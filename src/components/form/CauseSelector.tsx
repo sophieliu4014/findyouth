@@ -28,8 +28,16 @@ const CauseSelector = ({
   // Safe toggle function to prevent errors
   const handleCauseToggle = (cause: string, event?: React.MouseEvent) => {
     if (event) {
+      event.preventDefault();
       event.stopPropagation();
     }
+    onCauseToggle(cause);
+  };
+
+  // Safe removal of a cause
+  const handleRemoveCause = (cause: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     onCauseToggle(cause);
   };
 
@@ -42,6 +50,7 @@ const CauseSelector = ({
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between h-auto min-h-10"
+            onClick={(e) => e.preventDefault()}
           >
             {normalizedSelectedCauses.length > 0 ? (
               <div className="flex flex-wrap gap-1 py-0.5">
@@ -54,7 +63,7 @@ const CauseSelector = ({
                     {cause}
                     <X 
                       className="h-3 w-3 cursor-pointer" 
-                      onClick={(e) => handleCauseToggle(cause, e)}
+                      onClick={(e) => handleRemoveCause(cause, e)}
                     />
                   </Badge>
                 ))}
@@ -76,14 +85,10 @@ const CauseSelector = ({
                     <CommandItem
                       key={cause}
                       onSelect={() => {
-                        try {
-                          handleCauseToggle(cause);
-                          // Only close popover if we're at max causes after selection
-                          if (!isSelected && normalizedSelectedCauses.length >= maxCauses - 1) {
-                            setOpen(false);
-                          }
-                        } catch (error) {
-                          console.error("Error in cause selection:", error);
+                        handleCauseToggle(cause);
+                        // Only close popover if we're at max causes after selection
+                        if (!isSelected && normalizedSelectedCauses.length >= maxCauses - 1) {
+                          setOpen(false);
                         }
                       }}
                       className={cn(
