@@ -74,6 +74,20 @@ export const seedEvents = async () => {
       'Food Drive', 'Mentorship', 'Conference', 'Sport Event'
     ];
     
+    // Check if the events table has cause_area column
+    const { data: columnsData, error: columnsError } = await supabase
+      .from('events')
+      .select()
+      .limit(1);
+    
+    if (columnsError) {
+      console.error("Error checking events table structure:", columnsError);
+      return;
+    }
+
+    const hasCauseArea = columnsData && columnsData.length > 0 && 'cause_area' in columnsData[0];
+    console.log("Events table has cause_area column:", hasCauseArea);
+    
     const causeAreas = [
       'Advocacy & Human Rights', 'Education', 'Sports', 'Health', 
       'Arts & Culture', 'Environment', 'Homeless', 'Animals', 
@@ -113,17 +127,22 @@ export const seedEvents = async () => {
       const date = getRandomFutureDate();
       const causeArea = randomItem(causeAreas);
       
-      const eventData = {
+      // Create event data object based on column availability
+      const eventData: any = {
         title: `${eventType} in ${location}`,
         description: `Join ${nonprofit.organization_name} for a community ${eventType.toLowerCase()} event. This is a great opportunity to help our community and get involved with like-minded youth volunteers. We need your support to make this event a success!`,
         location: location,
         date: date,
         nonprofit_id: nonprofit.id,
         image_url: randomItem(imageUrls),
-        cause_area: causeArea,
         slots_available: randomInt(5, 30),
         duration_hours: randomInt(2, 8)
       };
+      
+      // Only add cause_area if the column exists
+      if (hasCauseArea) {
+        eventData.cause_area = causeArea;
+      }
       
       console.log(`Creating event: ${eventData.title} for ${nonprofit.organization_name}`);
       
