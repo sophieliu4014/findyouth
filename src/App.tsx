@@ -1,57 +1,59 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
-import AuthProvider from "@/components/auth/AuthProvider";
+import Index from './pages/Index';
+import FindActivities from './pages/FindActivities';
+import Contact from './pages/Contact';
+import OurStory from './pages/OurStory';
+import WebsiteGuidelines from './pages/WebsiteGuidelines';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import NgoLogin from './pages/NgoLogin';
+import RegisterNgo from './pages/RegisterNgo';
+import Profile from './pages/Profile';
+import NonprofitProfile from './pages/NonprofitProfile';
+import CauseEvents from './pages/CauseEvents';
+import NotFound from './pages/NotFound';
+import OurInstagram from './pages/OurInstagram';
+import { AuthProvider } from './components/auth/AuthProvider';
+import { ThemeProvider } from 'next-themes';
+import { useEffect } from 'react';
+import { seedEvents } from './utils/seedEvents';
 
-import Index from "./pages/Index";
-import FindActivities from "./pages/FindActivities";
-import NgoLogin from "./pages/NgoLogin";
-import WebsiteGuidelines from "./pages/WebsiteGuidelines";
-import RegisterNgo from "./pages/RegisterNgo";
-import OurStory from "./pages/OurStory";
-import OurInstagram from "./pages/OurInstagram";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Profile from "./pages/Profile";
+function App() {
+  // Run seed function on initial load
+  useEffect(() => {
+    seedEvents();
+  }, []);
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+  return (
+    <HelmetProvider>
+      <ThemeProvider attribute="class" defaultTheme="light">
         <AuthProvider>
-          <Toaster />
-          <Sonner />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/find-activities" element={<FindActivities />} />
-              <Route path="/ngo-login" element={<NgoLogin />} />
-              <Route path="/website-guidelines" element={<WebsiteGuidelines />} />
-              <Route path="/find-volunteers" element={<RegisterNgo />} />
-              <Route path="/register-ngo" element={<RegisterNgo />} />
-              <Route path="/our-story" element={<OurStory />} />
-              <Route path="/our-instagram" element={<OurInstagram />} />
               <Route path="/contact" element={<Contact />} />
-              
-              {/* Auth routes */}
+              <Route path="/our-story" element={<OurStory />} />
+              <Route path="/website-guidelines" element={<WebsiteGuidelines />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/ngo-login" element={<NgoLogin />} />
+              <Route path="/register-ngo" element={<RegisterNgo />} />
               <Route path="/profile" element={<Profile />} />
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/nonprofit/:id" element={<NonprofitProfile />} />
+              <Route path="/cause/:cause" element={<CauseEvents />} />
+              <Route path="/our-instagram" element={<OurInstagram />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <Toaster />
           </BrowserRouter>
         </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+      </ThemeProvider>
+    </HelmetProvider>
+  );
+}
 
 export default App;

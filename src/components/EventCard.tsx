@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
 
@@ -15,6 +15,7 @@ interface EventCardProps {
   rating: number;
   imageUrl?: string;
   profileImage?: string;
+  organizationId?: string;
 }
 
 const EventCard = ({
@@ -26,12 +27,14 @@ const EventCard = ({
   causeArea,
   rating,
   imageUrl,
-  profileImage
+  profileImage,
+  organizationId
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const { toast } = useToast();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const navigate = useNavigate();
 
   // Render 5 stars with appropriate filled/unfilled state
   const renderStars = (rating: number) => {
@@ -65,6 +68,18 @@ const EventCard = ({
     }, 1000);
   };
 
+  const handleOrganizationClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (organizationId) {
+      navigate(`/nonprofit/${organizationId}`);
+    }
+  };
+
+  const handleCauseClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(`/cause/${encodeURIComponent(causeArea)}`);
+  };
+
   return (
     <div 
       className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden"
@@ -73,7 +88,10 @@ const EventCard = ({
     >
       <div className="flex">
         {/* Organization profile image */}
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 mr-4">
+        <div 
+          className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
+          onClick={handleOrganizationClick}
+        >
           <img 
             src={profileImage || "https://via.placeholder.com/50"} 
             alt={organization} 
@@ -87,9 +105,19 @@ const EventCard = ({
           </h3>
           
           <div className="flex items-center mt-1 text-sm text-youth-charcoal/80">
-            <span className="font-medium text-youth-purple">{organization}</span>
+            <span 
+              className="font-medium text-youth-purple cursor-pointer hover:underline"
+              onClick={handleOrganizationClick}
+            >
+              {organization}
+            </span>
             <span className="mx-2">•</span>
-            <span className="text-youth-blue">{causeArea}</span>
+            <span 
+              className="text-youth-blue cursor-pointer hover:underline"
+              onClick={handleCauseClick}
+            >
+              {causeArea}
+            </span>
           </div>
           
           <div className="flex flex-wrap gap-y-1 mt-3">

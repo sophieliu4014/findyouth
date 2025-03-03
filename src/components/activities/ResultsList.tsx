@@ -6,6 +6,7 @@ interface Event {
   id: string;
   title: string;
   organization: string;
+  organizationId: string;
   date: string;
   location: string;
   causeArea: string;
