@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
@@ -7,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 // Import our components
@@ -36,11 +37,25 @@ const causeAreas = [
   "Religion"
 ];
 
+// reCAPTCHA site key
+const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
+
+// Declare grecaptcha for TypeScript
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 const RegisterNgo = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -87,11 +102,33 @@ const RegisterNgo = () => {
     }
     
     try {
+      // Get a fresh reCAPTCHA token before submission
+      let token = null;
+      if (window.grecaptcha) {
+        try {
+          token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit_ngo_registration' });
+          setRecaptchaToken(token);
+          console.log('reCAPTCHA token for submission:', token.substring(0, 10) + '...');
+        } catch (recaptchaError) {
+          console.error('Error getting reCAPTCHA token:', recaptchaError);
+          toast({
+            title: "reCAPTCHA verification failed",
+            description: "Please try again or contact support if the issue persists.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
       // Step 1: Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
-        { organization_name: data.organizationName }
+        { 
+          organization_name: data.organizationName,
+          recaptcha_token: token // Pass the token to your backend
+        }
       );
       
       if (authError) {
