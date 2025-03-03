@@ -14,6 +14,10 @@ const Hero = () => {
     }
   };
 
+  const handleCityClick = (city: string) => {
+    navigate('/find-activities', { state: { location: city } });
+  };
+
   return (
     <section className="relative min-h-screen w-full flex items-center justify-center">
       {/* Background image */}
@@ -39,7 +43,7 @@ const Hero = () => {
           FindYouth strives to connect youth all across Greater Vancouver, encouraging their leadership pursuits and helping them to become more involved in their communities.
         </p>
         
-        <div className="max-w-2xl mx-auto mb-10">
+        <div className="max-w-2xl mx-auto mb-6">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
@@ -58,6 +62,22 @@ const Hero = () => {
               </span>
             </button>
           </form>
+        </div>
+        
+        {/* City Buttons */}
+        <div className="max-w-2xl mx-auto mb-10">
+          <p className="text-white/90 mb-3">Or explore by city</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {['Vancouver', 'Burnaby', 'Richmond'].map((city) => (
+              <button
+                key={city}
+                onClick={() => handleCityClick(city)}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-8 py-2 rounded-full transition-all duration-300 border border-white/20"
+              >
+                {city}
+              </button>
+            ))}
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">

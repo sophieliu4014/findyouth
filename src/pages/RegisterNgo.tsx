@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
@@ -12,7 +11,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Check, Loader2, Upload, RefreshCw, AlertCircle } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
+import CauseSelector from '@/components/form/CauseSelector';
+import { useNavigate } from 'react-router-dom';
 
 const causeAreas = [
   "Advocacy & Human Rights",
@@ -88,6 +88,7 @@ const RegisterNgo = () => {
   const [captchaTarget, setCaptchaTarget] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -394,34 +395,11 @@ const RegisterNgo = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Select up to 3 Main Causes*</FormLabel>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-1">
-                          {causeAreas.map((cause) => {
-                            const isSelected = field.value.includes(cause);
-                            return (
-                              <div 
-                                key={cause}
-                                className={`border rounded-md p-3 cursor-pointer transition-colors
-                                  ${isSelected 
-                                    ? 'bg-primary/20 border-primary' 
-                                    : 'hover:bg-accent border-input'}`}
-                                onClick={() => handleCauseToggle(cause)}
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <Checkbox 
-                                    id={`cause-${cause}`}
-                                    checked={isSelected}
-                                  />
-                                  <label 
-                                    htmlFor={`cause-${cause}`}
-                                    className="text-sm font-medium leading-none cursor-pointer"
-                                  >
-                                    {cause}
-                                  </label>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        <CauseSelector 
+                          selectedCauses={field.value}
+                          onCauseToggle={handleCauseToggle}
+                          causeOptions={causeAreas}
+                        />
                         <FormDescription>
                           These will help match you with volunteers interested in your cause areas
                         </FormDescription>

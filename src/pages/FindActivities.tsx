@@ -57,6 +57,7 @@ const mockOrganizations = [
 const FindActivities = () => {
   const location = useLocation();
   const [address, setAddress] = useState('');
+  const [keyword, setKeyword] = useState('');
   const [filteredEvents, setFilteredEvents] = useState(mockEvents);
   const [filters, setFilters] = useState({
     cause: '',
@@ -66,11 +67,50 @@ const FindActivities = () => {
 
   // Handle location search from hero section
   useEffect(() => {
-    if (location.state && location.state.address) {
-      setAddress(location.state.address);
-      // In a real app, we would use this address to fetch events near the location
+    if (location.state) {
+      if (location.state.address) {
+        setAddress(location.state.address);
+      }
+      if (location.state.keyword) {
+        setKeyword(location.state.keyword);
+      }
+      if (location.state.location) {
+        const newFilters = { ...filters, location: location.state.location };
+        setFilters(newFilters);
+        applyFilters(newFilters, location.state.keyword || '');
+      }
     }
   }, [location.state]);
+
+  // Apply all filters
+  const applyFilters = (currentFilters: typeof filters, searchKeyword: string) => {
+    let results = [...mockEvents];
+    
+    // Apply keyword search
+    if (searchKeyword) {
+      const lowerKeyword = searchKeyword.toLowerCase();
+      results = results.filter(event => 
+        event.title.toLowerCase().includes(lowerKeyword) || 
+        event.organization.toLowerCase().includes(lowerKeyword) ||
+        event.causeArea.toLowerCase().includes(lowerKeyword)
+      );
+    }
+    
+    // Apply category filters
+    if (currentFilters.cause) {
+      results = results.filter(event => event.causeArea === currentFilters.cause);
+    }
+    
+    if (currentFilters.location) {
+      results = results.filter(event => event.location === currentFilters.location);
+    }
+    
+    if (currentFilters.organization) {
+      results = results.filter(event => event.organization === currentFilters.organization);
+    }
+    
+    setFilteredEvents(results);
+  };
 
   // Handle search by address
   const handleSearch = (query: string) => {
@@ -78,26 +118,16 @@ const FindActivities = () => {
     // In a real app, we would use this address to fetch events near the location
   };
 
+  // Handle keyword search
+  const handleKeywordSearch = (query: string) => {
+    setKeyword(query);
+    applyFilters(filters, query);
+  };
+
   // Handle filter changes
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters);
-    
-    // Apply filters
-    let results = [...mockEvents];
-    
-    if (newFilters.cause) {
-      results = results.filter(event => event.causeArea === newFilters.cause);
-    }
-    
-    if (newFilters.location) {
-      results = results.filter(event => event.location === newFilters.location);
-    }
-    
-    if (newFilters.organization) {
-      results = results.filter(event => event.organization === newFilters.organization);
-    }
-    
-    setFilteredEvents(results);
+    applyFilters(newFilters, keyword);
   };
 
   return (
@@ -118,12 +148,41 @@ const FindActivities = () => {
             Discover meaningful volunteer opportunities with youth-led nonprofits across Greater Vancouver
           </p>
           
+          {/* Search section */}
+          <div className="mb-4 animate-slide-up">
+            <LocationSearch 
+              onSearch={handleKeywordSearch}
+              placeholder="Search for activities, organizations, or causes"
+              initialValue={keyword}
+            />
+          </div>
+
           {/* Location search */}
           <div className="mb-8 animate-slide-up">
             <LocationSearch 
               onSearch={handleSearch}
               placeholder="Enter your address to find volunteer opportunities near you"
+              initialValue={address}
             />
+          </div>
+          
+          {/* City buttons */}
+          <div className="max-w-2xl mx-auto mb-8 animate-slide-up">
+            <p className="text-youth-charcoal/80 mb-3">Or explore by city</p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {['Vancouver', 'Burnaby', 'Richmond'].map((city) => (
+                <button
+                  key={city}
+                  onClick={() => handleFilterChange({...filters, location: city})}
+                  className={`px-8 py-2 rounded-full transition-all duration-300 border 
+                    ${filters.location === city 
+                      ? 'bg-youth-blue text-white border-youth-blue' 
+                      : 'bg-white/90 text-youth-charcoal hover:bg-youth-blue/10 border-youth-blue/20'}`}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
           </div>
           
           {/* Filters */}
@@ -131,6 +190,7 @@ const FindActivities = () => {
             <FilterBar 
               onFilterChange={handleFilterChange}
               organizations={mockOrganizations}
+              initialFilters={filters}
             />
           </div>
         </div>
