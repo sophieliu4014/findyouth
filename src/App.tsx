@@ -17,7 +17,6 @@ import OurInstagram from "./pages/OurInstagram";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
@@ -36,13 +35,13 @@ const App = () => (
               <Route path="/ngo-login" element={<NgoLogin />} />
               <Route path="/website-guidelines" element={<WebsiteGuidelines />} />
               <Route path="/find-volunteers" element={<RegisterNgo />} />
+              <Route path="/register-ngo" element={<RegisterNgo />} />
               <Route path="/our-story" element={<OurStory />} />
               <Route path="/our-instagram" element={<OurInstagram />} />
               <Route path="/contact" element={<Contact />} />
               
               {/* Auth routes */}
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
               <Route path="/profile" element={<Profile />} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
