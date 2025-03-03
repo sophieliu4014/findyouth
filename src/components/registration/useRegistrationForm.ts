@@ -82,11 +82,18 @@ export const useRegistrationForm = () => {
         throw new Error(authError.message);
       }
       
-      // Step 2: Upload profile image
-      const imageUrl = await uploadProfileImage(profileImage);
-      
-      if (!imageUrl) {
-        throw new Error("Failed to upload profile image");
+      // Step 2: Upload profile image with better error handling
+      let imageUrl;
+      try {
+        imageUrl = await uploadProfileImage(profileImage);
+        
+        if (!imageUrl) {
+          throw new Error("Failed to get a valid image URL after upload");
+        }
+        console.log("Profile image uploaded successfully:", imageUrl);
+      } catch (imageUploadError) {
+        console.error("Profile image upload error:", imageUploadError);
+        throw new Error("Failed to upload profile image: " + (imageUploadError.message || "Unknown error"));
       }
       
       // Step 3: Create nonprofit profile
@@ -114,6 +121,7 @@ export const useRegistrationForm = () => {
         description: "We'll review your information and contact you shortly.",
       });
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
         description: error.message || "An unexpected error occurred",

@@ -138,31 +138,78 @@ export const getNonprofitByAuthId = async () => {
   return { nonprofit: data, error };
 };
 
-// Upload profile image
+// Upload profile image with improved error handling
 export const uploadProfileImage = async (file: File): Promise<string | null> => {
-  const { user } = await getCurrentUser();
-  
-  if (!user) {
-    console.error("User not authenticated");
-    return null;
-  }
-  
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-  const filePath = `nonprofit-profiles/${fileName}`;
-  
-  const { error } = await supabase.storage
-    .from('profiles')
-    .upload(filePath, file);
+  try {
+    console.log("Starting profile image upload...");
     
-  if (error) {
-    console.error("Error uploading image:", error);
-    return null;
-  }
-  
-  const { data } = supabase.storage
-    .from('profiles')
-    .getPublicUrl(filePath);
+    // First check if we have an authenticated user
+    const { user } = await getCurrentUser();
     
-  return data.publicUrl;
+    if (!user) {
+      console.error("Error: User not authenticated for image upload");
+      throw new Error("User not authenticated");
+    }
+    
+    // Validate the file
+    if (!file || file.size === 0) {
+      console.error("Error: Invalid file for upload");
+      throw new Error("Invalid file");
+    }
+    
+    // Check file size (2MB limit)
+    if (file.size > 2 * 1024 * 1024) {
+      console.error("Error: File too large");
+      throw new Error("File size exceeds 2MB limit");
+    }
+    
+    // Sanitize the filename and create a unique path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    const filePath = `nonprofit-profiles/${fileName}`;
+    
+    console.log(`Uploading to path: ${filePath}`);
+    
+    // Upload the file to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('profiles')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+      
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      
+      // Check for specific error types and provide better messages
+      if (uploadError.message.includes("storage bucket") || uploadError.message.includes("not found")) {
+        throw new Error("Storage bucket not configured properly. Please contact support.");
+      }
+      
+      throw new Error(`Upload failed: ${uploadError.message}`);
+    }
+    
+    if (!uploadData || !uploadData.path) {
+      console.error("No upload data returned");
+      throw new Error("Upload completed but no path returned");
+    }
+    
+    console.log("File uploaded successfully, getting public URL");
+    
+    // Get the public URL
+    const { data: urlData } = supabase.storage
+      .from('profiles')
+      .getPublicUrl(filePath);
+      
+    if (!urlData || !urlData.publicUrl) {
+      console.error("Failed to get public URL");
+      throw new Error("Failed to generate public URL for uploaded image");
+    }
+    
+    console.log("Image upload successful, public URL:", urlData.publicUrl);
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error("Profile image upload failed:", error);
+    throw error; // Re-throw to allow proper handling in the calling function
+  }
 };

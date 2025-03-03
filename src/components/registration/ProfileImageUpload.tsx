@@ -2,7 +2,7 @@
 import React, { useRef, useState } from 'react';
 import { FormLabel } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Upload } from 'lucide-react';
+import { Upload, AlertCircle } from 'lucide-react';
 
 interface ProfileImageUploadProps {
   setProfileImage: (file: File | null) => void;
@@ -28,6 +28,14 @@ const ProfileImageUpload = ({
       return;
     }
     
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setImageError("Please upload a valid image file (JPEG, PNG, or GIF)");
+      return;
+    }
+    
+    // Validate file size
     if (file.size > 2 * 1024 * 1024) {
       setImageError("File size must be less than 2MB");
       return;
@@ -51,7 +59,7 @@ const ProfileImageUpload = ({
       <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 transition-colors hover:border-primary">
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/gif"
           ref={fileInputRef}
           onChange={handleFileChange}
           className="hidden"
@@ -81,7 +89,10 @@ const ProfileImageUpload = ({
         )}
       </div>
       {imageError && (
-        <p className="text-sm font-medium text-destructive">{imageError}</p>
+        <div className="flex items-center mt-2 text-destructive">
+          <AlertCircle className="h-4 w-4 mr-2" />
+          <p className="text-sm font-medium">{imageError}</p>
+        </div>
       )}
     </div>
   );
