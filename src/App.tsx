@@ -10,6 +10,9 @@ import FindActivities from "./pages/FindActivities";
 import NgoLogin from "./pages/NgoLogin";
 import WebsiteGuidelines from "./pages/WebsiteGuidelines";
 import RegisterNgo from "./pages/RegisterNgo";
+import OurStory from "./pages/OurStory";
+import OurInstagram from "./pages/OurInstagram";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
             <Route path="/ngo-login" element={<NgoLogin />} />
             <Route path="/website-guidelines" element={<WebsiteGuidelines />} />
             <Route path="/find-volunteers" element={<RegisterNgo />} />
+            <Route path="/our-story" element={<OurStory />} />
+            <Route path="/our-instagram" element={<OurInstagram />} />
+            <Route path="/contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
