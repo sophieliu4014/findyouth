@@ -21,7 +21,7 @@ export const seedEvents = async () => {
     console.log("Starting to seed events...");
     
     // Check if we already have enough events
-    const { count, error: countError } = await supabase
+    const { count: eventCount, error: countError } = await supabase
       .from('events')
       .select('*', { count: 'exact', head: true });
       
@@ -30,22 +30,109 @@ export const seedEvents = async () => {
       return;
     }
     
-    if (count && count >= 10) {
-      console.log(`Database already has ${count} events. No need to seed more.`);
+    if (eventCount && eventCount >= 10) {
+      console.log(`Database already has ${eventCount} events. No need to seed more.`);
       return;
     }
     
-    // 1. Get nonprofits that we can attach events to
-    const { data: nonprofits, error: nonprofitsError } = await supabase
+    // 1. Check for nonprofits and create some if none exist
+    const { data: existingNonprofits, error: nonprofitsCheckError } = await supabase
       .from('nonprofits')
       .select('id, organization_name');
       
-    if (nonprofitsError || !nonprofits || nonprofits.length === 0) {
-      console.error("Error fetching nonprofits:", nonprofitsError);
+    if (nonprofitsCheckError) {
+      console.error("Error checking nonprofits:", nonprofitsCheckError);
       return;
     }
     
-    console.log(`Found ${nonprofits.length} nonprofits to seed events for`);
+    let nonprofits = existingNonprofits || [];
+    
+    // If no nonprofits exist, create sample nonprofits
+    if (nonprofits.length === 0) {
+      console.log("No nonprofits found. Creating sample nonprofits...");
+      
+      const sampleNonprofits = [
+        {
+          organization_name: "Vancouver Youth Coalition",
+          email: "info@vancouveryouth.org",
+          phone: "604-555-1234",
+          social_media: "instagram.com/vancouveryouth",
+          website: "https://vancouveryouth.org",
+          location: "Vancouver",
+          description: "Dedicated to empowering youth through community engagement and leadership opportunities.",
+          mission: "To create a supportive environment where youth can develop skills, confidence, and a sense of community belonging.",
+          profile_image_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a"
+        },
+        {
+          organization_name: "Burnaby Environmental Network",
+          email: "contact@burnabyenv.org",
+          phone: "604-555-2345",
+          social_media: "instagram.com/burnabyenv",
+          website: "https://burnabyenv.org",
+          location: "Burnaby",
+          description: "Working to protect and enhance Burnaby's natural environment through community action.",
+          mission: "To foster environmental stewardship and sustainable practices in our community.",
+          profile_image_url: "https://images.unsplash.com/photo-1552084117-56a987666449"
+        },
+        {
+          organization_name: "Richmond Youth Arts Collective",
+          email: "arts@richmondyouth.org",
+          phone: "604-555-3456",
+          social_media: "instagram.com/richmondarts",
+          website: "https://richmondyoutharts.org",
+          location: "Richmond",
+          description: "Providing creative outlets and arts education for youth in Richmond.",
+          mission: "To nurture creativity and self-expression through accessible arts programming.",
+          profile_image_url: "https://images.unsplash.com/photo-1547153760-18fc86324498"
+        },
+        {
+          organization_name: "Surrey Community Food Bank",
+          email: "help@surreyfoodbank.org",
+          phone: "604-555-4567",
+          social_media: "instagram.com/surreyfoodbank",
+          website: "https://surreyfoodbank.org",
+          location: "Surrey",
+          description: "Addressing food insecurity in Surrey through community-based initiatives.",
+          mission: "To ensure that no one in our community goes hungry by providing dignified access to food and resources.",
+          profile_image_url: "https://images.unsplash.com/photo-1593113646773-028c9a82fde1"
+        },
+        {
+          organization_name: "North Shore Animal Rescue",
+          email: "rescue@northshoreanimals.org",
+          phone: "604-555-5678",
+          social_media: "instagram.com/northshorerescue",
+          website: "https://northshoreanimals.org",
+          location: "North Vancouver",
+          description: "Rescuing and rehoming animals in need across the North Shore.",
+          mission: "To provide care, shelter, and loving homes for abandoned and mistreated animals.",
+          profile_image_url: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b"
+        }
+      ];
+      
+      // Insert the sample nonprofits
+      for (const nonprofit of sampleNonprofits) {
+        const { data, error } = await supabase
+          .from('nonprofits')
+          .insert(nonprofit)
+          .select('id, organization_name');
+          
+        if (error) {
+          console.error(`Error creating nonprofit ${nonprofit.organization_name}:`, error);
+        } else if (data) {
+          console.log(`Created nonprofit: ${nonprofit.organization_name}`);
+          nonprofits.push(...data);
+        }
+      }
+      
+      if (nonprofits.length === 0) {
+        console.error("Failed to create any nonprofits. Cannot proceed with event creation.");
+        return;
+      }
+      
+      console.log(`Successfully created ${nonprofits.length} nonprofits.`);
+    } else {
+      console.log(`Found ${nonprofits.length} existing nonprofits.`);
+    }
     
     // 2. Prepare some example events
     const locations = [
@@ -88,7 +175,7 @@ export const seedEvents = async () => {
       return futureDate.toISOString();
     };
     
-    // 4. Create 10 example events
+    // 4. Create example events
     const eventPromises = [];
     
     for (let i = 0; i < 10; i++) {
