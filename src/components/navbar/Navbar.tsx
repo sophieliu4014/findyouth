@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import Logo from '../ui/Logo';
+import UserMenu from '../auth/UserMenu';
 
 const Navbar = () => {
   const [isVolunteersOpen, setIsVolunteersOpen] = useState(false);
@@ -29,9 +30,6 @@ const Navbar = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">
-            {/* Only show New Post for logged-in NGOs (would require auth check) */}
-            {/* <Link to="/new-post" className="text-youth-charcoal hover:text-youth-purple transition-colors">New Post</Link> */}
-            
             <Link 
               to="/find-activities" 
               className={`text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/find-activities') ? 'font-medium text-youth-purple' : ''}`}
@@ -81,13 +79,7 @@ const Navbar = () => {
               )}
             </div>
             
-            <Link 
-              to="/ngo-login" 
-              className="btn-primary"
-              onClick={closeDropdowns}
-            >
-              NGO Log In
-            </Link>
+            <UserMenu />
           </nav>
 
           {/* Mobile menu button - would need to implement mobile menu */}

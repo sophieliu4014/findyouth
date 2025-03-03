@@ -4,8 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Control } from 'react-hook-form';
 import { FormValues } from './RegistrationTypes';
 import { AlertTriangle } from 'lucide-react';
-import { Label } from "@/components/ui/label";
-import { OrganizationFormProps } from "./RegistrationTypes";
 
 interface OrganizationInfoFieldsProps {
   control: Control<FormValues>;
