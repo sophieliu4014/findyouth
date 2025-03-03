@@ -16,10 +16,15 @@ const ProfileImageUpload = ({
   imageError 
 }: ProfileImageUploadProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    handleFile(file);
+  };
+
+  const handleFile = (file?: File) => {
     setImageError(null);
     
     if (!file) {
@@ -59,11 +64,41 @@ const ProfileImageUpload = ({
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
+  
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
 
   return (
     <div className="space-y-2">
       <FormLabel>Profile Picture*</FormLabel>
-      <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 transition-colors hover:border-primary">
+      <div 
+        className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors ${
+          isDragging 
+            ? 'border-primary bg-primary/5' 
+            : imageError 
+              ? 'border-destructive bg-destructive/5' 
+              : 'border-gray-300 hover:border-primary'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <input
           type="file"
           accept="image/jpeg,image/png,image/gif"
@@ -90,6 +125,9 @@ const ProfileImageUpload = ({
               </Button>
               <p className="text-sm text-muted-foreground mt-2">
                 PNG, JPG or GIF (max. 2MB)
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Or drag and drop an image here
               </p>
             </div>
           </div>
