@@ -72,7 +72,6 @@ type FormValues = z.infer<typeof formSchema>;
 const RegisterNgo = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [selectedCauses, setSelectedCauses] = useState<string[]>([]);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -150,23 +149,27 @@ const RegisterNgo = () => {
   };
 
   const handleCauseToggle = (cause: string) => {
-    setSelectedCauses(prev => {
-      if (prev.includes(cause)) {
-        return prev.filter(c => c !== cause);
-      } else {
-        if (prev.length >= 3) {
-          toast({
-            title: "Maximum causes reached",
-            description: "You can select up to 3 causes. Remove one to add another.",
-            variant: "destructive",
-          });
-          return prev;
-        }
-        return [...prev, cause];
-      }
-    });
+    const currentCauses = form.getValues("causes");
+    let newCauses: string[];
     
-    form.setValue('causes', selectedCauses, { shouldValidate: true });
+    if (currentCauses.includes(cause)) {
+      // Remove the cause if it's already selected
+      newCauses = currentCauses.filter(c => c !== cause);
+    } else {
+      // Add the cause if it's not in the array and there are fewer than 3 causes
+      if (currentCauses.length >= 3) {
+        toast({
+          title: "Maximum causes reached",
+          description: "You can select up to 3 causes. Remove one to add another.",
+          variant: "destructive",
+        });
+        return;
+      }
+      newCauses = [...currentCauses, cause];
+    }
+    
+    // Update the form value
+    form.setValue('causes', newCauses, { shouldValidate: true });
   };
   
   const generateCaptcha = () => {
@@ -379,34 +382,37 @@ const RegisterNgo = () => {
                   <FormField
                     control={form.control}
                     name="causes"
-                    render={() => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Select up to 3 Main Causes*</FormLabel>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-1">
-                          {causeAreas.map((cause) => (
-                            <div 
-                              key={cause}
-                              className={`border rounded-md p-3 cursor-pointer transition-colors
-                                ${selectedCauses.includes(cause) 
-                                  ? 'bg-primary/20 border-primary' 
-                                  : 'hover:bg-accent border-input'}`}
-                              onClick={() => handleCauseToggle(cause)}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <Checkbox 
-                                  checked={selectedCauses.includes(cause)}
-                                  onCheckedChange={() => handleCauseToggle(cause)}
-                                  id={`cause-${cause}`}
-                                />
-                                <label 
-                                  htmlFor={`cause-${cause}`}
-                                  className="text-sm font-medium leading-none cursor-pointer"
-                                >
-                                  {cause}
-                                </label>
+                          {causeAreas.map((cause) => {
+                            const isSelected = field.value.includes(cause);
+                            return (
+                              <div 
+                                key={cause}
+                                className={`border rounded-md p-3 cursor-pointer transition-colors
+                                  ${isSelected 
+                                    ? 'bg-primary/20 border-primary' 
+                                    : 'hover:bg-accent border-input'}`}
+                                onClick={() => handleCauseToggle(cause)}
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox 
+                                    id={`cause-${cause}`}
+                                    checked={isSelected}
+                                    onCheckedChange={() => handleCauseToggle(cause)}
+                                  />
+                                  <label 
+                                    htmlFor={`cause-${cause}`}
+                                    className="text-sm font-medium leading-none cursor-pointer"
+                                  >
+                                    {cause}
+                                  </label>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                         <FormDescription>
                           These will help match you with volunteers interested in your cause areas
