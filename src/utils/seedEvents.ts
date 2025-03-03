@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import { checkCauseAreaColumn } from '@/hooks/event-utils';
 
 // Random selection helper
 const randomItem = <T>(array: T[]): T => {
@@ -74,26 +74,8 @@ export const seedEvents = async () => {
       'Food Drive', 'Mentorship', 'Conference', 'Sport Event'
     ];
     
-    // Check if the events table has cause_area column using the updated function
-    let hasCauseArea = false;
-    try {
-      // Using updated function that returns column_name and data_type
-      const { data, error } = await supabase
-        .rpc('get_columns_for_table', { table_name: 'events' });
-        
-      if (error) {
-        console.error("Error checking for columns:", error);
-      } else if (data) {
-        // Look for cause_area column in the returned data
-        hasCauseArea = data.some((col: { column_name: string, data_type: string }) => 
-          col.column_name === 'cause_area'
-        );
-        console.log("Column detection data:", data);
-        console.log("Has cause_area column:", hasCauseArea);
-      }
-    } catch (err) {
-      console.error("Error checking for cause_area column:", err);
-    }
+    // Check if the events table has cause_area column
+    const hasCauseArea = await checkCauseAreaColumn();
     
     const causeAreas = [
       'Advocacy & Human Rights', 'Education', 'Sports', 'Health', 
