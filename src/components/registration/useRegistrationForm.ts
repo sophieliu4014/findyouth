@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
-import { supabase } from '@/integrations/supabase/client';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,17 +95,13 @@ export const useRegistrationForm = () => {
       
       console.log("User created successfully with ID:", authData.user.id);
       
-      // After signup, we need to wait a moment for the session to be established
-      // instead of immediately checking for a session
-      console.log("Using user ID directly from signup response for further operations");
-      const userId = authData.user.id;
-      
-      // Step 2: Upload profile image using the user ID from the auth response
-      console.log("Step 2: Uploading profile image with user ID:", userId);
+      // Step 2: Upload profile image with a unique identifier
+      console.log("Step 2: Uploading profile image");
       let imageUrl;
       try {
-        // Explicitly use the user ID from the auth response for the upload
-        imageUrl = await uploadProfileImage(profileImage, userId);
+        // Use organization name and timestamp as a unique identifier
+        const identifier = `${data.organizationName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+        imageUrl = await uploadProfileImage(profileImage, identifier);
         
         if (!imageUrl) {
           console.error("No image URL returned after upload");
