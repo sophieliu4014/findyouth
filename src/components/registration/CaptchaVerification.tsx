@@ -11,18 +11,27 @@ interface CaptchaVerificationProps {
   control: Control<FormValues>;
 }
 
+// List of pre-defined CAPTCHA challenges with answers
+const captchaOptions = [
+  { image: '/captcha/captcha1.jpg', answer: 'D7X9F2' },
+  { image: '/captcha/captcha2.jpg', answer: 'B3K5M8' },
+  { image: '/captcha/captcha3.jpg', answer: 'P6R2T5' },
+  { image: '/captcha/captcha4.jpg', answer: 'W4J9L1' },
+  { image: '/captcha/captcha5.jpg', answer: 'A7C3E8' },
+];
+
 const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
-  const [captchaValue, setCaptchaValue] = useState(0);
-  const [captchaTarget, setCaptchaTarget] = useState(0);
-  const [captchaNumbers, setCaptchaNumbers] = useState({ num1: 0, num2: 0 });
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [currentCaptcha, setCurrentCaptcha] = useState<{ image: string; answer: string }>({ 
+    image: '', 
+    answer: '' 
+  });
 
   const generateCaptcha = () => {
-    const num1 = Math.floor(Math.random() * 10);
-    const num2 = Math.floor(Math.random() * 10);
-    setCaptchaValue(0);
-    setCaptchaTarget(num1 + num2);
-    setCaptchaNumbers({ num1, num2 });
-    return { num1, num2 };
+    const randomIndex = Math.floor(Math.random() * captchaOptions.length);
+    setCurrentCaptcha(captchaOptions[randomIndex]);
+    setCaptchaInput('');
+    return captchaOptions[randomIndex];
   };
   
   useEffect(() => {
@@ -30,10 +39,11 @@ const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
   }, []);
 
   const handleCaptchaChange = (value: string, setValue: (name: "captchaVerified", value: boolean) => void) => {
-    const numValue = parseInt(value);
-    setCaptchaValue(isNaN(numValue) ? 0 : numValue);
+    setCaptchaInput(value);
     
-    setValue("captchaVerified", numValue === captchaTarget);
+    // Case insensitive comparison
+    const isVerified = value.toUpperCase() === currentCaptcha.answer.toUpperCase();
+    setValue("captchaVerified", isVerified);
   };
   
   const refreshCaptcha = () => {
@@ -49,7 +59,7 @@ const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
           <FormLabel>Verification*</FormLabel>
           <div className="glass-card p-4">
             <div className="flex items-center space-x-2 mb-2">
-              <h3 className="text-sm font-medium">Solve the simple math problem:</h3>
+              <h3 className="text-sm font-medium">Enter the characters shown in the image:</h3>
               <Button 
                 type="button" 
                 variant="ghost" 
@@ -61,16 +71,22 @@ const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
               </Button>
             </div>
             
-            <div className="flex items-center gap-3">
-              <div className="text-lg font-medium">
-                {captchaNumbers.num1} + {captchaNumbers.num2} = ?
-              </div>
+            <div className="flex flex-col space-y-3">
+              {currentCaptcha.image && (
+                <div className="captcha-image-container border border-gray-300 rounded overflow-hidden max-w-md">
+                  <img 
+                    src={currentCaptcha.image} 
+                    alt="CAPTCHA verification" 
+                    className="w-full h-auto"
+                  />
+                </div>
+              )}
               <Input 
-                type="number" 
-                value={captchaValue || ''} 
+                type="text" 
+                value={captchaInput} 
                 onChange={(e) => handleCaptchaChange(e.target.value, field.onChange)}
-                className="w-20"
-                placeholder="?"
+                className="max-w-xs"
+                placeholder="Enter the code"
               />
             </div>
           </div>
