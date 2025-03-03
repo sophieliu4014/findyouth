@@ -153,7 +153,7 @@ const NgoLogin = () => {
                   </div>
                 )}
                 <div className="mt-1 text-sm text-youth-charcoal/70">
-                  <Link to="/forgot-password" className="text-youth-blue hover:text-youth-purple transition-colors">
+                  <Link to="/find-volunteers" className="text-youth-blue hover:text-youth-purple transition-colors">
                     Lost your password?
                   </Link>
                 </div>
