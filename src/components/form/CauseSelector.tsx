@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Check, X, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -25,7 +24,7 @@ const CauseSelector = ({
   // Ensure selectedCauses is always an array
   const normalizedSelectedCauses = Array.isArray(selectedCauses) ? selectedCauses : [];
 
-  // Safe toggle function to prevent errors
+  // Toggle cause selection
   const handleCauseToggle = (cause: string, event?: React.MouseEvent) => {
     if (event) {
       event.preventDefault();
@@ -34,7 +33,7 @@ const CauseSelector = ({
     onCauseToggle(cause);
   };
 
-  // Safe removal of a cause
+  // Remove cause from selection
   const handleRemoveCause = (cause: string, event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
@@ -50,7 +49,6 @@ const CauseSelector = ({
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between h-auto min-h-10"
-            onClick={(e) => e.preventDefault()}
           >
             {normalizedSelectedCauses.length > 0 ? (
               <div className="flex flex-wrap gap-1 py-0.5">
@@ -74,6 +72,7 @@ const CauseSelector = ({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
+
         <PopoverContent className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background" align="start">
           <Command>
             <CommandList>
@@ -86,10 +85,6 @@ const CauseSelector = ({
                       key={cause}
                       onSelect={() => {
                         handleCauseToggle(cause);
-                        // Only close popover if we're at max causes after selection
-                        if (!isSelected && normalizedSelectedCauses.length >= maxCauses - 1) {
-                          setOpen(false);
-                        }
                       }}
                       className={cn(
                         "flex items-center justify-between",
@@ -106,7 +101,7 @@ const CauseSelector = ({
           </Command>
         </PopoverContent>
       </Popover>
-      
+
       <div className="text-sm text-muted-foreground">
         {normalizedSelectedCauses.length} of {maxCauses} selected
       </div>
