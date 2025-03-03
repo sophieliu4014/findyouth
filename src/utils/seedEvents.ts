@@ -77,14 +77,15 @@ export const seedEvents = async () => {
     // Check if the events table has cause_area column using the updated function
     let hasCauseArea = false;
     try {
+      // Using updated function that returns column_name and data_type
       const { data, error } = await supabase
-        .rpc('get_columns_for_table', { query_table_name: 'events' });
+        .rpc('get_columns_for_table', { table_name: 'events' });
         
       if (error) {
         console.error("Error checking for columns:", error);
       } else if (data) {
         // Look for cause_area column in the returned data
-        hasCauseArea = data.some((col: { column_name: string }) => 
+        hasCauseArea = data.some((col: { column_name: string, data_type: string }) => 
           col.column_name === 'cause_area'
         );
         console.log("Column detection data:", data);

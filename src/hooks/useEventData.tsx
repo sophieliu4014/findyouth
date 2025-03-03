@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -38,14 +39,15 @@ export const useEventData = () => {
         let hasCauseArea = false;
         
         try {
+          // Using updated function that returns column_name and data_type
           const { data, error } = await supabase
-            .rpc('get_columns_for_table', { query_table_name: 'events' });
+            .rpc('get_columns_for_table', { table_name: 'events' });
             
           if (error) {
             console.error("Error checking for columns:", error);
           } else if (data && Array.isArray(data)) {
             // Look for cause_area column in the returned data
-            hasCauseArea = data.some((col: { column_name: string }) => 
+            hasCauseArea = data.some((col: { column_name: string, data_type: string }) => 
               col.column_name === 'cause_area'
             );
             console.log("Column detection data:", data);
@@ -191,14 +193,15 @@ export const useOrganizationEvents = (organizationId: string) => {
         let hasCauseArea = false;
         
         try {
+          // Using updated function that returns column_name and data_type
           const { data, error } = await supabase
-            .rpc('get_columns_for_table', { query_table_name: 'events' });
+            .rpc('get_columns_for_table', { table_name: 'events' });
             
           if (error) {
             console.error("Error checking for columns:", error);
           } else if (data && Array.isArray(data)) {
             // Look for cause_area column in the returned data
-            hasCauseArea = data.some((col: { column_name: string }) => 
+            hasCauseArea = data.some((col: { column_name: string, data_type: string }) => 
               col.column_name === 'cause_area'
             );
             console.log("Organization events - Has cause_area column:", hasCauseArea);

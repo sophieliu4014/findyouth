@@ -201,6 +201,7 @@ export type Database = {
         }
         Returns: {
           column_name: string
+          data_type: string
         }[]
       }
     }
