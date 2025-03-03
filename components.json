@@ -1,7 +1,7 @@
+
 {
 
-  import { createUserAccount } from '@/integrations/supabase/auth';
-  createUserAccount("sophieliu4014@gmail.com", "@Sophie2008").then(console.log);
+ 
   
 
   "$schema": "https://ui.shadcn.com/schema.json",
