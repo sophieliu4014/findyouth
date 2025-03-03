@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -138,16 +137,20 @@ export const getNonprofitByAuthId = async () => {
   return { nonprofit: data, error };
 };
 
-// Upload profile image with improved error handling
+// Upload profile image with improved error handling and owner metadata
 export const uploadProfileImage = async (file: File, userId?: string): Promise<string | null> => {
   try {
-    console.log("Starting profile image upload...");
+    console.log("Starting profile image upload process...");
     
     // Check if we have a user ID (either from parameter or current session)
     let actualUserId = userId;
     
     // If no user ID was provided, try to get it from the current session
     if (!actualUserId) {
+      // Debug the auth state before fetching the user
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log("Current session:", sessionData?.session ? "Active" : "No active session");
+      
       const { user } = await getCurrentUser();
       
       if (!user) {
@@ -157,6 +160,8 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
       
       actualUserId = user.id;
     }
+    
+    console.log("Uploading file for user ID:", actualUserId);
     
     // Validate the file
     if (!file || file.size === 0) {
@@ -178,12 +183,17 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
     
     console.log(`Uploading to 'profiles' bucket with path: ${filePath}`);
     
-    // Upload the file to Supabase Storage
+    // Debug auth state right before upload
+    const currentUser = await supabase.auth.getUser();
+    console.log("Current auth state before upload:", currentUser.data?.user ? "Authenticated" : "Not authenticated");
+    
+    // Upload the file to Supabase Storage with explicit owner metadata
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('profiles')
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: false,
+        metadata: { owner: actualUserId }
       });
       
     if (uploadError) {

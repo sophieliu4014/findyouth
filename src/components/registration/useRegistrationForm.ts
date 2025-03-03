@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,6 +98,7 @@ export const useRegistrationForm = () => {
       console.log("Step 2: Uploading profile image with user ID:", authData.user.id);
       let imageUrl;
       try {
+        // Explicitly use the user ID from the auth response for the upload
         imageUrl = await uploadProfileImage(profileImage, authData.user.id);
         
         if (!imageUrl) {
