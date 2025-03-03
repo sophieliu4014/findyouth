@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -35,19 +34,27 @@ export const useEventData = () => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
-        // First, check if cause_area column exists
+        // First, check if cause_area column exists by fetching all columns
+        // and checking the structure of the response
         let hasCauseArea = false;
         try {
-          // Get one event to examine its structure
-          const { data: oneEvent, error: columnCheckError } = await supabase
-            .from('events')
-            .select('*')
-            .limit(1)
-            .single();
+          const { data: columnInfo, error: columnError } = await supabase
+            .rpc('get_columns_for_table', { table_name: 'events' });
+            
+          if (!columnError && columnInfo) {
+            hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
+          }
           
-          if (!columnCheckError && oneEvent) {
-            // Check if cause_area exists in the returned object
-            hasCauseArea = 'cause_area' in oneEvent;
+          // Fallback approach: try to get one event to examine its structure
+          if (!hasCauseArea) {
+            const { data: oneEvent } = await supabase
+              .from('events')
+              .select('*')
+              .limit(1);
+            
+            if (oneEvent && oneEvent.length > 0) {
+              hasCauseArea = 'cause_area' in oneEvent[0];
+            }
           }
           
           console.log("Does events table have cause_area column:", hasCauseArea);
@@ -55,32 +62,28 @@ export const useEventData = () => {
           console.error("Error checking for cause_area column:", err);
         }
         
-        // Now fetch all events with appropriate column selection
-        let query = supabase.from('events').select(`
-          id,
-          title,
-          description,
-          date,
-          location,
-          image_url,
-          nonprofit_id
-        `);
+        // Fetch all events with the appropriate fields
+        // Use separate queries to avoid SQL template issues
+        let eventsData: any[] = [];
+        let eventsError = null;
         
-        // Only add cause_area to query if it exists
         if (hasCauseArea) {
-          query = supabase.from('events').select(`
-            id,
-            title,
-            description,
-            date,
-            location,
-            image_url,
-            nonprofit_id,
-            cause_area
-          `);
+          // If cause_area exists, include it in the query
+          const response = await supabase
+            .from('events')
+            .select('id, title, description, date, location, image_url, nonprofit_id, cause_area');
+            
+          eventsData = response.data || [];
+          eventsError = response.error;
+        } else {
+          // Otherwise query without cause_area
+          const response = await supabase
+            .from('events')
+            .select('id, title, description, date, location, image_url, nonprofit_id');
+            
+          eventsData = response.data || [];
+          eventsError = response.error;
         }
-        
-        const { data: eventsData, error: eventsError } = await query;
 
         if (eventsError) {
           console.error("Error fetching events:", eventsError);
@@ -120,10 +123,8 @@ export const useEventData = () => {
           const nonprofitId = event.nonprofit_id;
           const organizationName = NONPROFIT_NAME_MAP[nonprofitId] || 'Unknown Organization';
           
-          // Default cause area if not present
-          const causeArea = hasCauseArea && (event as any).cause_area 
-            ? (event as any).cause_area 
-            : 'General';
+          // Get cause area if available, otherwise use default
+          const causeArea = hasCauseArea && event.cause_area ? event.cause_area : 'General';
           
           // Calculate rating
           let rating = 4; // Default rating
@@ -182,58 +183,62 @@ export const useOrganizationEvents = (organizationId: string) => {
 
   useEffect(() => {
     const fetchOrganizationEvents = async () => {
+      if (!organizationId) {
+        setEvents([]);
+        setIsLoading(false);
+        return;
+      }
+      
       setIsLoading(true);
       try {
-        // First, check if cause_area column exists
+        // Check if cause_area column exists
         let hasCauseArea = false;
         try {
-          // Get one event to examine its structure
-          const { data: oneEvent, error: columnCheckError } = await supabase
-            .from('events')
-            .select('*')
-            .limit(1)
-            .single();
+          const { data: columnInfo, error: columnError } = await supabase
+            .rpc('get_columns_for_table', { table_name: 'events' });
+            
+          if (!columnError && columnInfo) {
+            hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
+          }
           
-          if (!columnCheckError && oneEvent) {
-            // Check if cause_area exists in the returned object
-            hasCauseArea = 'cause_area' in oneEvent;
+          // Fallback approach
+          if (!hasCauseArea) {
+            const { data: oneEvent } = await supabase
+              .from('events')
+              .select('*')
+              .limit(1);
+            
+            if (oneEvent && oneEvent.length > 0) {
+              hasCauseArea = 'cause_area' in oneEvent[0];
+            }
           }
         } catch (err) {
           console.error("Error checking for cause_area column:", err);
         }
         
-        // Now fetch events for this organization with appropriate column selection
-        let query = supabase
-          .from('events')
-          .select(`
-            id,
-            title,
-            description,
-            date,
-            location,
-            image_url
-          `)
-          .eq('nonprofit_id', organizationId)
-          .order('date', { ascending: false });
+        // Fetch events for this nonprofit
+        let eventsData: any[] = [];
+        let eventsError = null;
         
-        // Only add cause_area to query if it exists
         if (hasCauseArea) {
-          query = supabase
+          const response = await supabase
             .from('events')
-            .select(`
-              id,
-              title,
-              description,
-              date,
-              location,
-              image_url,
-              cause_area
-            `)
+            .select('id, title, description, date, location, image_url, cause_area')
             .eq('nonprofit_id', organizationId)
             .order('date', { ascending: false });
+            
+          eventsData = response.data || [];
+          eventsError = response.error;
+        } else {
+          const response = await supabase
+            .from('events')
+            .select('id, title, description, date, location, image_url')
+            .eq('nonprofit_id', organizationId)
+            .order('date', { ascending: false });
+            
+          eventsData = response.data || [];
+          eventsError = response.error;
         }
-        
-        const { data: eventsData, error: eventsError } = await query;
 
         if (eventsError) {
           console.error("Error fetching organization events:", eventsError);
@@ -281,9 +286,7 @@ export const useOrganizationEvents = (organizationId: string) => {
           });
 
           // Get cause area if available, otherwise use default
-          const causeArea = hasCauseArea && (event as any).cause_area 
-            ? (event as any).cause_area 
-            : 'General';
+          const causeArea = hasCauseArea && event.cause_area ? event.cause_area : 'General';
 
           return {
             id: event.id,
@@ -308,12 +311,7 @@ export const useOrganizationEvents = (organizationId: string) => {
       }
     };
 
-    if (organizationId) {
-      fetchOrganizationEvents();
-    } else {
-      setEvents([]);
-      setIsLoading(false);
-    }
+    fetchOrganizationEvents();
   }, [organizationId]);
 
   return { events, isLoading };

@@ -77,16 +77,24 @@ export const seedEvents = async () => {
     // Check if the events table has cause_area column
     let hasCauseArea = false;
     try {
-      // Get one event to examine its structure
-      const { data: oneEvent, error: columnCheckError } = await supabase
-        .from('events')
-        .select('*')
-        .limit(1)
-        .single();
+      // Try to get column info using a direct query first
+      const { data: columnInfo, error: columnError } = await supabase
+        .rpc('get_columns_for_table', { table_name: 'events' });
+        
+      if (!columnError && columnInfo) {
+        hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
+      }
       
-      if (!columnCheckError && oneEvent) {
-        // Check if cause_area exists in the returned object
-        hasCauseArea = 'cause_area' in oneEvent;
+      // If that fails, try to get one event to examine its structure
+      if (!hasCauseArea) {
+        const { data: oneEvent } = await supabase
+          .from('events')
+          .select('*')
+          .limit(1);
+        
+        if (oneEvent && oneEvent.length > 0) {
+          hasCauseArea = 'cause_area' in oneEvent[0];
+        }
       }
       
       console.log("Events table has cause_area column:", hasCauseArea);
@@ -132,7 +140,7 @@ export const seedEvents = async () => {
       const location = randomItem(locations);
       const date = getRandomFutureDate();
       
-      // Create event data object
+      // Create event data object with base fields
       const eventData: any = {
         title: `${eventType} in ${location}`,
         description: `Join ${nonprofit.organization_name} for a community ${eventType.toLowerCase()} event. This is a great opportunity to help our community and get involved with like-minded youth volunteers. We need your support to make this event a success!`,
@@ -154,7 +162,6 @@ export const seedEvents = async () => {
       const promise = supabase
         .from('events')
         .insert(eventData)
-        .select()
         .then(({ data, error }) => {
           if (error) {
             console.error(`Error creating event for ${nonprofit.organization_name}:`, error);
