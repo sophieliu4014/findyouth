@@ -82,10 +82,14 @@ export const useRegistrationForm = () => {
         throw new Error(authError.message);
       }
       
-      // Step 2: Upload profile image with better error handling
+      if (!authData?.user?.id) {
+        throw new Error("Failed to create user account - no user ID returned");
+      }
+      
+      // Step 2: Upload profile image using the user ID from the auth response
       let imageUrl;
       try {
-        imageUrl = await uploadProfileImage(profileImage);
+        imageUrl = await uploadProfileImage(profileImage, authData.user.id);
         
         if (!imageUrl) {
           throw new Error("Failed to get a valid image URL after upload");

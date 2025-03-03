@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -139,16 +138,23 @@ export const getNonprofitByAuthId = async () => {
 };
 
 // Upload profile image with improved error handling
-export const uploadProfileImage = async (file: File): Promise<string | null> => {
+export const uploadProfileImage = async (file: File, userId?: string): Promise<string | null> => {
   try {
     console.log("Starting profile image upload...");
     
-    // First check if we have an authenticated user
-    const { user } = await getCurrentUser();
+    // Check if we have a user ID (either from parameter or current session)
+    let actualUserId = userId;
     
-    if (!user) {
-      console.error("Error: User not authenticated for image upload");
-      throw new Error("User not authenticated");
+    // If no user ID was provided, try to get it from the current session
+    if (!actualUserId) {
+      const { user } = await getCurrentUser();
+      
+      if (!user) {
+        console.error("Error: User not authenticated for image upload");
+        throw new Error("User not authenticated");
+      }
+      
+      actualUserId = user.id;
     }
     
     // Validate the file
@@ -165,7 +171,7 @@ export const uploadProfileImage = async (file: File): Promise<string | null> => 
     
     // Sanitize the filename and create a unique path
     const fileExt = file.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    const fileName = `${actualUserId}-${Date.now()}.${fileExt}`;
     const filePath = `nonprofit-profiles/${fileName}`;
     
     console.log(`Uploading to path: ${filePath}`);
