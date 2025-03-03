@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Check, X, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
@@ -13,31 +13,29 @@ interface CauseSelectorProps {
   causeOptions: string[];
 }
 
-const CauseSelector = ({ 
-  selectedCauses, 
-  onCauseToggle, 
+const CauseSelector = ({
+  selectedCauses,
+  onCauseToggle,
   maxCauses = 3,
-  causeOptions 
+  causeOptions,
 }: CauseSelectorProps) => {
   const [open, setOpen] = React.useState(false);
 
   // Ensure selectedCauses is always an array
   const normalizedSelectedCauses = Array.isArray(selectedCauses) ? selectedCauses : [];
 
-  // Toggle cause selection
-  const handleCauseToggle = (cause: string, event?: React.MouseEvent) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+  // Toggle cause selection (ensures max limit is respected)
+  const handleCauseToggle = (cause: string) => {
+    if (normalizedSelectedCauses.includes(cause)) {
+      onCauseToggle(cause); // Remove cause if already selected
+    } else if (normalizedSelectedCauses.length < maxCauses) {
+      onCauseToggle(cause); // Add cause if within limit
     }
-    onCauseToggle(cause);
   };
 
-  // Remove cause from selection
-  const handleRemoveCause = (cause: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onCauseToggle(cause);
+  // Prevent dropdown from closing unexpectedly
+  const handleClickOutside = (e: Event) => {
+    e.preventDefault();
   };
 
   return (
@@ -52,16 +50,19 @@ const CauseSelector = ({
           >
             {normalizedSelectedCauses.length > 0 ? (
               <div className="flex flex-wrap gap-1 py-0.5">
-                {normalizedSelectedCauses.map(cause => (
-                  <Badge 
-                    key={cause} 
+                {normalizedSelectedCauses.map((cause) => (
+                  <Badge
+                    key={cause}
                     variant="secondary"
                     className="flex items-center gap-1 bg-youth-blue/10 text-youth-blue border-youth-blue"
                   >
                     {cause}
-                    <X 
-                      className="h-3 w-3 cursor-pointer" 
-                      onClick={(e) => handleRemoveCause(cause, e)}
+                    <X
+                      className="h-3 w-3 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCauseToggle(cause);
+                      }}
                     />
                   </Badge>
                 ))}
@@ -73,10 +74,10 @@ const CauseSelector = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent 
+        <PopoverContent
           className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background z-50"
           align="start"
-          onInteractOutside={(e) => e.preventDefault()} // Prevent accidental closure
+          onInteractOutside={handleClickOutside} // Prevent accidental closure
         >
           <Command>
             <CommandList>
@@ -84,14 +85,10 @@ const CauseSelector = ({
               <CommandGroup>
                 {causeOptions.map((cause) => {
                   const isSelected = normalizedSelectedCauses.includes(cause);
-
                   return (
                     <CommandItem
                       key={cause}
                       onSelect={() => {
-                        if (!isSelected && normalizedSelectedCauses.length >= maxCauses) {
-                          return; // Prevent selection if max reached
-                        }
                         handleCauseToggle(cause);
                       }}
                       className={cn(
