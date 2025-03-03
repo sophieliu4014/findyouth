@@ -38,9 +38,6 @@ const UserMenu = () => {
         <Link to="/login" className="text-youth-charcoal hover:text-youth-purple transition-colors">
           Log In
         </Link>
-        <Link to="/signup" className="btn-primary">
-          Sign Up
-        </Link>
       </div>
     );
   }
