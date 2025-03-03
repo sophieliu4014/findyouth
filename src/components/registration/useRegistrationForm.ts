@@ -96,22 +96,17 @@ export const useRegistrationForm = () => {
       
       console.log("User created successfully with ID:", authData.user.id);
       
-      // Immediately verify we have an active session
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !sessionData.session) {
-        console.error("Session verification failed:", sessionError || "No active session found");
-        throw new Error("Authentication verification failed. Please try again.");
-      }
-      
-      console.log("Session verified with token:", sessionData.session.access_token.substring(0, 10) + "...");
+      // After signup, we need to wait a moment for the session to be established
+      // instead of immediately checking for a session
+      console.log("Using user ID directly from signup response for further operations");
+      const userId = authData.user.id;
       
       // Step 2: Upload profile image using the user ID from the auth response
-      console.log("Step 2: Uploading profile image with user ID:", authData.user.id);
+      console.log("Step 2: Uploading profile image with user ID:", userId);
       let imageUrl;
       try {
         // Explicitly use the user ID from the auth response for the upload
-        imageUrl = await uploadProfileImage(profileImage, authData.user.id);
+        imageUrl = await uploadProfileImage(profileImage, userId);
         
         if (!imageUrl) {
           console.error("No image URL returned after upload");
