@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,7 +80,7 @@ export const useRegistrationForm = () => {
         data.password,
         { 
           organization_name: data.organizationName,
-          recaptcha_token: token // Pass the token to your backend
+          recaptcha_token: token
         }
       );
       
@@ -94,6 +96,16 @@ export const useRegistrationForm = () => {
       
       console.log("User created successfully with ID:", authData.user.id);
       
+      // Immediately verify we have an active session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !sessionData.session) {
+        console.error("Session verification failed:", sessionError || "No active session found");
+        throw new Error("Authentication verification failed. Please try again.");
+      }
+      
+      console.log("Session verified with token:", sessionData.session.access_token.substring(0, 10) + "...");
+      
       // Step 2: Upload profile image using the user ID from the auth response
       console.log("Step 2: Uploading profile image with user ID:", authData.user.id);
       let imageUrl;
@@ -108,6 +120,11 @@ export const useRegistrationForm = () => {
         console.log("Profile image uploaded successfully:", imageUrl);
       } catch (imageUploadError: any) {
         console.error("Profile image upload error:", imageUploadError);
+        toast({
+          title: "Profile image upload failed",
+          description: imageUploadError.message || "Failed to upload profile image",
+          variant: "destructive",
+        });
         throw new Error("Failed to upload profile image: " + (imageUploadError.message || "Unknown error"));
       }
       

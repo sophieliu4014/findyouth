@@ -1,3 +1,4 @@
+
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -137,28 +138,38 @@ export const getNonprofitByAuthId = async () => {
   return { nonprofit: data, error };
 };
 
-// Upload profile image with improved error handling and owner metadata
+// Upload profile image with improved error handling and authentication verification
 export const uploadProfileImage = async (file: File, userId?: string): Promise<string | null> => {
   try {
     console.log("Starting profile image upload process...");
     
+    // Check current authentication state
+    const { data: authData, error: authError } = await supabase.auth.getSession();
+    
+    if (authError) {
+      console.error("Authentication error:", authError);
+      throw new Error("Authentication failed: " + authError.message);
+    }
+    
+    console.log("Current session status:", authData?.session ? "Authenticated" : "No active session");
+    
+    // Verify we have a valid session before proceeding
+    if (!authData.session) {
+      console.error("Error: No active session for image upload");
+      throw new Error("You must be logged in to upload images");
+    }
+    
     // Check if we have a user ID (either from parameter or current session)
     let actualUserId = userId;
     
-    // If no user ID was provided, try to get it from the current session
+    // If no user ID was provided, use the one from the current session
     if (!actualUserId) {
-      // Debug the auth state before fetching the user
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log("Current session:", sessionData?.session ? "Active" : "No active session");
-      
-      const { user } = await getCurrentUser();
-      
-      if (!user) {
-        console.error("Error: User not authenticated for image upload");
-        throw new Error("User not authenticated");
+      if (!authData.session.user.id) {
+        console.error("Error: No user ID found in session");
+        throw new Error("User ID not found in session");
       }
       
-      actualUserId = user.id;
+      actualUserId = authData.session.user.id;
     }
     
     console.log("Uploading file for user ID:", actualUserId);
@@ -178,16 +189,11 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
     // Sanitize the filename and create a unique path
     const fileExt = file.name.split('.').pop();
     const fileName = `${actualUserId}-${Date.now()}.${fileExt}`;
-    // Use the root path of the bucket instead of a nested folder for simplicity
     const filePath = `${fileName}`;
     
     console.log(`Uploading to 'profiles' bucket with path: ${filePath}`);
     
-    // Debug auth state right before upload
-    const currentUser = await supabase.auth.getUser();
-    console.log("Current auth state before upload:", currentUser.data?.user ? "Authenticated" : "Not authenticated");
-    
-    // Upload the file to Supabase Storage with explicit owner metadata
+    // Upload the file to Supabase Storage with explicit owner metadata and auth
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('profiles')
       .upload(filePath, file, {
@@ -199,7 +205,11 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
       
-      // Check for specific error types and provide better messages
+      // Provide more specific error messages for debugging
+      if (uploadError.message.includes("new row violates row-level security policy")) {
+        throw new Error("Permission denied: Your account doesn't have permission to upload files. Please check your login status.");
+      }
+      
       if (uploadError.message.includes("storage bucket") || uploadError.message.includes("not found")) {
         throw new Error("Storage bucket not configured properly. Please contact support.");
       }
