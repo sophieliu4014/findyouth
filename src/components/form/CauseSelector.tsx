@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Check, X, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -24,18 +25,10 @@ const CauseSelector = ({
   // Ensure selectedCauses is always an array
   const normalizedSelectedCauses = Array.isArray(selectedCauses) ? selectedCauses : [];
 
-  // Toggle cause selection (ensures max limit is respected)
+  // Toggle cause selection - simplified to just call the parent handler
   const handleCauseToggle = (cause: string) => {
-    if (normalizedSelectedCauses.includes(cause)) {
-      onCauseToggle(cause); // Remove cause if already selected
-    } else if (normalizedSelectedCauses.length < maxCauses) {
-      onCauseToggle(cause); // Add cause if within limit
-    }
-  };
-
-  // Prevent dropdown from closing unexpectedly
-  const handleClickOutside = (e: Event) => {
-    e.preventDefault();
+    console.log("CauseSelector - toggling cause:", cause);
+    onCauseToggle(cause);
   };
 
   return (
@@ -77,7 +70,6 @@ const CauseSelector = ({
         <PopoverContent
           className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background z-50"
           align="start"
-          onInteractOutside={handleClickOutside} // Prevent accidental closure
         >
           <Command>
             <CommandList>
@@ -89,7 +81,10 @@ const CauseSelector = ({
                     <CommandItem
                       key={cause}
                       onSelect={() => {
+                        console.log("Command item selected:", cause);
                         handleCauseToggle(cause);
+                        // Don't auto-close the popover
+                        // setOpen(false);
                       }}
                       className={cn(
                         "flex items-center justify-between cursor-pointer",

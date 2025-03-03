@@ -14,36 +14,6 @@ interface CauseSelectionFieldProps {
 const CauseSelectionField = ({ control, causeOptions }: CauseSelectionFieldProps) => {
   const { toast } = useToast();
 
-  const handleCauseToggle = (cause: string, currentCauses: string[], setValue: (name: "causes", value: string[]) => void) => {
-    try {
-      // Ensure currentCauses is always an array
-      const safeCurrentCauses = Array.isArray(currentCauses) ? currentCauses : [];
-      
-      if (safeCurrentCauses.includes(cause)) {
-        // If cause is already selected, remove it
-        setValue("causes", safeCurrentCauses.filter(c => c !== cause));
-      } else {
-        // If cause is not selected, add it if we haven't reached the maximum
-        if (safeCurrentCauses.length >= 3) {
-          toast({
-            title: "Maximum causes reached",
-            description: "You can select up to 3 causes. Remove one to add another.",
-            variant: "destructive",
-          });
-          return;
-        }
-        setValue("causes", [...safeCurrentCauses, cause]);
-      }
-    } catch (error) {
-      console.error("Error in handleCauseToggle:", error);
-      toast({
-        title: "Error selecting cause",
-        description: "There was an error processing your selection. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <FormField
       control={control}
@@ -52,12 +22,45 @@ const CauseSelectionField = ({ control, causeOptions }: CauseSelectionFieldProps
         // Ensure field.value is always an array
         const safeValue = Array.isArray(field.value) ? field.value : [];
         
+        const handleToggle = (cause: string) => {
+          console.log("CauseSelectionField - toggling cause:", cause, "Current causes:", safeValue);
+          
+          try {
+            if (safeValue.includes(cause)) {
+              // Remove the cause if already selected
+              console.log("Removing cause:", cause);
+              field.onChange(safeValue.filter(c => c !== cause));
+            } else {
+              // Add the cause if under limit
+              if (safeValue.length >= 3) {
+                console.log("Max causes reached");
+                toast({
+                  title: "Maximum causes reached",
+                  description: "You can select up to 3 causes. Remove one to add another.",
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              console.log("Adding cause:", cause);
+              field.onChange([...safeValue, cause]);
+            }
+          } catch (error) {
+            console.error("Error in handleToggle:", error);
+            toast({
+              title: "Error selecting cause",
+              description: "There was an error processing your selection. Please try again.",
+              variant: "destructive",
+            });
+          }
+        };
+        
         return (
           <FormItem>
             <FormLabel>Select up to 3 Main Causes*</FormLabel>
             <CauseSelector 
               selectedCauses={safeValue}
-              onCauseToggle={(cause) => handleCauseToggle(cause, safeValue, field.onChange)}
+              onCauseToggle={handleToggle}
               causeOptions={causeOptions}
             />
             <FormDescription>
