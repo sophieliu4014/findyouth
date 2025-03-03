@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Event } from '@/hooks/event-types';
 
@@ -6,10 +7,11 @@ export interface EventFilters {
   cause: string;
   location: string;
   organization: string;
+  searchKeyword?: string;
 }
 
 // Apply all filters to events list
-export const filterEvents = (events: Event[], filters: any = {}) => {
+export const filterEvents = (events: Event[], filters: EventFilters = {}) => {
   let results = [...events];
   
   // Apply keyword search

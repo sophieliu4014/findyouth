@@ -1,84 +1,85 @@
 
-import { useState, useEffect } from 'react';
-import SearchSection from './SearchSection';
-import FilterBar from '../form/FilterBar';
-import ResultsList from './ResultsList';
-import { useEventData } from '@/hooks/useEventData';
-import { filterEvents, EventFilters } from '@/utils/eventFilters';
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import CitySelector from './CitySelector';
+import FilterBar from '@/components/form/FilterBar';
+import { EventFilters } from '@/utils/eventFilters';
+import useEventData from '@/hooks/useEventData';
 
 interface ActivitySearchProps {
-  initialAddress?: string;
-  initialKeyword?: string;
-  initialLocation?: string;
+  onSearch: (filters: EventFilters) => void;
 }
 
-const ActivitySearch = ({ 
-  initialAddress = '', 
-  initialKeyword = '',
-  initialLocation = ''
-}: ActivitySearchProps) => {
-  const [address, setAddress] = useState(initialAddress);
-  const [keyword, setKeyword] = useState(initialKeyword);
-  const { events, organizations, isLoading } = useEventData();
-  const [filteredEvents, setFilteredEvents] = useState<ReturnType<typeof useEventData>['events']>([]);
-  const [filters, setFilters] = useState<EventFilters>({
-    cause: '',
-    location: initialLocation,
-    organization: ''
-  });
-
-  // Apply initial filters
-  useEffect(() => {
-    if (events.length > 0) {
-      setFilteredEvents(events);
-      
-      if (initialLocation || initialKeyword) {
-        const initialFilters = { ...filters };
-        if (initialLocation) {
-          initialFilters.location = initialLocation;
-        }
-        setFilteredEvents(filterEvents(events, initialFilters, initialKeyword));
-      }
-    }
-  }, [events, initialLocation, initialKeyword]);
-
-  // Handle search by address
-  const handleLocationSearch = (query: string) => {
-    setAddress(query);
-    // In a real app, we would use this address to fetch events near the location
+const ActivitySearch = ({ onSearch }: ActivitySearchProps) => {
+  const [city, setCity] = useState<string>('');
+  const [cause, setCause] = useState<string>('');
+  const [organization, setOrganization] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  
+  const { data } = useEventData();
+  const events = data || [];
+  const uniqueOrganizations = [...new Set(events.map(event => event.organization))];
+  
+  const handleCityChange = (city: string) => {
+    setCity(city);
+    applyFilters(city, cause, organization);
   };
 
-  // Handle keyword search
-  const handleKeywordSearch = (query: string) => {
-    setKeyword(query);
-    setFilteredEvents(filterEvents(events, filters, query));
+  const handleCauseChange = (cause: string) => {
+    setCause(cause);
+    applyFilters(city, cause, organization);
   };
 
-  // Handle filter changes
-  const handleFilterChange = (newFilters: EventFilters) => {
-    setFilters(newFilters);
-    setFilteredEvents(filterEvents(events, newFilters, keyword));
+  const handleOrganizationChange = (organization: string) => {
+    setOrganization(organization);
+    applyFilters(city, cause, organization);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    applyFilters(city, cause, organization, e.target.value);
+  };
+
+  const applyFilters = (
+    location: string,
+    cause: string,
+    organization: string,
+    searchKeyword?: string
+  ) => {
+    onSearch({
+      location,
+      cause,
+      organization,
+      searchKeyword: searchKeyword || searchTerm
+    });
   };
 
   return (
-    <>
-      <SearchSection 
-        keyword={keyword}
-        address={address}
-        onKeywordSearch={handleKeywordSearch}
-        onLocationSearch={handleLocationSearch}
-      />
-      
-      <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+    <Card className="shadow-md p-4 mb-6">
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+            Search Activities
+          </label>
+          <input
+            type="text"
+            id="search"
+            className="w-full p-2 border rounded-md"
+            placeholder="Search for activities..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+        </div>
+        
+        <CitySelector onCityChange={handleCityChange} />
+        
         <FilterBar 
-          onFilterChange={handleFilterChange}
-          organizations={organizations}
-          initialFilters={filters}
+          onCauseChange={handleCauseChange}
+          onOrganizationChange={handleOrganizationChange}
+          organizations={uniqueOrganizations}
         />
       </div>
-      
-      <ResultsList events={filteredEvents} isLoading={isLoading} />
-    </>
+    </Card>
   );
 };
 
