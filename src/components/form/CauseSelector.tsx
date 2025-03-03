@@ -22,6 +22,17 @@ const CauseSelector = ({
 }: CauseSelectorProps) => {
   const [open, setOpen] = React.useState(false);
 
+  // Ensure selectedCauses is always an array
+  const normalizedSelectedCauses = Array.isArray(selectedCauses) ? selectedCauses : [];
+
+  // Safe toggle function to prevent errors
+  const handleCauseToggle = (cause: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    onCauseToggle(cause);
+  };
+
   return (
     <div className="flex flex-col gap-1.5">
       <Popover open={open} onOpenChange={setOpen}>
@@ -32,9 +43,9 @@ const CauseSelector = ({
             aria-expanded={open}
             className="w-full justify-between h-auto min-h-10"
           >
-            {selectedCauses.length > 0 ? (
+            {normalizedSelectedCauses.length > 0 ? (
               <div className="flex flex-wrap gap-1 py-0.5">
-                {selectedCauses.map(cause => (
+                {normalizedSelectedCauses.map(cause => (
                   <Badge 
                     key={cause} 
                     variant="secondary"
@@ -43,10 +54,7 @@ const CauseSelector = ({
                     {cause}
                     <X 
                       className="h-3 w-3 cursor-pointer" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCauseToggle(cause);
-                      }}
+                      onClick={(e) => handleCauseToggle(cause, e)}
                     />
                   </Badge>
                 ))}
@@ -57,21 +65,25 @@ const CauseSelector = ({
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full min-w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <PopoverContent className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background" align="start">
           <Command>
             <CommandList>
               <CommandEmpty>No causes found.</CommandEmpty>
               <CommandGroup>
                 {causeOptions.map((cause) => {
-                  const isSelected = selectedCauses.includes(cause);
+                  const isSelected = normalizedSelectedCauses.includes(cause);
                   return (
                     <CommandItem
                       key={cause}
                       onSelect={() => {
-                        onCauseToggle(cause);
-                        // Only close popover if we're at max causes after selection
-                        if (selectedCauses.length >= maxCauses && !isSelected) {
-                          setOpen(false);
+                        try {
+                          handleCauseToggle(cause);
+                          // Only close popover if we're at max causes after selection
+                          if (!isSelected && normalizedSelectedCauses.length >= maxCauses - 1) {
+                            setOpen(false);
+                          }
+                        } catch (error) {
+                          console.error("Error in cause selection:", error);
                         }
                       }}
                       className={cn(
@@ -90,11 +102,9 @@ const CauseSelector = ({
         </PopoverContent>
       </Popover>
       
-      {selectedCauses.length > 0 && (
-        <div className="text-sm text-muted-foreground">
-          {selectedCauses.length} of {maxCauses} selected
-        </div>
-      )}
+      <div className="text-sm text-muted-foreground">
+        {normalizedSelectedCauses.length} of {maxCauses} selected
+      </div>
     </div>
   );
 };
