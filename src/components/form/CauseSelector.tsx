@@ -23,21 +23,18 @@ const CauseSelector = ({
         return (
           <div 
             key={cause}
-            className={`border rounded-md p-3 cursor-pointer transition-colors
-              ${isSelected 
-                ? 'bg-primary/10 border-primary' 
-                : 'hover:bg-accent border-input'}`}
-            onClick={(e) => {
-              e.preventDefault();
-              onCauseToggle(cause);
-            }}
+            className={`border rounded-md p-3 cursor-pointer transition-colors ${
+              isSelected 
+                ? 'bg-youth-blue/10 border-youth-blue text-youth-blue font-medium' 
+                : 'hover:bg-accent border-input'
+            }`}
+            onClick={() => onCauseToggle(cause)}
           >
             <div className="flex items-center space-x-2">
               <Checkbox 
                 id={`cause-${cause}`}
                 checked={isSelected}
-                onCheckedChange={() => {}}
-                className={isSelected ? "bg-youth-purple border-youth-purple" : ""}
+                className={isSelected ? "data-[state=checked]:bg-youth-blue data-[state=checked]:border-youth-blue" : ""}
               />
               <label 
                 htmlFor={`cause-${cause}`}

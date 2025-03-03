@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
@@ -61,6 +60,22 @@ const RegisterNgo = () => {
       captchaVerified: false,
     },
   });
+
+  useEffect(() => {
+    form.reset({
+      organizationName: "",
+      password: "",
+      email: "",
+      phone: "",
+      website: "",
+      socialMedia: "",
+      location: "",
+      description: "",
+      mission: "",
+      causes: [],
+      captchaVerified: false,
+    });
+  }, [form.reset]);
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
