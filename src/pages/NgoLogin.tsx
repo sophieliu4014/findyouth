@@ -146,7 +146,7 @@ const NgoLogin = () => {
               <div className="text-center text-sm text-youth-charcoal/70">
                 <p>
                   Don't have an account?{' '}
-                  <Link to="/register-ngo" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
+                  <Link to="/find-volunteers" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
                     Sign Up
                   </Link>
                 </p>
