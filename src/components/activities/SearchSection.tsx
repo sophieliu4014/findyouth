@@ -32,15 +32,6 @@ const SearchSection = ({
           initialValue={keyword}
         />
       </div>
-
-      {/* Location search */}
-      <div className="mb-8 animate-slide-up">
-        <LocationSearch 
-          onSearch={onLocationSearch}
-          placeholder="Enter your address to find volunteer opportunities near you"
-          initialValue={address}
-        />
-      </div>
     </div>
   );
 };

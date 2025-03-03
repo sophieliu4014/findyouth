@@ -1,13 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import SearchSection from './SearchSection';
-import CitySelector from './CitySelector';
 import FilterBar from '../form/FilterBar';
 import ResultsList from './ResultsList';
 import { useEventData } from '@/hooks/useEventData';
 import { filterEvents, EventFilters } from '@/utils/eventFilters';
-
-const cities = ['Vancouver', 'Burnaby', 'Richmond'];
 
 interface ActivitySearchProps {
   initialAddress?: string;
@@ -57,13 +54,6 @@ const ActivitySearch = ({
     setFilteredEvents(filterEvents(events, filters, query));
   };
 
-  // Handle city selection
-  const handleCitySelect = (city: string) => {
-    const newFilters = { ...filters, location: city };
-    setFilters(newFilters);
-    setFilteredEvents(filterEvents(events, newFilters, keyword));
-  };
-
   // Handle filter changes
   const handleFilterChange = (newFilters: EventFilters) => {
     setFilters(newFilters);
@@ -77,12 +67,6 @@ const ActivitySearch = ({
         address={address}
         onKeywordSearch={handleKeywordSearch}
         onLocationSearch={handleLocationSearch}
-      />
-      
-      <CitySelector 
-        selectedCity={filters.location}
-        onCitySelect={handleCitySelect}
-        cities={cities}
       />
       
       <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
