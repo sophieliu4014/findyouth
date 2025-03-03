@@ -10,8 +10,12 @@ const Logo = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
 
   return (
     <Link to="/" className="flex items-center">
-      <div className={`${sizes[size]} bg-gradient-to-br from-youth-purple to-youth-blue rounded-md flex items-center justify-center text-white font-bold`}>
-        <span className="text-2xl font-bold">Y</span>
+      <div className={`${sizes[size]} rounded-md flex items-center justify-center`}>
+        <img 
+          src="/lovable-uploads/f86f3e29-c77f-4048-8b94-919af964812c.png" 
+          alt="FindYOUth Logo" 
+          className="w-full h-full object-contain"
+        />
       </div>
       <span className="ml-2 text-xl font-semibold text-youth-charcoal">
         Find<span className="text-youth-purple">YOUth</span>

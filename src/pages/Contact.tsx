@@ -25,7 +25,7 @@ const Contact = () => {
                 For inquiries and questions, contact{' '}
                 <a 
                   href="mailto:findyouthbc@gmail.com" 
-                  className="text-youth-blue hover:text-youth-purple transition-colors font-medium"
+                  className="text-youth-blue hover:text-youth-purple transition-colors font-medium hover-grow inline-block"
                 >
                   findyouthbc@gmail.com
                 </a>

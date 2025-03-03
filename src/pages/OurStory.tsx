@@ -26,7 +26,7 @@ const OurStory = () => {
             
             <div className="mt-12 flex justify-center">
               <img 
-                src="/lovable-uploads/7df50cd6-8aae-419d-a56e-b60da64740d7.png" 
+                src="/lovable-uploads/fa82e076-0772-4750-9dcf-c281180d4388.png" 
                 alt="FindYouth Team" 
                 className="rounded-xl shadow-lg max-w-full h-auto max-h-96 object-cover"
               />

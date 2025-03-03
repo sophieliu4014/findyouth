@@ -1,21 +1,30 @@
 
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
+
+// Mock database for demo purposes
+const mockUsers = [
+  { username: 'test@example.org', password: 'Password123!' },
+  { username: 'ngo@example.org', password: 'Ngo123!' },
+];
 
 const NgoLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ username?: string; password?: string; general?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const navigate = useNavigate();
 
   const validateForm = () => {
-    const newErrors: { username?: string; password?: string } = {};
+    const newErrors: { username?: string; password?: string; general?: string } = {};
     let isValid = true;
 
     if (!username.trim()) {
@@ -36,10 +45,32 @@ const NgoLogin = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      // In a real app, we would call an API to authenticate
-      // For demo purposes, we'll just show a success toast
-      toast.success('Login successful! Redirecting...');
-      // In a real app, we would redirect to the dashboard or home page
+      setIsLoading(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        const user = mockUsers.find(u => u.username === username);
+        
+        if (!user) {
+          setErrors({ general: 'An account with this email does not exist' });
+          setIsLoading(false);
+          return;
+        }
+        
+        if (user.password !== password) {
+          setErrors({ general: 'Incorrect email and password combination' });
+          setIsLoading(false);
+          return;
+        }
+        
+        // Successful login
+        toast.success('Login successful!');
+        // In a real app, we would set authentication state here
+        setIsLoading(false);
+        
+        // Redirect to home page
+        navigate('/');
+      }, 1000);
     }
   };
 
@@ -61,6 +92,13 @@ const NgoLogin = () => {
                 Access your organization's account to post and manage volunteer opportunities
               </p>
             </div>
+            
+            {errors.general && (
+              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
+                <AlertCircle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{errors.general}</p>
+              </div>
+            )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -137,9 +175,10 @@ const NgoLogin = () => {
               <div>
                 <button
                   type="submit"
-                  className="w-full btn-primary py-3"
+                  className="w-full btn-primary py-3 transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-70"
+                  disabled={isLoading}
                 >
-                  Login
+                  {isLoading ? 'Logging in...' : 'Login'}
                 </button>
               </div>
               

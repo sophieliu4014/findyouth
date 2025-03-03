@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
@@ -10,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Check, Loader2, Upload, RefreshCw } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Check, Loader2, Upload, RefreshCw, AlertCircle } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 
 const causeAreas = [
@@ -28,13 +28,23 @@ const causeAreas = [
   "Religion"
 ];
 
+const passwordSchema = z.string()
+  .min(8, { message: "Password must be at least 8 characters." })
+  .refine(password => /[A-Z]/.test(password), { 
+    message: "Password must include at least one capital letter."
+  })
+  .refine(password => /[0-9]/.test(password), { 
+    message: "Password must include at least one number."
+  })
+  .refine(password => /[^A-Za-z0-9]/.test(password), { 
+    message: "Password must include at least one symbol."
+  });
+
 const formSchema = z.object({
   organizationName: z.string().min(2, {
     message: "Organization name must be at least 2 characters.",
   }),
-  password: z.string().min(8, {
-    message: "Password must be at least 8 characters.",
-  }),
+  password: passwordSchema,
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
@@ -62,7 +72,7 @@ const formSchema = z.object({
     message: "You can select up to 3 causes.",
   }),
   captchaVerified: z.boolean().refine(val => val === true, {
-    message: "Please complete the reCAPTCHA verification.",
+    message: "Please complete the verification.",
   }),
 });
 
@@ -193,7 +203,7 @@ const RegisterNgo = () => {
   return (
     <>
       <Helmet>
-        <title>Register your NGO - FindYOUth</title>
+        <title>Register Your NGO - FindYOUth</title>
         <meta name="description" content="Register your youth-led nonprofit organization with FindYOUth to connect with passionate volunteers." />
       </Helmet>
       
@@ -201,7 +211,7 @@ const RegisterNgo = () => {
       
       <main className="page-container">
         <div className="max-w-3xl mx-auto">
-          <h1 className="section-title text-center">Register your Youth-Led NGO</h1>
+          <h1 className="section-title text-center">Register Your NGO</h1>
           <p className="section-subtitle text-center">Join our community of youth-led nonprofit organizations making a difference across Greater Vancouver.</p>
           
           {isSuccess ? (
@@ -245,6 +255,14 @@ const RegisterNgo = () => {
                           <FormControl>
                             <Input type="password" placeholder="••••••••" {...field} />
                           </FormControl>
+                          {!form.formState.errors.password && field.value && !/(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(field.value) && (
+                            <div className="mt-1 text-xs text-red-500">
+                              <div className="flex items-center gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>Please incorporate capital letters, symbols, and numbers</span>
+                              </div>
+                            </div>
+                          )}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -494,7 +512,7 @@ const RegisterNgo = () => {
                   <div className="pt-4">
                     <Button 
                       type="submit" 
-                      className="w-full btn-primary"
+                      className="w-full btn-primary hover:scale-[1.02] transition-transform"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? (
