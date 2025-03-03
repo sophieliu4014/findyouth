@@ -1,8 +1,5 @@
 
-// Re-export hooks for backward compatibility
-import useEventData from './useEventData';
-import useOrganizationEvents from './useOrganizationEvents';
-import useCauseEvents from './useCauseEvents';
-import { Event } from './event-types';
+import useEventData, { useCauseEvents, useOrganizationEvents } from './useEventData';
 
-export { useEventData as default, useOrganizationEvents, useCauseEvents, Event };
+export { useCauseEvents, useOrganizationEvents };
+export default useEventData;

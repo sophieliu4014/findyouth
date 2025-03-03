@@ -11,7 +11,11 @@ export interface EventFilters {
 }
 
 // Apply all filters to events list
-export const filterEvents = (events: Event[], filters: EventFilters = {}) => {
+export const filterEvents = (events: Event[], filters: EventFilters = {
+  cause: '',
+  location: '',
+  organization: ''
+}) => {
   let results = [...events];
   
   // Apply keyword search

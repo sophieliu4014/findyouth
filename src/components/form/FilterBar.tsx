@@ -31,11 +31,13 @@ const locations = [
 ];
 
 interface FilterBarProps {
-  onFilterChange: (filters: {
+  onFilterChange?: (filters: {
     cause: string;
     location: string;
     organization: string;
   }) => void;
+  onCauseChange?: (cause: string) => void;
+  onOrganizationChange?: (organization: string) => void;
   organizations?: string[];
   initialFilters?: {
     cause: string;
@@ -46,6 +48,8 @@ interface FilterBarProps {
 
 const FilterBar = ({ 
   onFilterChange, 
+  onCauseChange,
+  onOrganizationChange,
   organizations = [],
   initialFilters 
 }: FilterBarProps) => {
@@ -62,13 +66,31 @@ const FilterBar = ({
     }
   }, [initialFilters]);
 
+  // Handle cause change
+  const handleCauseChange = (newCause: string) => {
+    setCause(newCause);
+    if (onCauseChange) {
+      onCauseChange(newCause === "All Causes" ? "" : newCause);
+    }
+  };
+
+  // Handle organization change
+  const handleOrganizationChange = (newOrg: string) => {
+    setOrganization(newOrg);
+    if (onOrganizationChange) {
+      onOrganizationChange(newOrg === "All Organizations" ? "" : newOrg);
+    }
+  };
+
   // Apply filters
   const applyFilters = () => {
-    onFilterChange({
-      cause: cause === "All Causes" ? "" : cause,
-      location: location === "All Locations" ? "" : location,
-      organization: organization === "All Organizations" ? "" : organization
-    });
+    if (onFilterChange) {
+      onFilterChange({
+        cause: cause === "All Causes" ? "" : cause,
+        location: location === "All Locations" ? "" : location,
+        organization: organization === "All Organizations" ? "" : organization
+      });
+    }
   };
 
   // Reset filters
@@ -76,7 +98,18 @@ const FilterBar = ({
     setCause("All Causes");
     setLocation("All Locations");
     setOrganization("All Organizations");
-    onFilterChange({ cause: "", location: "", organization: "" });
+    
+    if (onFilterChange) {
+      onFilterChange({ cause: "", location: "", organization: "" });
+    }
+    
+    if (onCauseChange) {
+      onCauseChange("");
+    }
+    
+    if (onOrganizationChange) {
+      onOrganizationChange("");
+    }
   };
 
   return (
@@ -95,7 +128,7 @@ const FilterBar = ({
           <div className="relative">
             <select
               value={cause}
-              onChange={(e) => setCause(e.target.value)}
+              onChange={(e) => handleCauseChange(e.target.value)}
               className="input-field appearance-none pr-10"
             >
               {causeAreas.map((area) => (
@@ -137,7 +170,7 @@ const FilterBar = ({
           <div className="relative">
             <select
               value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
+              onChange={(e) => handleOrganizationChange(e.target.value)}
               className="input-field appearance-none pr-10"
             >
               <option value="All Organizations">All Organizations</option>

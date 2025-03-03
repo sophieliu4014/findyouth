@@ -1,85 +1,132 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import CitySelector from './CitySelector';
 import FilterBar from '@/components/form/FilterBar';
 import { EventFilters } from '@/utils/eventFilters';
 import useEventData from '@/hooks/useEventData';
+import ResultsList from './ResultsList';
+
+// Define available cities
+const cities = [
+  "Vancouver",
+  "Burnaby",
+  "Richmond",
+  "Surrey",
+  "North Vancouver",
+  "West Vancouver",
+  "Coquitlam"
+];
 
 interface ActivitySearchProps {
-  onSearch: (filters: EventFilters) => void;
+  initialAddress?: string;
+  initialKeyword?: string;
+  initialLocation?: string;
 }
 
-const ActivitySearch = ({ onSearch }: ActivitySearchProps) => {
-  const [city, setCity] = useState<string>('');
+const ActivitySearch = ({ 
+  initialAddress = '', 
+  initialKeyword = '', 
+  initialLocation = '' 
+}: ActivitySearchProps) => {
+  const [city, setCity] = useState<string>(initialLocation || '');
   const [cause, setCause] = useState<string>('');
   const [organization, setOrganization] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  
-  const { data } = useEventData();
-  const events = data || [];
+  const [searchTerm, setSearchTerm] = useState<string>(initialKeyword || '');
+  const [filters, setFilters] = useState<EventFilters>({
+    cause: '',
+    location: city,
+    organization: '',
+    searchKeyword: searchTerm
+  });
+
+  // Initialize with any provided initial values
+  useEffect(() => {
+    if (initialLocation || initialKeyword) {
+      setFilters({
+        cause,
+        location: initialLocation || '',
+        organization,
+        searchKeyword: initialKeyword || ''
+      });
+    }
+  }, [initialLocation, initialKeyword]);
+
+  const { data: eventsData, isLoading } = useEventData(filters);
+  const events = eventsData || [];
   const uniqueOrganizations = [...new Set(events.map(event => event.organization))];
   
-  const handleCityChange = (city: string) => {
-    setCity(city);
-    applyFilters(city, cause, organization);
+  const handleCitySelect = (selectedCity: string) => {
+    setCity(selectedCity);
+    setFilters({
+      ...filters,
+      location: selectedCity
+    });
   };
 
-  const handleCauseChange = (cause: string) => {
-    setCause(cause);
-    applyFilters(city, cause, organization);
+  const handleCauseChange = (selectedCause: string) => {
+    setCause(selectedCause);
+    setFilters({
+      ...filters,
+      cause: selectedCause
+    });
   };
 
-  const handleOrganizationChange = (organization: string) => {
-    setOrganization(organization);
-    applyFilters(city, cause, organization);
+  const handleOrganizationChange = (selectedOrg: string) => {
+    setOrganization(selectedOrg);
+    setFilters({
+      ...filters,
+      organization: selectedOrg
+    });
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    applyFilters(city, cause, organization, e.target.value);
-  };
-
-  const applyFilters = (
-    location: string,
-    cause: string,
-    organization: string,
-    searchKeyword?: string
-  ) => {
-    onSearch({
-      location,
-      cause,
-      organization,
-      searchKeyword: searchKeyword || searchTerm
+    const value = e.target.value;
+    setSearchTerm(value);
+    setFilters({
+      ...filters,
+      searchKeyword: value
     });
   };
 
   return (
-    <Card className="shadow-md p-4 mb-6">
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
-            Search Activities
-          </label>
-          <input
-            type="text"
-            id="search"
-            className="w-full p-2 border rounded-md"
-            placeholder="Search for activities..."
-            value={searchTerm}
-            onChange={handleSearchChange}
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold text-youth-charcoal mb-6 text-center">
+        Find Volunteer Opportunities
+      </h1>
+      
+      <Card className="shadow-md p-4 mb-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              Search Activities
+            </label>
+            <input
+              type="text"
+              id="search"
+              className="w-full p-2 border rounded-md"
+              placeholder="Search for activities..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
+          
+          <CitySelector 
+            selectedCity={city}
+            onCitySelect={handleCitySelect}
+            cities={cities}
+          />
+          
+          <FilterBar 
+            onCauseChange={handleCauseChange}
+            onOrganizationChange={handleOrganizationChange}
+            organizations={uniqueOrganizations}
           />
         </div>
-        
-        <CitySelector onCityChange={handleCityChange} />
-        
-        <FilterBar 
-          onCauseChange={handleCauseChange}
-          onOrganizationChange={handleOrganizationChange}
-          organizations={uniqueOrganizations}
-        />
-      </div>
-    </Card>
+      </Card>
+      
+      <ResultsList events={events} isLoading={isLoading} />
+    </div>
   );
 };
 
