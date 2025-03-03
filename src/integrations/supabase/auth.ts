@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -143,36 +142,37 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
   try {
     console.log("Starting profile image upload process...");
     
-    // Check current authentication state
-    const { data: authData, error: authError } = await supabase.auth.getSession();
-    
-    if (authError) {
-      console.error("Authentication error:", authError);
-      throw new Error("Authentication failed: " + authError.message);
-    }
-    
-    console.log("Current session status:", authData?.session ? "Authenticated" : "No active session");
-    
-    // Verify we have a valid session before proceeding
-    if (!authData.session) {
-      console.error("Error: No active session for image upload");
-      throw new Error("You must be logged in to upload images");
-    }
-    
-    // Check if we have a user ID (either from parameter or current session)
-    let actualUserId = userId;
-    
-    // If no user ID was provided, use the one from the current session
-    if (!actualUserId) {
-      if (!authData.session.user.id) {
-        console.error("Error: No user ID found in session");
-        throw new Error("User ID not found in session");
+    // If a specific userId is provided, use it directly without checking authentication
+    // This is useful for the registration flow where we have the userId but session might not be established yet
+    if (userId) {
+      console.log("Using provided user ID for upload:", userId);
+    } else {
+      // Otherwise, check current authentication state
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      
+      if (authError) {
+        console.error("Authentication error:", authError);
+        throw new Error("Authentication failed: " + authError.message);
       }
       
-      actualUserId = authData.session.user.id;
+      console.log("Current session status:", authData?.session ? "Authenticated" : "No active session");
+      
+      // Verify we have a valid session before proceeding
+      if (!authData.session) {
+        console.error("Error: No active session for image upload");
+        throw new Error("You must be logged in to upload images");
+      }
+      
+      // Use the user ID from the current session
+      userId = authData.session.user.id;
     }
     
-    console.log("Uploading file for user ID:", actualUserId);
+    if (!userId) {
+      console.error("Error: No user ID available for upload");
+      throw new Error("User ID not found for file upload");
+    }
+    
+    console.log("Uploading file for user ID:", userId);
     
     // Validate the file
     if (!file || file.size === 0) {
@@ -188,18 +188,18 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
     
     // Sanitize the filename and create a unique path
     const fileExt = file.name.split('.').pop();
-    const fileName = `${actualUserId}-${Date.now()}.${fileExt}`;
+    const fileName = `${userId}-${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
     
     console.log(`Uploading to 'profiles' bucket with path: ${filePath}`);
     
-    // Upload the file to Supabase Storage with explicit owner metadata and auth
+    // Upload the file to Supabase Storage with explicit owner metadata
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('profiles')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false,
-        metadata: { owner: actualUserId }
+        metadata: { owner: userId }
       });
       
     if (uploadError) {
