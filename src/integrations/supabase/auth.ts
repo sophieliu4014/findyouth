@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -197,5 +196,27 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
   } catch (error) {
     console.error("Profile image upload failed:", error);
     throw error; // Re-throw to allow proper handling in the calling function
+  }
+};
+
+// Direct sign up function (for admin/development use)
+export const createUserAccount = async (email: string, password: string) => {
+  try {
+    console.log(`Creating account for ${email}...`);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    
+    if (error) {
+      console.error("Error creating user account:", error);
+      throw error;
+    }
+    
+    console.log("Account created successfully:", data.user?.id);
+    return { success: true, userId: data.user?.id, message: "User account created successfully" };
+  } catch (error) {
+    console.error("Exception during account creation:", error);
+    return { success: false, message: error instanceof Error ? error.message : "Unknown error occurred" };
   }
 };
