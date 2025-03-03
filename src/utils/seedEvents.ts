@@ -75,18 +75,24 @@ export const seedEvents = async () => {
     ];
     
     // Check if the events table has cause_area column
-    const { data: columnsData, error: columnsError } = await supabase
-      .from('events')
-      .select()
-      .limit(1);
-    
-    if (columnsError) {
-      console.error("Error checking events table structure:", columnsError);
-      return;
+    let hasCauseArea = false;
+    try {
+      // Get one event to examine its structure
+      const { data: oneEvent, error: columnCheckError } = await supabase
+        .from('events')
+        .select('*')
+        .limit(1)
+        .single();
+      
+      if (!columnCheckError && oneEvent) {
+        // Check if cause_area exists in the returned object
+        hasCauseArea = 'cause_area' in oneEvent;
+      }
+      
+      console.log("Events table has cause_area column:", hasCauseArea);
+    } catch (err) {
+      console.error("Error checking for cause_area column:", err);
     }
-
-    const hasCauseArea = columnsData && columnsData.length > 0 && 'cause_area' in columnsData[0];
-    console.log("Events table has cause_area column:", hasCauseArea);
     
     const causeAreas = [
       'Advocacy & Human Rights', 'Education', 'Sports', 'Health', 
@@ -125,9 +131,8 @@ export const seedEvents = async () => {
       const eventType = randomItem(eventTypes);
       const location = randomItem(locations);
       const date = getRandomFutureDate();
-      const causeArea = randomItem(causeAreas);
       
-      // Create event data object based on column availability
+      // Create event data object
       const eventData: any = {
         title: `${eventType} in ${location}`,
         description: `Join ${nonprofit.organization_name} for a community ${eventType.toLowerCase()} event. This is a great opportunity to help our community and get involved with like-minded youth volunteers. We need your support to make this event a success!`,
@@ -141,7 +146,7 @@ export const seedEvents = async () => {
       
       // Only add cause_area if the column exists
       if (hasCauseArea) {
-        eventData.cause_area = causeArea;
+        eventData.cause_area = randomItem(causeAreas);
       }
       
       console.log(`Creating event: ${eventData.title} for ${nonprofit.organization_name}`);

@@ -35,35 +35,57 @@ export const useEventData = () => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
-        // Check if the events table has cause_area column
-        const { data: columnsData, error: columnsError } = await supabase
-          .from('events')
-          .select()
-          .limit(1);
-        
-        if (columnsError) {
-          console.error("Error checking events table structure:", columnsError);
-          return;
+        // First, check if cause_area column exists
+        let hasCauseArea = false;
+        try {
+          // Get one event to examine its structure
+          const { data: oneEvent, error: columnCheckError } = await supabase
+            .from('events')
+            .select('*')
+            .limit(1)
+            .single();
+          
+          if (!columnCheckError && oneEvent) {
+            // Check if cause_area exists in the returned object
+            hasCauseArea = 'cause_area' in oneEvent;
+          }
+          
+          console.log("Does events table have cause_area column:", hasCauseArea);
+        } catch (err) {
+          console.error("Error checking for cause_area column:", err);
         }
-
-        const hasCauseArea = columnsData && columnsData.length > 0 && 'cause_area' in columnsData[0];
         
-        // Adjust query based on column presence
-        const { data: eventsData, error: eventsError } = await supabase
-          .from('events')
-          .select(`
+        // Now fetch all events with appropriate column selection
+        let query = supabase.from('events').select(`
+          id,
+          title,
+          description,
+          date,
+          location,
+          image_url,
+          nonprofit_id
+        `);
+        
+        // Only add cause_area to query if it exists
+        if (hasCauseArea) {
+          query = supabase.from('events').select(`
             id,
             title,
             description,
             date,
             location,
             image_url,
-            nonprofit_id
-            ${hasCauseArea ? ', cause_area' : ''}
+            nonprofit_id,
+            cause_area
           `);
+        }
+        
+        const { data: eventsData, error: eventsError } = await query;
 
         if (eventsError) {
           console.error("Error fetching events:", eventsError);
+          setEvents([]);
+          setIsLoading(false);
           return;
         }
 
@@ -99,7 +121,9 @@ export const useEventData = () => {
           const organizationName = NONPROFIT_NAME_MAP[nonprofitId] || 'Unknown Organization';
           
           // Default cause area if not present
-          const causeArea = hasCauseArea && event.cause_area ? event.cause_area : 'General';
+          const causeArea = hasCauseArea && (event as any).cause_area 
+            ? (event as any).cause_area 
+            : 'General';
           
           // Calculate rating
           let rating = 4; // Default rating
@@ -139,6 +163,7 @@ export const useEventData = () => {
         setOrganizations(orgNames);
       } catch (error) {
         console.error("Error processing events:", error);
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }
@@ -159,21 +184,26 @@ export const useOrganizationEvents = (organizationId: string) => {
     const fetchOrganizationEvents = async () => {
       setIsLoading(true);
       try {
-        // Check if the events table has cause_area column
-        const { data: columnsData, error: columnsError } = await supabase
-          .from('events')
-          .select()
-          .limit(1);
-        
-        if (columnsError) {
-          console.error("Error checking events table structure:", columnsError);
-          return;
+        // First, check if cause_area column exists
+        let hasCauseArea = false;
+        try {
+          // Get one event to examine its structure
+          const { data: oneEvent, error: columnCheckError } = await supabase
+            .from('events')
+            .select('*')
+            .limit(1)
+            .single();
+          
+          if (!columnCheckError && oneEvent) {
+            // Check if cause_area exists in the returned object
+            hasCauseArea = 'cause_area' in oneEvent;
+          }
+        } catch (err) {
+          console.error("Error checking for cause_area column:", err);
         }
-
-        const hasCauseArea = columnsData && columnsData.length > 0 && 'cause_area' in columnsData[0];
-
-        // Adjust query based on column presence
-        const { data: eventsData, error: eventsError } = await supabase
+        
+        // Now fetch events for this organization with appropriate column selection
+        let query = supabase
           .from('events')
           .select(`
             id,
@@ -182,13 +212,39 @@ export const useOrganizationEvents = (organizationId: string) => {
             date,
             location,
             image_url
-            ${hasCauseArea ? ', cause_area' : ''}
           `)
           .eq('nonprofit_id', organizationId)
           .order('date', { ascending: false });
+        
+        // Only add cause_area to query if it exists
+        if (hasCauseArea) {
+          query = supabase
+            .from('events')
+            .select(`
+              id,
+              title,
+              description,
+              date,
+              location,
+              image_url,
+              cause_area
+            `)
+            .eq('nonprofit_id', organizationId)
+            .order('date', { ascending: false });
+        }
+        
+        const { data: eventsData, error: eventsError } = await query;
 
         if (eventsError) {
           console.error("Error fetching organization events:", eventsError);
+          setEvents([]);
+          setIsLoading(false);
+          return;
+        }
+
+        if (!eventsData || eventsData.length === 0) {
+          setEvents([]);
+          setIsLoading(false);
           return;
         }
 
@@ -224,6 +280,11 @@ export const useOrganizationEvents = (organizationId: string) => {
             hour12: true
           });
 
+          // Get cause area if available, otherwise use default
+          const causeArea = hasCauseArea && (event as any).cause_area 
+            ? (event as any).cause_area 
+            : 'General';
+
           return {
             id: event.id,
             title: event.title,
@@ -231,7 +292,7 @@ export const useOrganizationEvents = (organizationId: string) => {
             organizationId: organizationId,
             date: formattedDate,
             location: event.location,
-            causeArea: hasCauseArea && event.cause_area ? event.cause_area : 'General',
+            causeArea: causeArea,
             rating: rating,
             imageUrl: event.image_url,
             profileImage: `https://images.unsplash.com/photo-${1550000000000 + parseInt(organizationId.slice(-4), 16) % 1000000}`
@@ -241,6 +302,7 @@ export const useOrganizationEvents = (organizationId: string) => {
         setEvents(transformedEvents);
       } catch (error) {
         console.error("Error processing organization events:", error);
+        setEvents([]);
       } finally {
         setIsLoading(false);
       }
@@ -248,6 +310,9 @@ export const useOrganizationEvents = (organizationId: string) => {
 
     if (organizationId) {
       fetchOrganizationEvents();
+    } else {
+      setEvents([]);
+      setIsLoading(false);
     }
   }, [organizationId]);
 
