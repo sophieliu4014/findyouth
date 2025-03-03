@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, ChevronDown } from 'lucide-react';
 
 // Define the available cause areas
@@ -37,12 +37,30 @@ interface FilterBarProps {
     organization: string;
   }) => void;
   organizations?: string[];
+  initialFilters?: {
+    cause: string;
+    location: string;
+    organization: string;
+  };
 }
 
-const FilterBar = ({ onFilterChange, organizations = [] }: FilterBarProps) => {
-  const [cause, setCause] = useState("All Causes");
-  const [location, setLocation] = useState("All Locations");
-  const [organization, setOrganization] = useState("All Organizations");
+const FilterBar = ({ 
+  onFilterChange, 
+  organizations = [],
+  initialFilters 
+}: FilterBarProps) => {
+  const [cause, setCause] = useState(initialFilters?.cause ? initialFilters.cause : "All Causes");
+  const [location, setLocation] = useState(initialFilters?.location ? initialFilters.location : "All Locations");
+  const [organization, setOrganization] = useState(initialFilters?.organization ? initialFilters.organization : "All Organizations");
+
+  // Apply filters whenever initialFilters change
+  useEffect(() => {
+    if (initialFilters) {
+      setCause(initialFilters.cause || "All Causes");
+      setLocation(initialFilters.location || "All Locations");
+      setOrganization(initialFilters.organization || "All Organizations");
+    }
+  }, [initialFilters]);
 
   // Apply filters
   const applyFilters = () => {

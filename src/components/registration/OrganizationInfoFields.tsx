@@ -1,9 +1,11 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Control } from 'react-hook-form';
 import { FormValues } from './RegistrationTypes';
+import { AlertTriangle } from 'lucide-react';
+import { Label } from "@/components/ui/label";
+import { OrganizationFormProps } from "./RegistrationTypes";
 
 interface OrganizationInfoFieldsProps {
   control: Control<FormValues>;
@@ -39,7 +41,7 @@ const OrganizationInfoFields = ({ control }: OrganizationInfoFieldsProps) => {
               {!field.value || /(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9])/.test(field.value) ? null : (
                 <div className="mt-1 text-xs text-red-500">
                   <div className="flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                    <AlertTriangle className="h-3 w-3" />
                     <span>Please incorporate capital letters, symbols, and numbers</span>
                   </div>
                 </div>
