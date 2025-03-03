@@ -2,33 +2,30 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
-
-// Mock database for demo purposes
-const mockUsers = [
-  { username: 'test@example.org', password: 'Password123!' },
-  { username: 'ngo@example.org', password: 'Ngo123!' },
-];
+import { signInWithEmail } from '@/integrations/supabase/auth';
+import { useAuthStore } from '@/lib/auth';
 
 const NgoLogin = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ username?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
+  const refreshAuth = useAuthStore((state) => state.refreshAuth);
 
   const validateForm = () => {
-    const newErrors: { username?: string; password?: string; general?: string } = {};
+    const newErrors: { email?: string; password?: string; general?: string } = {};
     let isValid = true;
 
-    if (!username.trim()) {
-      newErrors.username = 'Organization name is required';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
       isValid = false;
     }
 
@@ -41,36 +38,42 @@ const NgoLogin = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
       setIsLoading(true);
+      setErrors({});
       
-      // Simulate API call
-      setTimeout(() => {
-        const user = mockUsers.find(u => u.username === username);
+      try {
+        const { data, error } = await signInWithEmail(email, password);
         
-        if (!user) {
-          setErrors({ general: 'An account with this email does not exist' });
-          setIsLoading(false);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            setErrors({ general: 'Incorrect email and password combination' });
+          } else if (error.message.includes('Email not confirmed')) {
+            setErrors({ general: 'Please verify your email before logging in' });
+          } else {
+            setErrors({ general: error.message });
+          }
           return;
         }
         
-        if (user.password !== password) {
-          setErrors({ general: 'Incorrect email and password combination' });
-          setIsLoading(false);
-          return;
+        if (data.session) {
+          // Update auth store
+          await refreshAuth();
+          
+          // Successful login
+          toast.success('Login successful!');
+          
+          // Redirect to home page
+          navigate('/');
         }
-        
-        // Successful login
-        toast.success('Login successful!');
-        // In a real app, we would set authentication state here
+      } catch (err: any) {
+        setErrors({ general: err.message || 'An error occurred during login' });
+      } finally {
         setIsLoading(false);
-        
-        // Redirect to home page
-        navigate('/');
-      }, 1000);
+      }
     }
   };
 
@@ -102,21 +105,21 @@ const NgoLogin = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-youth-charcoal mb-1">
-                  Username or Email Address <span className="text-red-500">*</span>
+                <label htmlFor="email" className="block text-sm font-medium text-youth-charcoal mb-1">
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className={`input-field ${errors.username ? 'border-red-500 focus:ring-red-500' : ''}`}
-                  placeholder="Enter username or email address"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={`input-field ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Enter your email address"
                 />
-                {errors.username && (
+                {errors.email && (
                   <div className="mt-1 flex items-center text-sm text-red-500">
                     <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.username}
+                    {errors.email}
                   </div>
                 )}
               </div>
@@ -178,14 +181,19 @@ const NgoLogin = () => {
                   className="w-full btn-primary py-3 transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-70"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="inline mr-2 h-4 w-4 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : 'Login'}
                 </button>
               </div>
               
               <div className="text-center text-sm text-youth-charcoal/70">
                 <p>
                   Don't have an account?{' '}
-                  <Link to="/find-volunteers" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
+                  <Link to="/register-ngo" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
                     Sign Up
                   </Link>
                 </p>

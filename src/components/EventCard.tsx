@@ -1,7 +1,9 @@
 
 import { useState } from 'react';
-import { Calendar, MapPin, Star, Clock, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useToast } from './ui/use-toast';
+import { useAuthStore } from '@/lib/auth';
 
 interface EventCardProps {
   id: string;
@@ -27,6 +29,9 @@ const EventCard = ({
   profileImage
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+  const { toast } = useToast();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   // Render 5 stars with appropriate filled/unfilled state
   const renderStars = (rating: number) => {
@@ -36,6 +41,28 @@ const EventCard = ({
         className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
       />
     ));
+  };
+
+  const handleApplyNow = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to apply for volunteer opportunities",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsApplying(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast({
+        title: "Application submitted",
+        description: "The organization has been notified of your interest",
+      });
+      setIsApplying(false);
+    }, 1000);
   };
 
   return (
@@ -103,8 +130,12 @@ const EventCard = ({
           <ArrowRight className="ml-1 h-4 w-4" />
         </Link>
         
-        <button className="btn-primary py-2">
-          Apply Now
+        <button 
+          className="btn-primary py-2 disabled:opacity-70"
+          onClick={handleApplyNow}
+          disabled={isApplying}
+        >
+          {isApplying ? 'Applying...' : 'Apply Now'}
         </button>
       </div>
     </div>

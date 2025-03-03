@@ -9,11 +9,186 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      causes: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          date: string
+          description: string
+          end_date: string | null
+          id: string
+          image_url: string | null
+          location: string
+          nonprofit_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          description: string
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          location: string
+          nonprofit_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          description?: string
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string
+          nonprofit_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_nonprofit_id_fkey"
+            columns: ["nonprofit_id"]
+            isOneToOne: false
+            referencedRelation: "nonprofits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Feedback: {
         Row: {}
         Insert: {}
         Update: {}
         Relationships: []
+      }
+      nonprofit_causes: {
+        Row: {
+          cause_id: string
+          id: string
+          nonprofit_id: string
+        }
+        Insert: {
+          cause_id: string
+          id?: string
+          nonprofit_id: string
+        }
+        Update: {
+          cause_id?: string
+          id?: string
+          nonprofit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nonprofit_causes_cause_id_fkey"
+            columns: ["cause_id"]
+            isOneToOne: false
+            referencedRelation: "causes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonprofit_causes_nonprofit_id_fkey"
+            columns: ["nonprofit_id"]
+            isOneToOne: false
+            referencedRelation: "nonprofits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nonprofits: {
+        Row: {
+          auth_id: string | null
+          created_at: string | null
+          description: string
+          email: string
+          id: string
+          is_approved: boolean | null
+          location: string
+          mission: string
+          organization_name: string
+          phone: string
+          profile_image_url: string | null
+          social_media: string
+          website: string | null
+        }
+        Insert: {
+          auth_id?: string | null
+          created_at?: string | null
+          description: string
+          email: string
+          id?: string
+          is_approved?: boolean | null
+          location: string
+          mission: string
+          organization_name: string
+          phone: string
+          profile_image_url?: string | null
+          social_media: string
+          website?: string | null
+        }
+        Update: {
+          auth_id?: string | null
+          created_at?: string | null
+          description?: string
+          email?: string
+          id?: string
+          is_approved?: boolean | null
+          location?: string
+          mission?: string
+          organization_name?: string
+          phone?: string
+          profile_image_url?: string | null
+          social_media?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          nonprofit_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          nonprofit_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          nonprofit_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_nonprofit_id_fkey"
+            columns: ["nonprofit_id"]
+            isOneToOne: false
+            referencedRelation: "nonprofits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

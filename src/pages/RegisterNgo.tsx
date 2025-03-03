@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Import our new components
+// Import our components
 import OrganizationInfoFields from '@/components/registration/OrganizationInfoFields';
 import MissionFields from '@/components/registration/MissionFields';
 import CauseSelectionField from '@/components/registration/CauseSelectionField';
@@ -19,6 +19,9 @@ import ProfileImageUpload from '@/components/registration/ProfileImageUpload';
 import CaptchaVerification from '@/components/registration/CaptchaVerification';
 import RegistrationSuccess from '@/components/registration/RegistrationSuccess';
 import { formSchema, FormValues } from '@/components/registration/RegistrationTypes';
+
+// Import Supabase auth functions
+import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 
 const causeAreas = [
   "Advocacy & Human Rights",
@@ -68,16 +71,58 @@ const RegisterNgo = () => {
       return;
     }
     
-    setTimeout(() => {
-      console.log(data);
-      console.log("Profile Image:", profileImage);
-      setIsSubmitting(false);
+    try {
+      // Step 1: Sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await signUpWithEmail(
+        data.email,
+        data.password,
+        { organization_name: data.organizationName }
+      );
+      
+      if (authError) {
+        throw new Error(authError.message);
+      }
+      
+      // Step 2: Upload profile image
+      const imageUrl = await uploadProfileImage(profileImage);
+      
+      if (!imageUrl) {
+        throw new Error("Failed to upload profile image");
+      }
+      
+      // Step 3: Create nonprofit profile
+      const { nonprofit, error: profileError } = await createNonprofitProfile({
+        organizationName: data.organizationName,
+        email: data.email,
+        phone: data.phone,
+        website: data.website,
+        socialMedia: data.socialMedia,
+        location: data.location,
+        description: data.description,
+        mission: data.mission,
+        profileImageUrl: imageUrl,
+        causes: data.causes
+      });
+      
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
+      
+      // Success
       setIsSuccess(true);
       toast({
         title: "Registration submitted",
         description: "We'll review your information and contact you shortly.",
       });
-    }, 1500);
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
