@@ -1,21 +1,25 @@
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Event } from './event-types';
-import { useEventData } from './useEventData';
+import { filterEvents } from '@/utils/eventFilters';
 
-// Helper function to fetch events by cause area
 export const useCauseEvents = (causeArea: string) => {
-  const { events: allEvents, isLoading } = useEventData();
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  return useQuery({
+    queryKey: ['events', 'cause', causeArea],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('causeArea', causeArea);
 
-  useEffect(() => {
-    if (!isLoading && causeArea) {
-      const filtered = allEvents.filter(event => 
-        event.causeArea.toLowerCase() === causeArea.toLowerCase()
-      );
-      setFilteredEvents(filtered);
-    }
-  }, [allEvents, causeArea, isLoading]);
+      if (error) {
+        console.error('Error fetching events by cause:', error);
+        throw new Error(error.message);
+      }
 
-  return { events: filteredEvents, isLoading };
+      // Apply any additional filtering if needed
+      return filterEvents(data as Event[]);
+    },
+  });
 };

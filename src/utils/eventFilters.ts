@@ -1,5 +1,5 @@
-
-import { Event } from '@/hooks/useEventData';
+import { useState } from 'react';
+import { Event } from '@/hooks/event-types';
 
 // Type for filters
 export interface EventFilters {
@@ -9,16 +9,12 @@ export interface EventFilters {
 }
 
 // Apply all filters to events list
-export const filterEvents = (
-  events: Event[],
-  filters: EventFilters,
-  searchKeyword: string
-): Event[] => {
+export const filterEvents = (events: Event[], filters: any = {}) => {
   let results = [...events];
   
   // Apply keyword search
-  if (searchKeyword) {
-    const lowerKeyword = searchKeyword.toLowerCase();
+  if (filters.searchKeyword) {
+    const lowerKeyword = filters.searchKeyword.toLowerCase();
     results = results.filter(event => 
       event.title.toLowerCase().includes(lowerKeyword) || 
       event.organization.toLowerCase().includes(lowerKeyword) ||
