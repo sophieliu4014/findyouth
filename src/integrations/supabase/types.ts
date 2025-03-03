@@ -195,7 +195,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_columns_for_table: {
+        Args: {
+          table_name: string
+        }
+        Returns: {
+          column_name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

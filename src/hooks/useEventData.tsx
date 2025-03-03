@@ -34,62 +34,58 @@ export const useEventData = () => {
     const fetchEvents = async () => {
       setIsLoading(true);
       try {
-        // First, check if cause_area column exists by fetching all columns
-        // and checking the structure of the response
+        // Check if cause_area column exists using the updated function
         let hasCauseArea = false;
+        
         try {
-          const { data: columnInfo, error: columnError } = await supabase
-            .rpc('get_columns_for_table', { table_name: 'events' });
+          const { data, error } = await supabase
+            .rpc('get_columns_for_table', { query_table_name: 'events' });
             
-          if (!columnError && columnInfo) {
-            hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
+          if (error) {
+            console.error("Error checking for columns:", error);
+          } else if (data && Array.isArray(data)) {
+            // Look for cause_area column in the returned data
+            hasCauseArea = data.some((col: { column_name: string }) => 
+              col.column_name === 'cause_area'
+            );
+            console.log("Column detection data:", data);
+            console.log("Events table has cause_area column:", hasCauseArea);
           }
-          
-          // Fallback approach: try to get one event to examine its structure
-          if (!hasCauseArea) {
-            const { data: oneEvent } = await supabase
-              .from('events')
-              .select('*')
-              .limit(1);
-            
-            if (oneEvent && oneEvent.length > 0) {
-              hasCauseArea = 'cause_area' in oneEvent[0];
-            }
-          }
-          
-          console.log("Does events table have cause_area column:", hasCauseArea);
         } catch (err) {
           console.error("Error checking for cause_area column:", err);
         }
         
-        // Fetch all events with the appropriate fields
-        // Use separate queries to avoid SQL template issues
+        // Fetch events with appropriate columns based on schema
         let eventsData: any[] = [];
-        let eventsError = null;
         
         if (hasCauseArea) {
           // If cause_area exists, include it in the query
-          const response = await supabase
+          const { data, error } = await supabase
             .from('events')
             .select('id, title, description, date, location, image_url, nonprofit_id, cause_area');
             
-          eventsData = response.data || [];
-          eventsError = response.error;
+          if (error) {
+            console.error("Error fetching events with cause_area:", error);
+            setEvents([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          eventsData = data || [];
         } else {
           // Otherwise query without cause_area
-          const response = await supabase
+          const { data, error } = await supabase
             .from('events')
             .select('id, title, description, date, location, image_url, nonprofit_id');
             
-          eventsData = response.data || [];
-          eventsError = response.error;
-        }
-
-        if (eventsError) {
-          console.error("Error fetching events:", eventsError);
-          setEvents([]);
-          setIsLoading(false);
-          return;
+          if (error) {
+            console.error("Error fetching events without cause_area:", error);
+            setEvents([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          eventsData = data || [];
         }
 
         if (!eventsData || eventsData.length === 0) {
@@ -191,60 +187,59 @@ export const useOrganizationEvents = (organizationId: string) => {
       
       setIsLoading(true);
       try {
-        // Check if cause_area column exists
+        // Check if cause_area column exists using the updated function
         let hasCauseArea = false;
+        
         try {
-          const { data: columnInfo, error: columnError } = await supabase
-            .rpc('get_columns_for_table', { table_name: 'events' });
+          const { data, error } = await supabase
+            .rpc('get_columns_for_table', { query_table_name: 'events' });
             
-          if (!columnError && columnInfo) {
-            hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
-          }
-          
-          // Fallback approach
-          if (!hasCauseArea) {
-            const { data: oneEvent } = await supabase
-              .from('events')
-              .select('*')
-              .limit(1);
-            
-            if (oneEvent && oneEvent.length > 0) {
-              hasCauseArea = 'cause_area' in oneEvent[0];
-            }
+          if (error) {
+            console.error("Error checking for columns:", error);
+          } else if (data && Array.isArray(data)) {
+            // Look for cause_area column in the returned data
+            hasCauseArea = data.some((col: { column_name: string }) => 
+              col.column_name === 'cause_area'
+            );
+            console.log("Organization events - Has cause_area column:", hasCauseArea);
           }
         } catch (err) {
           console.error("Error checking for cause_area column:", err);
         }
         
-        // Fetch events for this nonprofit
+        // Fetch events for this nonprofit based on schema
         let eventsData: any[] = [];
-        let eventsError = null;
         
         if (hasCauseArea) {
-          const response = await supabase
+          const { data, error } = await supabase
             .from('events')
             .select('id, title, description, date, location, image_url, cause_area')
             .eq('nonprofit_id', organizationId)
             .order('date', { ascending: false });
             
-          eventsData = response.data || [];
-          eventsError = response.error;
+          if (error) {
+            console.error("Error fetching organization events with cause_area:", error);
+            setEvents([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          eventsData = data || [];
         } else {
-          const response = await supabase
+          const { data, error } = await supabase
             .from('events')
             .select('id, title, description, date, location, image_url')
             .eq('nonprofit_id', organizationId)
             .order('date', { ascending: false });
             
-          eventsData = response.data || [];
-          eventsError = response.error;
-        }
-
-        if (eventsError) {
-          console.error("Error fetching organization events:", eventsError);
-          setEvents([]);
-          setIsLoading(false);
-          return;
+          if (error) {
+            console.error("Error fetching organization events without cause_area:", error);
+            setEvents([]);
+            setIsLoading(false);
+            return;
+          }
+          
+          eventsData = data || [];
         }
 
         if (!eventsData || eventsData.length === 0) {

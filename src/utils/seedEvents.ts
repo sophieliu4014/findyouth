@@ -74,30 +74,22 @@ export const seedEvents = async () => {
       'Food Drive', 'Mentorship', 'Conference', 'Sport Event'
     ];
     
-    // Check if the events table has cause_area column
+    // Check if the events table has cause_area column using the updated function
     let hasCauseArea = false;
     try {
-      // Try to get column info using a direct query first
-      const { data: columnInfo, error: columnError } = await supabase
-        .rpc('get_columns_for_table', { table_name: 'events' });
+      const { data, error } = await supabase
+        .rpc('get_columns_for_table', { query_table_name: 'events' });
         
-      if (!columnError && columnInfo) {
-        hasCauseArea = columnInfo.some((col: any) => col.column_name === 'cause_area');
+      if (error) {
+        console.error("Error checking for columns:", error);
+      } else if (data) {
+        // Look for cause_area column in the returned data
+        hasCauseArea = data.some((col: { column_name: string }) => 
+          col.column_name === 'cause_area'
+        );
+        console.log("Column detection data:", data);
+        console.log("Has cause_area column:", hasCauseArea);
       }
-      
-      // If that fails, try to get one event to examine its structure
-      if (!hasCauseArea) {
-        const { data: oneEvent } = await supabase
-          .from('events')
-          .select('*')
-          .limit(1);
-        
-        if (oneEvent && oneEvent.length > 0) {
-          hasCauseArea = 'cause_area' in oneEvent[0];
-        }
-      }
-      
-      console.log("Events table has cause_area column:", hasCauseArea);
     } catch (err) {
       console.error("Error checking for cause_area column:", err);
     }
