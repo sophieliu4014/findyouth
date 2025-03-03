@@ -1,3 +1,4 @@
+
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -172,9 +173,10 @@ export const uploadProfileImage = async (file: File, userId?: string): Promise<s
     // Sanitize the filename and create a unique path
     const fileExt = file.name.split('.').pop();
     const fileName = `${actualUserId}-${Date.now()}.${fileExt}`;
-    const filePath = `nonprofit-profiles/${fileName}`;
+    // Use the root path of the bucket instead of a nested folder for simplicity
+    const filePath = `${fileName}`;
     
-    console.log(`Uploading to path: ${filePath}`);
+    console.log(`Uploading to 'profiles' bucket with path: ${filePath}`);
     
     // Upload the file to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage

@@ -39,14 +39,18 @@ export const useRegistrationForm = () => {
 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+    console.log("Starting registration submission process");
     
     if (!profileImage) {
       setImageError("Profile picture is required");
       setIsSubmitting(false);
+      console.error("Profile picture is required but none was provided");
       return;
     }
     
     try {
+      console.log("Form data ready for submission:", data.organizationName, data.email);
+      
       // Get a fresh reCAPTCHA token before submission
       let token = null;
       const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
@@ -68,6 +72,7 @@ export const useRegistrationForm = () => {
         }
       }
       
+      console.log("Step 1: Creating user account with Supabase Auth");
       // Step 1: Sign up the user with Supabase Auth
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
@@ -79,28 +84,35 @@ export const useRegistrationForm = () => {
       );
       
       if (authError) {
+        console.error("Auth error:", authError);
         throw new Error(authError.message);
       }
       
       if (!authData?.user?.id) {
+        console.error("No user ID returned from auth signup");
         throw new Error("Failed to create user account - no user ID returned");
       }
       
+      console.log("User created successfully with ID:", authData.user.id);
+      
       // Step 2: Upload profile image using the user ID from the auth response
+      console.log("Step 2: Uploading profile image with user ID:", authData.user.id);
       let imageUrl;
       try {
         imageUrl = await uploadProfileImage(profileImage, authData.user.id);
         
         if (!imageUrl) {
+          console.error("No image URL returned after upload");
           throw new Error("Failed to get a valid image URL after upload");
         }
         console.log("Profile image uploaded successfully:", imageUrl);
-      } catch (imageUploadError) {
+      } catch (imageUploadError: any) {
         console.error("Profile image upload error:", imageUploadError);
         throw new Error("Failed to upload profile image: " + (imageUploadError.message || "Unknown error"));
       }
       
       // Step 3: Create nonprofit profile
+      console.log("Step 3: Creating nonprofit profile");
       const { nonprofit, error: profileError } = await createNonprofitProfile({
         organizationName: data.organizationName,
         email: data.email,
@@ -115,8 +127,11 @@ export const useRegistrationForm = () => {
       });
       
       if (profileError) {
+        console.error("Profile creation error:", profileError);
         throw new Error(profileError.message);
       }
+      
+      console.log("Nonprofit profile created successfully:", nonprofit);
       
       // Success
       setIsSuccess(true);
@@ -133,6 +148,7 @@ export const useRegistrationForm = () => {
       });
     } finally {
       setIsSubmitting(false);
+      console.log("Registration submission process complete");
     }
   };
 

@@ -25,18 +25,23 @@ const ProfileImageUpload = ({
     if (!file) {
       setProfileImage(null);
       setImagePreview(null);
+      console.log("No file selected");
       return;
     }
+    
+    console.log("File selected:", file.name, "Type:", file.type, "Size:", (file.size / 1024).toFixed(2) + "KB");
     
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
     if (!validTypes.includes(file.type)) {
+      console.error("Invalid file type:", file.type);
       setImageError("Please upload a valid image file (JPEG, PNG, or GIF)");
       return;
     }
     
     // Validate file size
     if (file.size > 2 * 1024 * 1024) {
+      console.error("File too large:", file.size);
       setImageError("File size must be less than 2MB");
       return;
     }
@@ -44,9 +49,11 @@ const ProfileImageUpload = ({
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
+      console.log("Image preview created");
     };
     reader.readAsDataURL(file);
     setProfileImage(file);
+    console.log("Profile image set for upload");
   };
 
   const triggerFileInput = () => {
