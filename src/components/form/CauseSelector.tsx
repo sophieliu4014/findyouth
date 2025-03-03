@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Checkbox } from "@/components/ui/checkbox";
+import { AlertCircle } from "lucide-react";
 
 interface CauseSelectorProps {
   selectedCauses: string[];
