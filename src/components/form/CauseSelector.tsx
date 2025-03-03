@@ -73,21 +73,29 @@ const CauseSelector = ({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background" align="start">
+        <PopoverContent 
+          className="w-full min-w-[var(--radix-popover-trigger-width)] p-0 bg-background z-50"
+          align="start"
+          onInteractOutside={(e) => e.preventDefault()} // Prevent accidental closure
+        >
           <Command>
             <CommandList>
               <CommandEmpty>No causes found.</CommandEmpty>
               <CommandGroup>
                 {causeOptions.map((cause) => {
                   const isSelected = normalizedSelectedCauses.includes(cause);
+
                   return (
                     <CommandItem
                       key={cause}
                       onSelect={() => {
+                        if (!isSelected && normalizedSelectedCauses.length >= maxCauses) {
+                          return; // Prevent selection if max reached
+                        }
                         handleCauseToggle(cause);
                       }}
                       className={cn(
-                        "flex items-center justify-between",
+                        "flex items-center justify-between cursor-pointer",
                         isSelected && "bg-youth-blue/10 text-youth-blue font-medium"
                       )}
                     >
