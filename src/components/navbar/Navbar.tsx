@@ -40,7 +40,7 @@ const Navbar = () => {
             
             <div className="relative">
               <button 
-                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/find-volunteers') || isActive('/register-ngo') ? 'font-medium text-youth-purple' : ''}`}
+                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/register-ngo') ? 'font-medium text-youth-purple' : ''}`}
                 onClick={() => {
                   setIsVolunteersOpen(!isVolunteersOpen);
                   setIsAboutOpen(false);
@@ -52,7 +52,7 @@ const Navbar = () => {
               
               {isVolunteersOpen && (
                 <div className="dropdown-menu">
-                  <Link to="/find-volunteers" className="dropdown-item" onClick={closeDropdowns}>Register your NGO</Link>
+                  <Link to="/register-ngo" className="dropdown-item" onClick={closeDropdowns}>Register your NGO</Link>
                   <Link to="/website-guidelines" className="dropdown-item" onClick={closeDropdowns}>Website Guidelines</Link>
                 </div>
               )}

@@ -6,6 +6,11 @@ const randomItem = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
+// Random integer helper
+const randomInt = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
 interface SeedNonprofit {
   id: string;
   organization_name: string;
@@ -25,7 +30,7 @@ export const seedEvents = async () => {
       return;
     }
     
-    if (count && count > 8) {
+    if (count && count >= 10) {
       console.log(`Database already has ${count} events. No need to seed more.`);
       return;
     }
@@ -45,12 +50,19 @@ export const seedEvents = async () => {
     // 2. Prepare some example events
     const locations = [
       'Vancouver', 'Burnaby', 'Richmond', 'Surrey', 'North Vancouver', 
-      'West Vancouver', 'Coquitlam', 'New Westminster'
+      'West Vancouver', 'Coquitlam', 'New Westminster', 'Delta', 'Langley'
     ];
     
     const eventTypes = [
       'Clean-up', 'Workshop', 'Fundraiser', 'Awareness Campaign', 
-      'Community Event', 'Training Session', 'Support Group', 'Social Gathering'
+      'Community Event', 'Training Session', 'Support Group', 'Social Gathering',
+      'Food Drive', 'Mentorship', 'Conference', 'Sport Event'
+    ];
+    
+    const causeAreas = [
+      'Advocacy & Human Rights', 'Education', 'Sports', 'Health', 
+      'Arts & Culture', 'Environment', 'Homeless', 'Animals', 
+      'Youth', 'Seniors', 'Religion'
     ];
     
     const imageUrls = [
@@ -59,7 +71,11 @@ export const seedEvents = async () => {
       'https://images.unsplash.com/photo-1509062522246-3755977927d7',
       'https://images.unsplash.com/photo-1498836517558-503c3a06a7ca',
       'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a',
-      'https://images.unsplash.com/photo-1546410531-bb4caa6b424d'
+      'https://images.unsplash.com/photo-1546410531-bb4caa6b424d',
+      'https://images.unsplash.com/photo-1559027615-cd4628902d4a',
+      'https://images.unsplash.com/photo-1528605248644-14dd04022da1',
+      'https://images.unsplash.com/photo-1511632765486-a01980e01a18',
+      'https://images.unsplash.com/photo-1542810634-71277d95dcbb'
     ];
     
     // 3. Generate random future dates in the next 3 months
@@ -72,40 +88,47 @@ export const seedEvents = async () => {
       return futureDate.toISOString();
     };
     
-    // 4. Create example events
-    const eventPromises = nonprofits.slice(0, 4).flatMap((nonprofit: SeedNonprofit) => {
-      // Create 3 events for each nonprofit
-      return Array(3).fill(null).map(async (_, index) => {
-        const eventType = randomItem(eventTypes);
-        const location = randomItem(locations);
-        const date = getRandomFutureDate();
-        
-        const eventData = {
-          title: `${eventType} in ${location}`,
-          description: `Join ${nonprofit.organization_name} for a community ${eventType.toLowerCase()} event. This is a great opportunity to help our community and get involved with like-minded youth volunteers.`,
-          location: location,
-          date: date,
-          nonprofit_id: nonprofit.id,
-          image_url: randomItem(imageUrls)
-        };
-        
-        const { data, error } = await supabase
-          .from('events')
-          .insert(eventData)
-          .select();
+    // 4. Create 10 example events
+    const eventPromises = [];
+    
+    for (let i = 0; i < 10; i++) {
+      const nonprofit = randomItem(nonprofits);
+      const eventType = randomItem(eventTypes);
+      const location = randomItem(locations);
+      const date = getRandomFutureDate();
+      const causeArea = randomItem(causeAreas);
+      
+      const eventData = {
+        title: `${eventType} in ${location}`,
+        description: `Join ${nonprofit.organization_name} for a community ${eventType.toLowerCase()} event. This is a great opportunity to help our community and get involved with like-minded youth volunteers. We need your support to make this event a success!`,
+        location: location,
+        date: date,
+        nonprofit_id: nonprofit.id,
+        image_url: randomItem(imageUrls),
+        cause_area: causeArea,
+        slots_available: randomInt(5, 30),
+        duration_hours: randomInt(2, 8)
+      };
+      
+      const promise = supabase
+        .from('events')
+        .insert(eventData)
+        .select()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error(`Error creating event for ${nonprofit.organization_name}:`, error);
+            return null;
+          }
           
-        if (error) {
-          console.error(`Error creating event for ${nonprofit.organization_name}:`, error);
-          return null;
-        }
-        
-        console.log(`Created event: ${eventData.title} for ${nonprofit.organization_name}`);
-        return data;
-      });
-    });
+          console.log(`Created event: ${eventData.title} for ${nonprofit.organization_name}`);
+          return data;
+        });
+      
+      eventPromises.push(promise);
+    }
     
     await Promise.all(eventPromises);
-    console.log("Seeding completed successfully!");
+    console.log("Seeding completed successfully! Created 10 example events.");
     
   } catch (error) {
     console.error("Error in seed function:", error);
