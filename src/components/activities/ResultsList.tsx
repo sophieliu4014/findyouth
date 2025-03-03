@@ -1,6 +1,8 @@
 
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import EventCard from '../EventCard';
+import { seedEvents } from '@/utils/seedEvents';
 
 interface Event {
   id: string;
@@ -21,6 +23,13 @@ interface ResultsListProps {
 }
 
 const ResultsList = ({ events, isLoading }: ResultsListProps) => {
+  // Seed events if none are found
+  useEffect(() => {
+    if (!isLoading && events.length === 0) {
+      seedEvents();
+    }
+  }, [events, isLoading]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-16">
@@ -48,6 +57,12 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
           <p className="text-youth-charcoal/70">
             Try adjusting your filters or search criteria to find volunteer opportunities.
           </p>
+          <button 
+            className="mt-4 px-4 py-2 bg-youth-purple text-white rounded-md hover:bg-youth-purple/90 transition-colors"
+            onClick={() => seedEvents()}
+          >
+            Generate Sample Data
+          </button>
         </div>
       )}
     </div>
