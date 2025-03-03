@@ -1,5 +1,4 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
@@ -106,7 +105,6 @@ const RegisterNgo = () => {
       return;
     }
     
-    // Simulate API call
     setTimeout(() => {
       console.log(data);
       console.log("Profile Image:", profileImage);
@@ -129,13 +127,11 @@ const RegisterNgo = () => {
       return;
     }
     
-    // Check file size (2MB limit)
     if (file.size > 2 * 1024 * 1024) {
       setImageError("File size must be less than 2MB");
       return;
     }
     
-    // Preview the image
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -153,10 +149,8 @@ const RegisterNgo = () => {
     let newCauses: string[];
     
     if (currentCauses.includes(cause)) {
-      // Remove the cause if it's already selected
       newCauses = currentCauses.filter(c => c !== cause);
     } else {
-      // Add the cause if it's not in the array and there are fewer than 3 causes
       if (currentCauses.length >= 3) {
         toast({
           title: "Maximum causes reached",
@@ -168,7 +162,6 @@ const RegisterNgo = () => {
       newCauses = [...currentCauses, cause];
     }
     
-    // Update the form value
     form.setValue('causes', newCauses, { shouldValidate: true });
   };
   
@@ -180,16 +173,14 @@ const RegisterNgo = () => {
     return { num1, num2 };
   };
   
-  // Initialize captcha on component mount
-  useState(() => {
+  useEffect(() => {
     generateCaptcha();
-  });
+  }, []);
 
   const handleCaptchaChange = (value: string) => {
     const numValue = parseInt(value);
     setCaptchaValue(isNaN(numValue) ? 0 : numValue);
     
-    // Check if captcha is verified
     form.setValue('captchaVerified', numValue === captchaTarget, { 
       shouldValidate: true 
     });
@@ -401,7 +392,6 @@ const RegisterNgo = () => {
                                   <Checkbox 
                                     id={`cause-${cause}`}
                                     checked={isSelected}
-                                    onCheckedChange={() => handleCauseToggle(cause)}
                                   />
                                   <label 
                                     htmlFor={`cause-${cause}`}
