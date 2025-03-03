@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
@@ -58,13 +57,10 @@ const NgoLoginForm = () => {
         }
         
         if (data.session) {
-          // Update auth store
           await refreshAuth();
           
-          // Successful login
           toast.success('Login successful!');
           
-          // Redirect to home page
           navigate('/');
         }
       } catch (err: any) {
