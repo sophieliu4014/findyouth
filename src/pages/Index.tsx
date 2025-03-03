@@ -1,13 +1,29 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { Helmet } from 'react-helmet-async';
+import Navbar from '../components/navbar/Navbar';
+import Hero from '../components/home/Hero';
+import CauseAreas from '../components/home/CauseAreas';
+import HowItWorks from '../components/home/HowItWorks';
+import Footer from '../components/Footer';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Helmet>
+        <title>FindYOUth - Connect Youth with Volunteer Opportunities</title>
+        <meta name="description" content="FindYOUth connects youth-led nonprofits with passionate volunteers across Greater Vancouver." />
+      </Helmet>
+      
+      <Navbar />
+      
+      <main>
+        <Hero />
+        <CauseAreas />
+        <HowItWorks />
+      </main>
+      
+      <Footer />
+    </>
   );
 };
 
