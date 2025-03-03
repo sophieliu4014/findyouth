@@ -8,6 +8,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index";
 import FindActivities from "./pages/FindActivities";
 import NgoLogin from "./pages/NgoLogin";
+import WebsiteGuidelines from "./pages/WebsiteGuidelines";
+import RegisterNgo from "./pages/RegisterNgo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +25,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/find-activities" element={<FindActivities />} />
             <Route path="/ngo-login" element={<NgoLogin />} />
+            <Route path="/website-guidelines" element={<WebsiteGuidelines />} />
+            <Route path="/find-volunteers" element={<RegisterNgo />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
