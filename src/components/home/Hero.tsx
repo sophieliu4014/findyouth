@@ -64,11 +64,11 @@ const Hero = () => {
           </form>
         </div>
         
-        {/* City Buttons */}
+        {/* City Buttons - removed Coquitlam */}
         <div className="max-w-2xl mx-auto mb-10 animate-slide-up animate-delay-300">
           <p className="text-white/90 mb-3">Or explore by city</p>
           <div className="flex flex-wrap justify-center gap-3">
-            {['Vancouver', 'Burnaby', 'Richmond', 'Surrey', 'Coquitlam'].map((city) => (
+            {['Vancouver', 'Burnaby', 'Richmond', 'Surrey'].map((city) => (
               <button
                 key={city}
                 onClick={() => handleCityClick(city)}

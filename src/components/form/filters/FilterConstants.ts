@@ -23,6 +23,5 @@ export const locations = [
   "Richmond",
   "Surrey",
   "North Vancouver",
-  "West Vancouver",
-  "Coquitlam"
+  "West Vancouver"
 ];
