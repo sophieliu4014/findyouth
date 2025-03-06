@@ -64,7 +64,7 @@ const Hero = () => {
           </form>
         </div>
         
-        {/* City Buttons - improved design */}
+        {/* City Buttons */}
         <div className="max-w-2xl mx-auto mb-12 animate-slide-up animate-delay-300">
           <p className="text-white/90 mb-4 drop-shadow-md">Or explore by city</p>
           <div className="flex flex-wrap justify-center gap-4">
