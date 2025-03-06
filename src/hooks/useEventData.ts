@@ -8,7 +8,8 @@ import { filterEvents, EventFilters } from '@/utils/eventFilters';
 export const useEventData = (filters: EventFilters = {
   cause: '',
   location: '',
-  organization: ''
+  organization: '',
+  searchKeyword: ''
 }) => {
   return useQuery({
     queryKey: ['events', filters],
@@ -36,7 +37,8 @@ export const useCauseEvents = (cause: string) => {
   const { data, isLoading, error } = useEventData({ 
     cause, 
     location: '', 
-    organization: '' 
+    organization: '',
+    searchKeyword: ''
   });
 
   return {
@@ -48,7 +50,12 @@ export const useCauseEvents = (cause: string) => {
 
 // Hook for fetching events for a specific organization
 export const useOrganizationEvents = (organizationId: string) => {
-  const { data, isLoading, error } = useEventData();
+  const { data, isLoading, error } = useEventData({
+    cause: '',
+    location: '',
+    organization: '',
+    searchKeyword: ''
+  });
   
   const filteredEvents = data?.filter(event => 
     event.organizationId === organizationId
