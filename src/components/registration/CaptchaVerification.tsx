@@ -19,7 +19,7 @@ declare global {
 }
 
 // Use the user's site key
-const RECAPTCHA_SITE_KEY = '6LccIOsqAAAAAA4hDtpVBMJvBFM00IolctKUN5uT';
+const RECAPTCHA_SITE_KEY = '6LfuS-sqAAAAACoes-qA9Qz-1TjRC-tbxfdZlUwn';
 
 const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
   useEffect(() => {
