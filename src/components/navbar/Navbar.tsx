@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-youth-purple/80 backdrop-blur-md border-b border-youth-purple/20 shadow-sm transition-all duration-300">
+    <header className="sticky top-0 z-50 bg-[#E6D9FF] shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex-shrink-0">
@@ -32,7 +32,7 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
               to="/find-activities" 
-              className={`text-white hover:text-white/80 transition-colors font-medium tracking-wide ${isActive('/find-activities') ? 'font-semibold text-white' : ''}`}
+              className={`text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/find-activities') ? 'font-semibold text-youth-purple' : ''}`}
               onClick={closeDropdowns}
             >
               Find Activities
@@ -40,7 +40,7 @@ const Navbar = () => {
             
             <div className="relative">
               <button 
-                className={`flex items-center text-white hover:text-white/80 transition-colors font-medium tracking-wide ${isActive('/register-ngo') ? 'font-semibold text-white' : ''}`}
+                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/register-ngo') ? 'font-semibold text-youth-purple' : ''}`}
                 onClick={() => {
                   setIsVolunteersOpen(!isVolunteersOpen);
                   setIsAboutOpen(false);
@@ -60,7 +60,7 @@ const Navbar = () => {
             
             <div className="relative">
               <button 
-                className={`flex items-center text-white hover:text-white/80 transition-colors font-medium tracking-wide ${isActive('/about') || isActive('/instagram') || isActive('/contact') ? 'font-semibold text-white' : ''}`}
+                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/about') || isActive('/instagram') || isActive('/contact') ? 'font-semibold text-youth-purple' : ''}`}
                 onClick={() => {
                   setIsAboutOpen(!isAboutOpen);
                   setIsVolunteersOpen(false);
@@ -84,7 +84,7 @@ const Navbar = () => {
 
           {/* Mobile menu button - would need to implement mobile menu */}
           <div className="md:hidden">
-            <button className="text-white">
+            <button className="text-youth-charcoal">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
