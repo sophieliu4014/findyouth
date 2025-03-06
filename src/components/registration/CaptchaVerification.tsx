@@ -18,9 +18,8 @@ declare global {
   }
 }
 
-// This is just a placeholder key, typically you would use an environment variable
-// for the actual production key that matches your domain
-const RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google's test key that doesn't display errors
+// Use the site key that's already in the index.html file
+const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
 
 const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
   useEffect(() => {

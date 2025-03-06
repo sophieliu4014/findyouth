@@ -1,10 +1,11 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
+
+const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +54,6 @@ export const useRegistrationForm = () => {
       
       // Get a fresh reCAPTCHA token before submission
       let token = null;
-      const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
       
       if (window.grecaptcha) {
         try {
