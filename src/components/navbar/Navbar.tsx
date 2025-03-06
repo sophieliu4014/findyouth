@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="navbar bg-youth-lightpurple/70 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/30 shadow-sm transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex-shrink-0">
@@ -32,7 +32,7 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
               to="/find-activities" 
-              className={`text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/find-activities') ? 'font-medium text-youth-purple' : ''}`}
+              className={`text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/find-activities') ? 'font-semibold text-youth-purple' : ''}`}
               onClick={closeDropdowns}
             >
               Find Activities
@@ -40,7 +40,7 @@ const Navbar = () => {
             
             <div className="relative">
               <button 
-                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/register-ngo') ? 'font-medium text-youth-purple' : ''}`}
+                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/register-ngo') ? 'font-semibold text-youth-purple' : ''}`}
                 onClick={() => {
                   setIsVolunteersOpen(!isVolunteersOpen);
                   setIsAboutOpen(false);
@@ -51,16 +51,16 @@ const Navbar = () => {
               </button>
               
               {isVolunteersOpen && (
-                <div className="dropdown-menu">
-                  <Link to="/register-ngo" className="dropdown-item" onClick={closeDropdowns}>Register your NGO</Link>
-                  <Link to="/website-guidelines" className="dropdown-item" onClick={closeDropdowns}>Website Guidelines</Link>
+                <div className="dropdown-menu bg-white/95 backdrop-blur-sm rounded-xl">
+                  <Link to="/register-ngo" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Register your NGO</Link>
+                  <Link to="/website-guidelines" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Website Guidelines</Link>
                 </div>
               )}
             </div>
             
             <div className="relative">
               <button 
-                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors ${isActive('/about') || isActive('/instagram') || isActive('/contact') ? 'font-medium text-youth-purple' : ''}`}
+                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide ${isActive('/about') || isActive('/instagram') || isActive('/contact') ? 'font-semibold text-youth-purple' : ''}`}
                 onClick={() => {
                   setIsAboutOpen(!isAboutOpen);
                   setIsVolunteersOpen(false);
@@ -71,10 +71,10 @@ const Navbar = () => {
               </button>
               
               {isAboutOpen && (
-                <div className="dropdown-menu">
-                  <Link to="/our-story" className="dropdown-item" onClick={closeDropdowns}>Our Story</Link>
-                  <Link to="/our-instagram" className="dropdown-item" onClick={closeDropdowns}>Our Instagram</Link>
-                  <Link to="/contact" className="dropdown-item" onClick={closeDropdowns}>Contact Us</Link>
+                <div className="dropdown-menu bg-white/95 backdrop-blur-sm rounded-xl">
+                  <Link to="/our-story" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Our Story</Link>
+                  <Link to="/our-instagram" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Our Instagram</Link>
+                  <Link to="/contact" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Contact Us</Link>
                 </div>
               )}
             </div>

@@ -18,7 +18,9 @@ declare global {
   }
 }
 
-const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
+// This is just a placeholder key, typically you would use an environment variable
+// for the actual production key that matches your domain
+const RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google's test key that doesn't display errors
 
 const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
   useEffect(() => {
@@ -27,8 +29,12 @@ const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
       try {
         if (window.grecaptcha) {
           window.grecaptcha.ready(async () => {
-            const token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'register_ngo' });
-            console.log('reCAPTCHA token generated:', token.substring(0, 10) + '...');
+            try {
+              const token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'register_ngo' });
+              console.log('reCAPTCHA token generated:', token.substring(0, 10) + '...');
+            } catch (error) {
+              console.error('reCAPTCHA execution error:', error);
+            }
           });
         }
       } catch (error) {
