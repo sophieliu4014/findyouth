@@ -27,7 +27,7 @@ const Hero = () => {
           alt="Youth volunteers working together" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/50"></div>
       </div>
       
       <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-white text-center">
