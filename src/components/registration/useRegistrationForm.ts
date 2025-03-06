@@ -5,7 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
 
-const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
+const RECAPTCHA_SITE_KEY = '6LccIOsqAAAAAA4hDtpVBMJvBFM00IolctKUN5uT';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);

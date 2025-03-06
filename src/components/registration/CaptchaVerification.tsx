@@ -18,8 +18,8 @@ declare global {
   }
 }
 
-// Use the site key that's already in the index.html file
-const RECAPTCHA_SITE_KEY = '6Lcsw-cqAAAAAK5mQ32_PtlyuPQkw_MKPc8fjFY7';
+// Use the user's site key
+const RECAPTCHA_SITE_KEY = '6LccIOsqAAAAAA4hDtpVBMJvBFM00IolctKUN5uT';
 
 const CaptchaVerification = ({ control }: CaptchaVerificationProps) => {
   useEffect(() => {
