@@ -1,4 +1,6 @@
 
+import { MapPin } from 'lucide-react';
+
 interface CitySelectorProps {
   selectedCity?: string;
   onCitySelect: (city: string) => void;
@@ -16,17 +18,20 @@ const CitySelector = ({ selectedCity = '', onCitySelect, onCityChange, cities }:
   };
 
   return (
-    <div className="max-w-2xl mx-auto mb-8 animate-slide-up">
-      <p className="text-youth-charcoal/80 mb-3">Or explore by city</p>
-      <div className="flex flex-wrap justify-center gap-3">
+    <div className="max-w-4xl mx-auto mb-8 animate-slide-up">
+      <h3 className="flex items-center text-lg font-medium text-youth-charcoal mb-3">
+        <MapPin className="h-5 w-5 mr-2 text-youth-blue" />
+        Popular Locations
+      </h3>
+      <div className="flex flex-wrap gap-3">
         {cities.map((city) => (
           <button
             key={city}
             onClick={() => handleCityClick(city)}
-            className={`px-8 py-2 rounded-full transition-all duration-300 border 
+            className={`px-5 py-2 rounded-full transition-all duration-300 
               ${selectedCity === city 
-                ? 'bg-youth-blue text-white border-youth-blue' 
-                : 'bg-white/90 text-youth-charcoal hover:bg-youth-blue/10 border-youth-blue/20'}`}
+                ? 'bg-youth-blue text-white shadow-md' 
+                : 'bg-white text-youth-charcoal hover:bg-youth-blue/10 border border-youth-blue/20'}`}
           >
             {city}
           </button>
