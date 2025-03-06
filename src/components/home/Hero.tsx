@@ -20,14 +20,14 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen w-full flex items-center justify-center">
-      {/* Background image with overlay - improved for better text readability */}
+      {/* Background image with overlay - darker overlay for better readability */}
       <div className="absolute inset-0 z-0">
         <img 
           src="/lovable-uploads/c8a5f090-6366-46c8-aa61-36e33745e1cd.png" 
           alt="Youth volunteers working together" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-black/60"></div>
       </div>
       
       <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-white text-center">
@@ -64,7 +64,7 @@ const Hero = () => {
           </form>
         </div>
         
-        {/* City Buttons */}
+        {/* City Buttons - made semi-transparent white */}
         <div className="max-w-2xl mx-auto mb-12 animate-slide-up animate-delay-300">
           <p className="text-white/90 mb-4 drop-shadow-md">Or explore by city</p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -72,7 +72,7 @@ const Hero = () => {
               <button
                 key={city}
                 onClick={() => handleCityClick(city)}
-                className="bg-white/90 hover:bg-youth-blue text-youth-charcoal hover:text-white px-8 py-2.5 rounded-full transition-all duration-300 border border-white/20 shadow-md hover:shadow-lg"
+                className="bg-white/60 hover:bg-youth-blue text-youth-charcoal hover:text-white px-8 py-2.5 rounded-full transition-all duration-300 border border-white/20 shadow-md hover:shadow-lg"
               >
                 {city}
               </button>
