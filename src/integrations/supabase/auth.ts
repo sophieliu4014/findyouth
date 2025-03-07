@@ -8,6 +8,7 @@ export type AuthSession = Session | null;
 
 // Sign up with email and password
 export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>) => {
+  // Direct signup without captcha verification
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
