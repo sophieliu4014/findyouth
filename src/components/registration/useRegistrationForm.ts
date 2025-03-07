@@ -11,6 +11,8 @@ export const useRegistrationForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -32,17 +34,32 @@ export const useRegistrationForm = () => {
   const resetForm = () => {
     form.reset();
     setProfileImage(null);
+    setCaptchaToken(null);
     setIsSuccess(false);
+  };
+
+  const handleCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
+    setCaptchaError(token ? null : "Please complete the captcha verification");
   };
 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     console.log("Starting registration submission process");
     
+    // Check for required image
     if (!profileImage) {
       setImageError("Profile picture is required");
       setIsSubmitting(false);
       console.error("Profile picture is required but none was provided");
+      return;
+    }
+    
+    // Check if captcha is verified
+    if (!captchaToken) {
+      setCaptchaError("Please complete the captcha verification");
+      setIsSubmitting(false);
+      console.error("Captcha verification is required but not completed");
       return;
     }
     
@@ -54,7 +71,8 @@ export const useRegistrationForm = () => {
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
-        { organization_name: data.organizationName }
+        { organization_name: data.organizationName },
+        captchaToken
       );
       
       if (authError) {
@@ -141,6 +159,9 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
+    captchaToken,
+    captchaError,
+    handleCaptchaChange,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };

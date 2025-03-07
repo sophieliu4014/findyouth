@@ -3,6 +3,7 @@ import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 // Import form components
 import OrganizationInfoFields from './OrganizationInfoFields';
@@ -21,6 +22,9 @@ interface RegistrationFormProps {
   setProfileImage: (file: File | null) => void;
   imageError: string | null;
   setImageError: (error: string | null) => void;
+  captchaToken: string | null;
+  captchaError: string | null;
+  handleCaptchaChange: (token: string | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   causeAreas: string[];
 }
@@ -32,6 +36,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   setProfileImage,
   imageError,
   setImageError,
+  captchaToken,
+  captchaError,
+  handleCaptchaChange,
   onSubmit,
   causeAreas
 }) => {
@@ -51,11 +58,22 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             imageError={imageError}
           />
           
+          <div className="mt-6">
+            <p className="text-sm text-youth-charcoal mb-2">Please verify that you are human:</p>
+            <ReCAPTCHA
+              sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // This is a test key for localhost
+              onChange={handleCaptchaChange}
+            />
+            {captchaError && (
+              <p className="mt-1 text-sm text-red-500">{captchaError}</p>
+            )}
+          </div>
+          
           <div className="pt-4">
             <Button 
               type="submit" 
               className="w-full btn-primary hover:scale-[1.02] transition-transform"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !captchaToken}
             >
               {isSubmitting ? (
                 <>

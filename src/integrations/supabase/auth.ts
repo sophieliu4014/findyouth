@@ -7,13 +7,19 @@ export type AuthUser = User | null;
 export type AuthSession = Session | null;
 
 // Sign up with email and password
-export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>) => {
-  // Direct signup without captcha verification
+export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>, captchaToken?: string) => {
+  // Check if captchaToken is provided
+  if (!captchaToken) {
+    console.error("Captcha token is required for signup");
+    return { data: null, error: { message: "Captcha verification required" } };
+  }
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: userData
+      data: userData,
+      captchaToken: captchaToken // Add the captcha token to the request
     }
   });
   return { data, error };
