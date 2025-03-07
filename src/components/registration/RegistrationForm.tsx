@@ -24,6 +24,7 @@ interface RegistrationFormProps {
   setImageError: (error: string | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   causeAreas: string[];
+  setRecaptchaToken: (token: string | null) => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -34,7 +35,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   imageError,
   setImageError,
   onSubmit,
-  causeAreas
+  causeAreas,
+  setRecaptchaToken
 }) => {
   return (
     <div className="glass-panel p-8 mt-8">
@@ -51,7 +53,10 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             setImageError={setImageError}
             imageError={imageError}
           />
-          <CaptchaVerification control={form.control} />
+          <CaptchaVerification 
+            control={form.control} 
+            onTokenChange={setRecaptchaToken}
+          />
           
           <div className="pt-4">
             <Button 

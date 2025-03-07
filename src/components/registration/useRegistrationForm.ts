@@ -1,11 +1,10 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
-
-const RECAPTCHA_SITE_KEY = '6LfuS-sqAAAAACoes-qA9Qz-1TjRC-tbxfdZlUwn';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +37,11 @@ export const useRegistrationForm = () => {
     setIsSuccess(false);
   };
 
+  const handleSetRecaptchaToken = (token: string | null) => {
+    console.log("Setting reCAPTCHA token:", token ? `${token.substring(0, 10)}...` : "null");
+    setRecaptchaToken(token);
+  };
+
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     console.log("Starting registration submission process");
@@ -49,37 +53,29 @@ export const useRegistrationForm = () => {
       return;
     }
     
+    if (!recaptchaToken) {
+      toast({
+        title: "reCAPTCHA verification failed",
+        description: "Please try again or contact support if the issue persists.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      console.error("No valid reCAPTCHA token available at submission time");
+      return;
+    }
+    
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
+      console.log("Using reCAPTCHA token:", recaptchaToken.substring(0, 10) + '...');
       
-      // Get a fresh reCAPTCHA token before submission
-      let token = null;
-      
-      if (window.grecaptcha) {
-        try {
-          token = await window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'submit_ngo_registration' });
-          setRecaptchaToken(token);
-          console.log('reCAPTCHA token for submission:', token.substring(0, 10) + '...');
-        } catch (recaptchaError) {
-          console.error('Error getting reCAPTCHA token:', recaptchaError);
-          toast({
-            title: "reCAPTCHA verification failed",
-            description: "Please try again or contact support if the issue persists.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      
-      console.log("Step 1: Creating user account with Supabase Auth");
       // Step 1: Sign up the user with Supabase Auth
+      console.log("Step 1: Creating user account with Supabase Auth");
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
         { 
           organization_name: data.organizationName,
-          recaptcha_token: token
+          recaptcha_token: recaptchaToken
         }
       );
       
@@ -167,6 +163,8 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
+    recaptchaToken,
+    setRecaptchaToken: handleSetRecaptchaToken,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };

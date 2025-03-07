@@ -22,16 +22,6 @@ const causeAreas = [
   "Religion"
 ];
 
-// Declare grecaptcha for TypeScript
-declare global {
-  interface Window {
-    grecaptcha: {
-      ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
-    };
-  }
-}
-
 const RegisterNgo = () => {
   const {
     form,
@@ -41,6 +31,7 @@ const RegisterNgo = () => {
     setProfileImage,
     imageError,
     setImageError,
+    setRecaptchaToken,
     resetForm,
     handleSubmit
   } = useRegistrationForm();
@@ -71,6 +62,7 @@ const RegisterNgo = () => {
               setImageError={setImageError}
               onSubmit={handleSubmit}
               causeAreas={causeAreas}
+              setRecaptchaToken={setRecaptchaToken}
             />
           )}
         </div>
