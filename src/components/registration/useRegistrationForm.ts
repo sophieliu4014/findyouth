@@ -39,6 +39,7 @@ export const useRegistrationForm = () => {
   };
 
   const handleCaptchaChange = (token: string | null) => {
+    console.log("Captcha token received:", token ? "Token received" : "No token");
     setCaptchaToken(token);
     setCaptchaError(token ? null : "Please complete the captcha verification");
   };
@@ -62,6 +63,8 @@ export const useRegistrationForm = () => {
       console.error("Captcha verification is required but not completed");
       return;
     }
+    
+    console.log("Captcha token before submission:", captchaToken ? "Token exists" : "No token");
     
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);

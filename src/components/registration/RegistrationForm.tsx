@@ -61,7 +61,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           <div className="mt-6">
             <p className="text-sm text-youth-charcoal mb-2">Please verify that you are human:</p>
             <ReCAPTCHA
-              sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // This is a test key for localhost
+              sitekey="6LdzUOwqAAAAAG5kLUGk_Lpi94WcqvTDSDdm5fkE"
               onChange={handleCaptchaChange}
             />
             {captchaError && (
