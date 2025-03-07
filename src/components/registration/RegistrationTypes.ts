@@ -43,10 +43,7 @@ export const formSchema = z.object({
     message: "Please select at least one cause.",
   }).max(3, {
     message: "You can select up to 3 causes.",
-  }),
-  captchaVerified: z.boolean().refine(val => val === true, {
-    message: "Please complete the verification.",
-  }),
+  })
 });
 
 export type FormValues = z.infer<typeof formSchema>;

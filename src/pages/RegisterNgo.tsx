@@ -31,7 +31,6 @@ const RegisterNgo = () => {
     setProfileImage,
     imageError,
     setImageError,
-    setRecaptchaToken,
     resetForm,
     handleSubmit
   } = useRegistrationForm();
@@ -62,7 +61,6 @@ const RegisterNgo = () => {
               setImageError={setImageError}
               onSubmit={handleSubmit}
               causeAreas={causeAreas}
-              setRecaptchaToken={setRecaptchaToken}
             />
           )}
         </div>

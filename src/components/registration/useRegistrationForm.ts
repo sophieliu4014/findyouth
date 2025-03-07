@@ -11,7 +11,6 @@ export const useRegistrationForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -27,7 +26,6 @@ export const useRegistrationForm = () => {
       description: "",
       mission: "",
       causes: [],
-      captchaVerified: false,
     },
   });
 
@@ -35,11 +33,6 @@ export const useRegistrationForm = () => {
     form.reset();
     setProfileImage(null);
     setIsSuccess(false);
-  };
-
-  const handleSetRecaptchaToken = (token: string | null) => {
-    console.log("Setting reCAPTCHA token:", token ? `${token.substring(0, 10)}...` : "null");
-    setRecaptchaToken(token);
   };
 
   const handleSubmit = async (data: FormValues) => {
@@ -53,30 +46,15 @@ export const useRegistrationForm = () => {
       return;
     }
     
-    if (!recaptchaToken) {
-      toast({
-        title: "reCAPTCHA verification failed",
-        description: "Please try again or contact support if the issue persists.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      console.error("No valid reCAPTCHA token available at submission time");
-      return;
-    }
-    
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
-      console.log("Using reCAPTCHA token:", recaptchaToken.substring(0, 10) + '...');
       
       // Step 1: Sign up the user with Supabase Auth
       console.log("Step 1: Creating user account with Supabase Auth");
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
-        { 
-          organization_name: data.organizationName,
-          recaptcha_token: recaptchaToken
-        }
+        { organization_name: data.organizationName }
       );
       
       if (authError) {
@@ -163,8 +141,6 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
-    recaptchaToken,
-    setRecaptchaToken: handleSetRecaptchaToken,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };

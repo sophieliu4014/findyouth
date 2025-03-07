@@ -9,7 +9,6 @@ import OrganizationInfoFields from './OrganizationInfoFields';
 import MissionFields from './MissionFields';
 import CauseSelectionField from './CauseSelectionField';
 import ProfileImageUpload from './ProfileImageUpload';
-import CaptchaVerification from './CaptchaVerification';
 
 // Import types
 import { FormValues } from './RegistrationTypes';
@@ -24,7 +23,6 @@ interface RegistrationFormProps {
   setImageError: (error: string | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   causeAreas: string[];
-  setRecaptchaToken: (token: string | null) => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -35,8 +33,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   imageError,
   setImageError,
   onSubmit,
-  causeAreas,
-  setRecaptchaToken
+  causeAreas
 }) => {
   return (
     <div className="glass-panel p-8 mt-8">
@@ -52,10 +49,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             setProfileImage={setProfileImage} 
             setImageError={setImageError}
             imageError={imageError}
-          />
-          <CaptchaVerification 
-            control={form.control} 
-            onTokenChange={setRecaptchaToken}
           />
           
           <div className="pt-4">
