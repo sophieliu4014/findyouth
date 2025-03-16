@@ -62,19 +62,21 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           />
           
           <div className="mt-6">
+           /*
             <p className="text-sm text-youth-charcoal mb-2">
-              <span className="opacity-50">CAPTCHA verification temporarily disabled - </span>
-              You can skip this step:
-            </p>
-            <ReCAPTCHA
-              sitekey={RECAPTCHA_SITE_KEY}
-            onChange={handleCaptchaChange}
-            />
-            {captchaError && (
-              <p className="mt-1 text-sm text-opacity-50 text-gray-500">
-                CAPTCHA verification is currently optional
+                <span className="opacity-50">CAPTCHA verification temporarily disabled - </span>
+                You can skip this step:
               </p>
-            )}
+              <ReCAPTCHA
+                sitekey={RECAPTCHA_SITE_KEY}
+              onChange={handleCaptchaChange}
+              />
+              {captchaError && (
+                <p className="mt-1 text-sm text-opacity-50 text-gray-500">
+                  CAPTCHA verification is currently optional
+                </p>
+              )}
+            */
           </div>
           
           <div className="pt-4">
