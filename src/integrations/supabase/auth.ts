@@ -1,3 +1,4 @@
+
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -5,7 +6,7 @@ import { Session, User } from '@supabase/supabase-js';
 export type AuthUser = User | null;
 export type AuthSession = Session | null;
 
-// Sign up with email and password
+// Sign up with email and password - captcha removed
 export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>) => {
   // Create options object with user data
   const options: any = {

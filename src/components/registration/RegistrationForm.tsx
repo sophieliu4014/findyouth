@@ -21,9 +21,6 @@ interface RegistrationFormProps {
   setProfileImage: (file: File | null) => void;
   imageError: string | null;
   setImageError: (error: string | null) => void;
-  captchaToken: string | null;
-  captchaError: string | null;
-  handleCaptchaChange: (token: string | null) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   causeAreas: string[];
 }

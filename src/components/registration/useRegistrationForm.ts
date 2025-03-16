@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,8 +11,6 @@ export const useRegistrationForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [captchaError, setCaptchaError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -33,13 +32,7 @@ export const useRegistrationForm = () => {
   const resetForm = () => {
     form.reset();
     setProfileImage(null);
-    setCaptchaToken(null);
     setIsSuccess(false);
-  };
-
-  const handleCaptchaChange = (token: string | null) => {
-    setCaptchaToken(token);
-    setCaptchaError(null);
   };
 
   const handleSubmit = async (data: FormValues) => {
@@ -143,9 +136,6 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
-    captchaToken,
-    captchaError,
-    handleCaptchaChange,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };
