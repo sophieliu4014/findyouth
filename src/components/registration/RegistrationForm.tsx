@@ -16,7 +16,7 @@ import { FormValues } from './RegistrationTypes';
 import { useForm } from 'react-hook-form';
 
 // reCAPTCHA site key
-const RECAPTCHA_SITE_KEY = "6LdzUOwqAAAAAG5kLUGk_Lpi94WcqvTDSDdm5fkE"; // Replace this with your new site key when ready
+const RECAPTCHA_SITE_KEY = "6LeIuPUqAAAAAN1K4DV9mMM5B-ViLLvqsuQOqYN0"; // Replace this with your new site key when ready
 
 interface RegistrationFormProps {
   form: ReturnType<typeof useForm<FormValues>>;
@@ -68,7 +68,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             </p>
             <ReCAPTCHA
               sitekey={RECAPTCHA_SITE_KEY}
-              onChange={handleCaptchaChange}
+            onChange={handleCaptchaChange}
             />
             {captchaError && (
               <p className="mt-1 text-sm text-opacity-50 text-gray-500">
