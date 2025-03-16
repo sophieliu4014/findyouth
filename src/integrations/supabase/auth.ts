@@ -6,19 +6,11 @@ export type AuthUser = User | null;
 export type AuthSession = Session | null;
 
 // Sign up with email and password
-export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>, captchaToken?: string | null) => {
-  // We're no longer requiring the captcha token
-  console.log("Attempting signup " + (captchaToken ? "with captcha token" : "without captcha token"));
-  
-  // Create options object without captchaToken by default
+export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>) => {
+  // Create options object with user data
   const options: any = {
     data: userData
   };
-  
-  // Only add captchaToken to options if it exists
-  if (captchaToken) {
-    options.captchaToken = captchaToken;
-  }
   
   const { data, error } = await supabase.auth.signUp({
     email,

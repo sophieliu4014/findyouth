@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,16 +38,14 @@ export const useRegistrationForm = () => {
   };
 
   const handleCaptchaChange = (token: string | null) => {
-    console.log("Captcha token received:", token ? "Token received" : "No token");
     setCaptchaToken(token);
-    setCaptchaError(token ? null : "Please complete the captcha verification");
+    setCaptchaError(null);
   };
 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     console.log("Starting registration submission process");
     
-    // Check for required image
     if (!profileImage) {
       setImageError("Profile picture is required");
       setIsSubmitting(false);
@@ -56,19 +53,14 @@ export const useRegistrationForm = () => {
       return;
     }
     
-    // Note: We're no longer checking for captcha token
-    // It might be present if the user completes it, but we won't require it
-    
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
       
-      // Step 1: Sign up the user with Supabase Auth
       console.log("Step 1: Creating user account with Supabase Auth");
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
-        { organization_name: data.organizationName },
-        captchaToken // This is now optional in the auth.ts file
+        { organization_name: data.organizationName }
       );
       
       if (authError) {
@@ -83,11 +75,9 @@ export const useRegistrationForm = () => {
       
       console.log("User created successfully with ID:", authData.user.id);
       
-      // Step 2: Upload profile image with a unique identifier
       console.log("Step 2: Uploading profile image");
       let imageUrl;
       try {
-        // Use organization name and timestamp as a unique identifier
         const identifier = `${data.organizationName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
         imageUrl = await uploadProfileImage(profileImage, identifier);
         
@@ -106,7 +96,6 @@ export const useRegistrationForm = () => {
         throw new Error("Failed to upload profile image: " + (imageUploadError.message || "Unknown error"));
       }
       
-      // Step 3: Create nonprofit profile
       console.log("Step 3: Creating nonprofit profile");
       const { nonprofit, error: profileError } = await createNonprofitProfile({
         organizationName: data.organizationName,
@@ -128,7 +117,6 @@ export const useRegistrationForm = () => {
       
       console.log("Nonprofit profile created successfully:", nonprofit);
       
-      // Success
       setIsSuccess(true);
       toast({
         title: "Registration submitted",

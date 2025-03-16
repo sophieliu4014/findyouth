@@ -3,7 +3,6 @@ import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 // Import form components
 import OrganizationInfoFields from './OrganizationInfoFields';
@@ -14,9 +13,6 @@ import ProfileImageUpload from './ProfileImageUpload';
 // Import types
 import { FormValues } from './RegistrationTypes';
 import { useForm } from 'react-hook-form';
-
-// reCAPTCHA site key
-const RECAPTCHA_SITE_KEY = "6LeIuPUqAAAAAN1K4DV9mMM5B-ViLLvqsuQOqYN0"; // Replace this with your new site key when ready
 
 interface RegistrationFormProps {
   form: ReturnType<typeof useForm<FormValues>>;
@@ -39,9 +35,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   setProfileImage,
   imageError,
   setImageError,
-  captchaToken,
-  captchaError,
-  handleCaptchaChange,
   onSubmit,
   causeAreas
 }) => {
@@ -60,10 +53,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             setImageError={setImageError}
             imageError={imageError}
           />
-          
-          <div className="mt-6">
-          
-          </div>
           
           <div className="pt-4">
             <Button 
@@ -88,19 +77,3 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 };
 
 export default RegistrationForm;
-
- /*
-            <p className="text-sm text-youth-charcoal mb-2">
-                <span className="opacity-50">CAPTCHA verification temporarily disabled - </span>
-                You can skip this step:
-              </p>
-              <ReCAPTCHA
-                sitekey={RECAPTCHA_SITE_KEY}
-              onChange={handleCaptchaChange}
-              />
-              {captchaError && (
-                <p className="mt-1 text-sm text-opacity-50 text-gray-500">
-                  CAPTCHA verification is currently optional
-                </p>
-              )}
-            */
