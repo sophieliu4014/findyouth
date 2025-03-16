@@ -15,6 +15,9 @@ import ProfileImageUpload from './ProfileImageUpload';
 import { FormValues } from './RegistrationTypes';
 import { useForm } from 'react-hook-form';
 
+// reCAPTCHA site key
+const RECAPTCHA_SITE_KEY = "6LdzUOwqAAAAAG5kLUGk_Lpi94WcqvTDSDdm5fkE"; // Replace this with your new site key when ready
+
 interface RegistrationFormProps {
   form: ReturnType<typeof useForm<FormValues>>;
   isSubmitting: boolean;
@@ -64,7 +67,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               You can skip this step:
             </p>
             <ReCAPTCHA
-              sitekey="6LdzUOwqAAAAAG5kLUGk_Lpi94WcqvTDSDdm5fkE"
+              sitekey={RECAPTCHA_SITE_KEY}
               onChange={handleCaptchaChange}
             />
             {captchaError && (
