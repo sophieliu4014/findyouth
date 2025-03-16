@@ -56,15 +56,8 @@ export const useRegistrationForm = () => {
       return;
     }
     
-    // Check if captcha is verified
-    if (!captchaToken) {
-      setCaptchaError("Please complete the captcha verification");
-      setIsSubmitting(false);
-      console.error("Captcha verification is required but not completed");
-      return;
-    }
-    
-    console.log("Captcha token before submission:", captchaToken ? "Token exists" : "No token");
+    // Note: We're no longer checking for captcha token
+    // It might be present if the user completes it, but we won't require it
     
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
@@ -75,7 +68,7 @@ export const useRegistrationForm = () => {
         data.email,
         data.password,
         { organization_name: data.organizationName },
-        captchaToken
+        captchaToken // This is now optional in the auth.ts file
       );
       
       if (authError) {

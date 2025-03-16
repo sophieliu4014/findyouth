@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 
@@ -8,22 +7,25 @@ export type AuthSession = Session | null;
 
 // Sign up with email and password
 export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>, captchaToken?: string | null) => {
-  // Check if captchaToken is provided
-  if (!captchaToken) {
-    console.error("Captcha token is required for signup");
-    return { data: null, error: { message: "Captcha verification required" } };
-  }
+  // We're no longer requiring the captcha token
+  console.log("Attempting signup " + (captchaToken ? "with captcha token" : "without captcha token"));
   
-  console.log("Attempting signup with captcha token:", captchaToken ? "Token exists" : "No token");
+  // Create options object without captchaToken by default
+  const options: any = {
+    data: userData
+  };
+  
+  // Only add captchaToken to options if it exists
+  if (captchaToken) {
+    options.captchaToken = captchaToken;
+  }
   
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      data: userData,
-      captchaToken: captchaToken // Add the captcha token to the request
-    }
+    options: options
   });
+  
   return { data, error };
 };
 

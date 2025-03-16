@@ -59,13 +59,18 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           />
           
           <div className="mt-6">
-            <p className="text-sm text-youth-charcoal mb-2">Please verify that you are human:</p>
+            <p className="text-sm text-youth-charcoal mb-2">
+              <span className="opacity-50">CAPTCHA verification temporarily disabled - </span>
+              You can skip this step:
+            </p>
             <ReCAPTCHA
               sitekey="6LdzUOwqAAAAAG5kLUGk_Lpi94WcqvTDSDdm5fkE"
               onChange={handleCaptchaChange}
             />
             {captchaError && (
-              <p className="mt-1 text-sm text-red-500">{captchaError}</p>
+              <p className="mt-1 text-sm text-opacity-50 text-gray-500">
+                CAPTCHA verification is currently optional
+              </p>
             )}
           </div>
           
@@ -73,7 +78,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             <Button 
               type="submit" 
               className="w-full btn-primary hover:scale-[1.02] transition-transform"
-              disabled={isSubmitting || !captchaToken}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
