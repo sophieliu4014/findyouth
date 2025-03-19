@@ -1,14 +1,116 @@
 
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
+import { toast } from "sonner";
 
 // Types for authentication
 export type AuthUser = User | null;
 export type AuthSession = Session | null;
 
+// Create nonprofit profile in the database
+export const createNonprofitProfile = async ({
+  organizationName,
+  email,
+  phone,
+  website,
+  socialMedia,
+  location,
+  description,
+  mission,
+  profileImageUrl,
+  causes
+}: {
+  organizationName: string;
+  email: string;
+  phone: string;
+  website?: string;
+  socialMedia: string;
+  location: string;
+  description: string;
+  mission: string;
+  profileImageUrl: string;
+  causes: string[];
+}) => {
+  try {
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error('No user found');
+
+    // Insert the nonprofit profile
+    const { data: nonprofit, error: profileError } = await supabase
+      .from('nonprofits')
+      .insert({
+        id: user.id,
+        organization_name: organizationName,
+        email,
+        phone,
+        website,
+        social_media: socialMedia,
+        location,
+        description,
+        mission,
+        profile_image_url: profileImageUrl
+      })
+      .select()
+      .single();
+
+    if (profileError) throw profileError;
+
+    // Get cause IDs
+    const { data: causeData, error: causesError } = await supabase
+      .from('causes')
+      .select('id, name')
+      .in('name', causes);
+
+    if (causesError) throw causesError;
+
+    // Insert nonprofit-cause relationships
+    if (causeData && causeData.length > 0) {
+      const causeRelations = causeData.map(cause => ({
+        nonprofit_id: user.id,
+        cause_id: cause.id
+      }));
+
+      const { error: relationError } = await supabase
+        .from('nonprofit_causes')
+        .insert(causeRelations);
+
+      if (relationError) throw relationError;
+    }
+
+    return { nonprofit, error: null };
+  } catch (error: any) {
+    console.error('Error creating nonprofit profile:', error);
+    return { nonprofit: null, error };
+  }
+};
+
+// Upload profile image to Supabase storage
+export const uploadProfileImage = async (file: File, identifier: string): Promise<string | null> => {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${identifier}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('profile-images')
+      .upload(filePath, file);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('profile-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading profile image:', error);
+    return null;
+  }
+};
+
 // Sign up with email and password
 export const signUpWithEmail = async (email: string, password: string, userData?: Record<string, any>) => {
-  // Create options object with user data
   const options: any = {
     data: userData
   };
@@ -16,8 +118,14 @@ export const signUpWithEmail = async (email: string, password: string, userData?
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: options
+    options
   });
+
+  if (error) {
+    toast.error(error.message);
+  } else {
+    toast.success("Registration successful! Please check your email to confirm your account.");
+  }
   
   return { data, error };
 };
@@ -28,12 +136,26 @@ export const signInWithEmail = async (email: string, password: string) => {
     email,
     password
   });
+
+  if (error) {
+    toast.error(error.message);
+  } else {
+    toast.success("Successfully logged in!");
+  }
+
   return { data, error };
 };
 
 // Sign out
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut();
+  
+  if (error) {
+    toast.error(error.message);
+  } else {
+    toast.success("Successfully logged out!");
+  }
+  
   return { error };
 };
 
