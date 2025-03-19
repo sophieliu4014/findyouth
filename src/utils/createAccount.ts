@@ -1,5 +1,5 @@
 
-import { createUserAccount } from '@/integrations/supabase/auth';
+import { signUpWithEmail } from '@/integrations/supabase/auth';
 
 // This function should only be used in development for testing purposes
 export const createTestAccount = async () => {
@@ -7,7 +7,7 @@ export const createTestAccount = async () => {
   const password = "@Sophie2008";
   
   try {
-    const result = await createUserAccount(email, password);
+    const result = await signUpWithEmail(email, password);
     console.log('Account creation result:', result);
     return result;
   } catch (error) {
