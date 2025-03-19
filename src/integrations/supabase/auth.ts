@@ -94,8 +94,8 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     
     console.log(`Uploading file to bucket 'profile-images', path: ${filePath}`);
     
-    // Direct upload approach - the bucket exists from our SQL but the check is failing
-    const { error: uploadError } = await supabase.storage
+    // Try the upload without checking for bucket existence first
+    const { data, error: uploadError } = await supabase.storage
       .from('profile-images')
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -106,6 +106,8 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
       console.error('Upload error:', uploadError);
       throw uploadError;
     }
+
+    console.log('Upload successful, data:', data);
 
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
@@ -120,6 +122,7 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     return publicUrl;
   } catch (error: any) {
     console.error('Error uploading profile image:', error);
+    toast.error(`Failed to upload image: ${error.message}`);
     throw new Error(`Failed to upload profile image: ${error.message}`);
   }
 };
