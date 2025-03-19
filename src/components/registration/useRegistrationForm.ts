@@ -37,6 +37,7 @@ export const useRegistrationForm = () => {
 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+    setImageError(null);
     console.log("Starting registration submission process");
     
     if (!profileImage) {
@@ -86,7 +87,7 @@ export const useRegistrationForm = () => {
           description: imageUploadError.message || "Failed to upload profile image",
           variant: "destructive",
         });
-        throw new Error("Failed to upload profile image: " + (imageUploadError.message || "Unknown error"));
+        throw imageUploadError;
       }
       
       console.log("Step 3: Creating nonprofit profile");
