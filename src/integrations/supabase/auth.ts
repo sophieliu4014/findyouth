@@ -9,6 +9,7 @@ export type AuthSession = Session | null;
 
 // Create nonprofit profile in the database
 export const createNonprofitProfile = async ({
+  userId,
   organizationName,
   email,
   phone,
@@ -20,6 +21,7 @@ export const createNonprofitProfile = async ({
   profileImageUrl,
   causes
 }: {
+  userId: string;
   organizationName: string;
   email: string;
   phone: string;
@@ -32,16 +34,11 @@ export const createNonprofitProfile = async ({
   causes: string[];
 }) => {
   try {
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!user) throw new Error('No user found');
-
     // Insert the nonprofit profile
     const { data: nonprofit, error: profileError } = await supabase
       .from('nonprofits')
       .insert({
-        id: user.id,
+        id: userId,
         organization_name: organizationName,
         email,
         phone,
@@ -68,7 +65,7 @@ export const createNonprofitProfile = async ({
     // Insert nonprofit-cause relationships
     if (causeData && causeData.length > 0) {
       const causeRelations = causeData.map(cause => ({
-        nonprofit_id: user.id,
+        nonprofit_id: userId,
         cause_id: cause.id
       }));
 
@@ -83,6 +80,72 @@ export const createNonprofitProfile = async ({
   } catch (error: any) {
     console.error('Error creating nonprofit profile:', error);
     return { nonprofit: null, error };
+  }
+};
+
+// Check if user has a nonprofit profile and create one if needed
+export const ensureNonprofitProfile = async (): Promise<boolean> => {
+  try {
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) {
+      console.log("No authenticated user found");
+      return false;
+    }
+
+    // Check if nonprofit profile exists
+    const { data: existingProfile, error: profileError } = await supabase
+      .from('nonprofits')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      throw profileError;
+    }
+
+    // If profile exists, nothing to do
+    if (existingProfile) {
+      console.log("Nonprofit profile already exists");
+      return true;
+    }
+
+    // Extract stored data from user metadata
+    const metadata = user.user_metadata;
+    const organizationName = metadata?.organization_name;
+    const nonprofitData = metadata?.nonprofit_data;
+    
+    if (!organizationName || !nonprofitData) {
+      console.log("Missing required data in user metadata");
+      return false;
+    }
+
+    // Create the nonprofit profile
+    const { nonprofit, error } = await createNonprofitProfile({
+      userId: user.id,
+      organizationName,
+      email: user.email || '',
+      phone: nonprofitData.phone || '',
+      website: nonprofitData.website || '',
+      socialMedia: nonprofitData.socialMedia || '',
+      location: nonprofitData.location || '',
+      description: nonprofitData.description || '',
+      mission: nonprofitData.mission || '',
+      profileImageUrl: nonprofitData.profileImageUrl || '',
+      causes: nonprofitData.causes || []
+    });
+
+    if (error) {
+      toast.error("Failed to create nonprofit profile. Please contact support.");
+      return false;
+    }
+
+    toast.success("Your nonprofit profile has been created!");
+    return true;
+  } catch (error: any) {
+    console.error("Error ensuring nonprofit profile:", error);
+    return false;
   }
 };
 
@@ -159,6 +222,11 @@ export const signInWithEmail = async (email: string, password: string) => {
     toast.error(error.message);
   } else {
     toast.success("Successfully logged in!");
+    
+    // Try to create nonprofit profile if not exists
+    ensureNonprofitProfile().catch(err => {
+      console.error("Failed to ensure nonprofit profile:", err);
+    });
   }
 
   return { data, error };

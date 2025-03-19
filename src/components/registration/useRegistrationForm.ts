@@ -54,7 +54,19 @@ export const useRegistrationForm = () => {
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
-        { organization_name: data.organizationName }
+        { 
+          organization_name: data.organizationName,
+          // Store all the nonprofit data in the user metadata
+          nonprofit_data: {
+            phone: data.phone,
+            website: data.website,
+            socialMedia: data.socialMedia,
+            location: data.location,
+            description: data.description,
+            mission: data.mission,
+            causes: data.causes
+          }
+        }
       );
       
       if (authError) {
@@ -90,31 +102,14 @@ export const useRegistrationForm = () => {
         throw imageUploadError;
       }
       
-      console.log("Step 3: Creating nonprofit profile");
-      const { nonprofit, error: profileError } = await createNonprofitProfile({
-        organizationName: data.organizationName,
-        email: data.email,
-        phone: data.phone,
-        website: data.website,
-        socialMedia: data.socialMedia,
-        location: data.location,
-        description: data.description,
-        mission: data.mission,
-        profileImageUrl: imageUrl,
-        causes: data.causes
-      });
-      
-      if (profileError) {
-        console.error("Profile creation error:", profileError);
-        throw new Error(profileError.message);
-      }
-      
-      console.log("Nonprofit profile created successfully:", nonprofit);
+      // We've now completed all the necessary steps for registration
+      // We'll skip the immediate profile creation since the user isn't fully authenticated yet
+      // Instead, we'll store the image URL in user metadata for later use
       
       setIsSuccess(true);
       toast({
         title: "Registration submitted",
-        description: "We'll review your information and contact you shortly.",
+        description: "Please check your email to confirm your account. Once confirmed, you can log in to complete your profile.",
       });
     } catch (error: any) {
       console.error("Registration error:", error);

@@ -1,25 +1,30 @@
 
 import React from 'react';
+import { CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface RegistrationSuccessProps {
   resetForm: () => void;
 }
 
-const RegistrationSuccess = ({ resetForm }: RegistrationSuccessProps) => {
+const RegistrationSuccess: React.FC<RegistrationSuccessProps> = ({ resetForm }) => {
   return (
-    <div className="glass-panel p-8 text-center mt-8">
-      <div className="w-16 h-16 bg-green-100 rounded-full mx-auto flex items-center justify-center mb-4">
-        <Check className="h-8 w-8 text-green-600" />
-      </div>
-      <h2 className="text-2xl font-bold text-youth-charcoal mb-4">Registration Submitted!</h2>
-      <p className="text-lg text-youth-charcoal/80 mb-6">
-        Thank you for registering your NGO with FindYOUth. Our team will review your information and reach out to you shortly to complete the verification process.
+    <div className="glass-panel p-8 mt-8 animate-fade-in text-center">
+      <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+      <h2 className="text-2xl font-bold text-youth-charcoal mb-2">Registration Successful!</h2>
+      <p className="text-youth-charcoal/80 mb-6">
+        Thank you for registering your organization with FindYOUth. 
+        Please check your email to confirm your account. Once confirmed, you can log in to complete your profile.
       </p>
-      <Button className="btn-primary" onClick={resetForm}>
-        Register Another Organization
-      </Button>
+      <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <Button onClick={resetForm} variant="outline" className="btn-secondary">
+          Register Another NGO
+        </Button>
+        <Button asChild className="btn-primary">
+          <Link to="/ngo-login">Go to Login</Link>
+        </Button>
+      </div>
     </div>
   );
 };
