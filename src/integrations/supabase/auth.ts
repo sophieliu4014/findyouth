@@ -1,3 +1,4 @@
+
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from "sonner";
@@ -93,23 +94,7 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     
     console.log(`Uploading file to bucket 'profile-images', path: ${filePath}`);
     
-    // First check if the bucket exists
-    const { data: buckets, error: bucketError } = await supabase
-      .storage
-      .listBuckets();
-      
-    if (bucketError) {
-      console.error('Error listing buckets:', bucketError);
-      throw new Error(`Failed to list buckets: ${bucketError.message}`);
-    }
-    
-    const bucketExists = buckets.some(bucket => bucket.name === 'profile-images');
-    if (!bucketExists) {
-      console.error('Bucket profile-images does not exist');
-      throw new Error('Storage bucket not configured. Please contact support.');
-    }
-    
-    // Upload the file
+    // Direct upload approach - the bucket exists from our SQL but the check is failing
     const { error: uploadError } = await supabase.storage
       .from('profile-images')
       .upload(filePath, file, {
@@ -126,6 +111,10 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     const { data: { publicUrl } } = supabase.storage
       .from('profile-images')
       .getPublicUrl(filePath);
+
+    if (!publicUrl) {
+      throw new Error('Failed to get public URL for uploaded image');
+    }
 
     console.log('File uploaded successfully, public URL:', publicUrl);
     return publicUrl;
