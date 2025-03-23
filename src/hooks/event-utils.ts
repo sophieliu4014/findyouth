@@ -1,11 +1,9 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Event, NONPROFIT_NAME_MAP, transformDatabaseEvents } from './event-types';
 
 // Check if the events table has a cause_area column
 export async function checkCauseAreaColumn(): Promise<boolean> {
   try {
-    // Using updated function that returns column_name and data_type
     const { data, error } = await supabase
       .rpc('get_columns_for_table', { table_name: 'events' });
       
@@ -13,7 +11,6 @@ export async function checkCauseAreaColumn(): Promise<boolean> {
       console.error("Error checking for columns:", error);
       return false;
     } else if (data && Array.isArray(data)) {
-      // Look for cause_area column in the returned data
       const hasCauseArea = data.some((col: { column_name: string, data_type: string }) => 
         col.column_name === 'cause_area'
       );
@@ -53,7 +50,7 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
   return Math.round(sum / reviewsData.length);
 }
 
-// Async function to fetch nonprofit data for an event
+// Async function to fetch nonprofit or user data for an event
 export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
   try {
     const { data: nonprofit } = await supabase
@@ -68,13 +65,25 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
         profileImage: nonprofit.profile_image_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
       };
     }
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', nonprofitId)
+      .single();
+      
+    if (profile) {
+      return {
+        name: profile.full_name || 'User',
+        profileImage: profile.avatar_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+      };
+    }
   } catch (error) {
-    console.error("Error fetching nonprofit data:", error);
+    console.error("Error fetching organization/user data:", error);
   }
   
-  // Return defaults if nonprofit not found
   return {
-    name: NONPROFIT_NAME_MAP[nonprofitId] || 'Unknown Organization',
+    name: NONPROFIT_NAME_MAP[nonprofitId] || 'User',
     profileImage: `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
   };
 }
@@ -86,10 +95,8 @@ export async function transformEventData(
   causeArea: string, 
   rating: number
 ): Promise<Event> {
-  // Fetch nonprofit data
   const { name: organizationName, profileImage } = await fetchNonprofitData(organizationId);
   
-  // Format date
   const formattedDate = formatEventDate(event.date);
 
   return {
