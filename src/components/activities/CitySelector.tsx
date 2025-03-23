@@ -1,4 +1,3 @@
-
 import { MapPin } from 'lucide-react';
 
 interface CitySelectorProps {

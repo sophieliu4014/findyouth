@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import CitySelector from './CitySelector';
 import FilterBar from '@/components/form/FilterBar';
 import { EventFilters } from '@/utils/eventFilters';
-import { useEventData } from '@/hooks'; // Updated import to use the hooks index
+import { useEventData } from '@/hooks';
 import ResultsList from './ResultsList';
 
 // Define available cities
@@ -14,7 +13,6 @@ const cities = [
   "Richmond",
   "Surrey",
   "North Vancouver",
-  "West Vancouver",
   "Coquitlam"
 ];
 
