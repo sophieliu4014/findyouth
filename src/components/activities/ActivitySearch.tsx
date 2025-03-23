@@ -118,7 +118,7 @@ const ActivitySearch = ({
               type="text"
               id="search"
               className="w-full p-2 border rounded-md"
-              placeholder="Search for activities..."
+              placeholder="Search for activities, locations, causes..."
               value={searchTerm}
               onChange={handleSearchChange}
             />

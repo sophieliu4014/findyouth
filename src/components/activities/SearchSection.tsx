@@ -31,7 +31,7 @@ const SearchSection = ({
           <div className="relative">
             <input
               type="text"
-              placeholder="Search for activities, organizations, or causes"
+              placeholder="Search for activities, causes, organizations, or locations"
               className="w-full px-6 py-4 rounded-full text-youth-charcoal bg-white shadow-lg focus:ring-2 focus:ring-youth-blue/50 focus:outline-none transition-all"
               value={keyword}
               onChange={(e) => onKeywordSearch(e.target.value)}

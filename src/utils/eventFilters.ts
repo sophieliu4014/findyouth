@@ -18,11 +18,13 @@ export const filterEvents = (events: Event[], filters: EventFilters = {
 }) => {
   let results = [...events];
   
-  // Apply keyword search
+  // Apply keyword search across all relevant fields
   if (filters.searchKeyword) {
     const lowerKeyword = filters.searchKeyword.toLowerCase();
     results = results.filter(event => 
       event.title.toLowerCase().includes(lowerKeyword) || 
+      (event.description || '').toLowerCase().includes(lowerKeyword) || 
+      (event.location || '').toLowerCase().includes(lowerKeyword) || 
       event.organization.toLowerCase().includes(lowerKeyword) ||
       event.causeArea.toLowerCase().includes(lowerKeyword)
     );
