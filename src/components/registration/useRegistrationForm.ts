@@ -50,38 +50,8 @@ export const useRegistrationForm = () => {
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
       
-      console.log("Step 1: Creating user account with Supabase Auth");
-      const { data: authData, error: authError } = await signUpWithEmail(
-        data.email,
-        data.password,
-        { 
-          organization_name: data.organizationName,
-          // Store all the nonprofit data in the user metadata
-          nonprofit_data: {
-            phone: data.phone,
-            website: data.website,
-            socialMedia: data.socialMedia,
-            location: data.location,
-            description: data.description,
-            mission: data.mission,
-            causes: data.causes
-          }
-        }
-      );
-      
-      if (authError) {
-        console.error("Auth error:", authError);
-        throw new Error(authError.message);
-      }
-      
-      if (!authData?.user?.id) {
-        console.error("No user ID returned from auth signup");
-        throw new Error("Failed to create user account - no user ID returned");
-      }
-      
-      console.log("User created successfully with ID:", authData.user.id);
-      
-      console.log("Step 2: Uploading profile image");
+      // Upload the profile image first
+      console.log("Step 1: Uploading profile image");
       let imageUrl;
       try {
         const identifier = `${data.organizationName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
@@ -101,6 +71,38 @@ export const useRegistrationForm = () => {
         });
         throw imageUploadError;
       }
+      
+      console.log("Step 2: Creating user account with Supabase Auth");
+      const { data: authData, error: authError } = await signUpWithEmail(
+        data.email,
+        data.password,
+        { 
+          organization_name: data.organizationName,
+          // Store all the nonprofit data in the user metadata
+          nonprofit_data: {
+            phone: data.phone,
+            website: data.website,
+            socialMedia: data.socialMedia,
+            location: data.location,
+            description: data.description,
+            mission: data.mission,
+            causes: data.causes,
+            profileImageUrl: imageUrl  // Store the profile image URL in user metadata
+          }
+        }
+      );
+      
+      if (authError) {
+        console.error("Auth error:", authError);
+        throw new Error(authError.message);
+      }
+      
+      if (!authData?.user?.id) {
+        console.error("No user ID returned from auth signup");
+        throw new Error("Failed to create user account - no user ID returned");
+      }
+      
+      console.log("User created successfully with ID:", authData.user.id);
       
       // We've now completed all the necessary steps for registration
       // We'll skip the immediate profile creation since the user isn't fully authenticated yet

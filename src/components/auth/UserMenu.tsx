@@ -6,6 +6,7 @@ import { useAuthStore } from '@/lib/auth';
 import { signOut } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +42,12 @@ const UserMenu = () => {
       </div>
     );
   }
+
+  // Get profile image URL from user metadata
+  const profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl;
+  const initials = user?.user_metadata?.organization_name?.charAt(0).toUpperCase() || 
+                  user?.email?.charAt(0).toUpperCase() || 
+                  'U';
   
   return (
     <div className="relative" ref={menuRef}>
@@ -49,15 +56,20 @@ const UserMenu = () => {
         className="flex items-center p-2 rounded-full hover:bg-youth-blue/10"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="w-8 h-8 bg-youth-blue rounded-full flex items-center justify-center text-white">
-          {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
-        </div>
+        <Avatar className="h-8 w-8">
+          {profileImageUrl ? (
+            <AvatarImage src={profileImageUrl} alt="Profile" />
+          ) : null}
+          <AvatarFallback className="bg-youth-blue text-white">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
       </Button>
       
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
           <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-sm font-medium truncate">{user?.user_metadata?.full_name || user?.email}</p>
+            <p className="text-sm font-medium truncate">{user?.user_metadata?.organization_name || user?.email}</p>
             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
           </div>
           
