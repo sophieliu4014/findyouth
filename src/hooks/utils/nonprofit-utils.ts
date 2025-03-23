@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { generateFallbackImageUrl } from './image-utils';
 import { NONPROFIT_NAME_MAP } from '../types/event-types';
@@ -18,7 +19,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
         profileImage: nonprofitData.profile_image_url || await getProfileImageFromStorage(nonprofitId),
         description: nonprofitData.description,
         location: nonprofitData.location,
-        bannerImageUrl: nonprofitData.banner_image_url || null // Added banner image URL
+        bannerImageUrl: nonprofitData.banner_image_url || null // Use banner_image_url property if it exists
       };
     }
     
