@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -32,6 +33,7 @@ const EventCard = ({
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [profileImageError, setProfileImageError] = useState(false);
   const { toast } = useToast();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
@@ -41,7 +43,6 @@ const EventCard = ({
     title, 
     organization, 
     organizationId, 
-    imageUrl, 
     profileImage 
   });
 
@@ -87,34 +88,14 @@ const EventCard = ({
     navigate(`/cause/${encodeURIComponent(causeArea)}`);
   };
 
+  const handleProfileImageError = () => {
+    console.log(`Profile image error for ${organization}`);
+    setProfileImageError(true);
+  };
+
   const getOrgInitial = () => {
     return organization ? organization.charAt(0).toUpperCase() : '?';
   };
-  
-  const getProfileImageUrl = () => {
-    if (!profileImage) {
-      console.log(`Profile image for ${organization} is null or undefined`);
-      return undefined;
-    }
-    
-    if (typeof profileImage !== 'string') {
-      console.log(`Profile image for ${organization} is not a string:`, profileImage);
-      return undefined;
-    }
-    
-    if (profileImage.startsWith('http://') || 
-        profileImage.startsWith('https://') || 
-        profileImage.includes('supabase.co/storage/v1/object/public/')) {
-      return profileImage;
-    }
-    
-    console.log(`Profile image for ${organization} is not a valid URL:`, profileImage);
-    return undefined;
-  };
-
-  console.log('Profile image for', organization, ':', profileImage, 
-              'Type:', typeof profileImage, 
-              'Valid URL:', getProfileImageUrl() ? 'Yes' : 'No');
 
   return (
     <div 
@@ -127,13 +108,17 @@ const EventCard = ({
           className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
           onClick={handleOrganizationClick}
         >
-          <AvatarImage 
-            src={getProfileImageUrl()} 
-            alt={organization}
-          />
-          <AvatarFallback className="bg-youth-blue/10 text-youth-blue font-bold text-xl">
-            {getOrgInitial()}
-          </AvatarFallback>
+          {profileImage && !profileImageError ? (
+            <AvatarImage 
+              src={profileImage}
+              alt={organization}
+              onError={handleProfileImageError}
+            />
+          ) : (
+            <AvatarFallback className="bg-youth-blue/10 text-youth-blue font-bold text-xl">
+              {getOrgInitial()}
+            </AvatarFallback>
+          )}
         </Avatar>
         
         <div className="flex-1">

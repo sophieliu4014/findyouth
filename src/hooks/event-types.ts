@@ -54,6 +54,31 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   }
 }
 
+// Check if a profile image exists in storage and get its URL
+async function getProfileImageFromStorage(nonprofitId: string): Promise<string | null> {
+  try {
+    // Common image extensions to check
+    const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+    
+    for (const ext of extensions) {
+      const { data, error } = await supabase
+        .storage
+        .from('profile-images')
+        .getPublicUrl(`${nonprofitId}.${ext}`);
+        
+      if (!error && data && data.publicUrl) {
+        console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
+        return data.publicUrl;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error getting profile image from storage:", error);
+    return null;
+  }
+}
+
 // Generate a deterministic fallback image URL
 function generateFallbackImageUrl(id: string): string {
   const idValue = id.slice(-6).replace(/\D/g, '');
@@ -87,13 +112,24 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     } else if (nonprofits && nonprofits.length > 0) {
       console.log('Fetched nonprofits data:', nonprofits);
       
-      // Populate the nonprofit map with direct access to profile_image_url
-      nonprofits.forEach(nonprofit => {
+      // Process nonprofit data and check for valid profile images
+      for (const nonprofit of nonprofits) {
+        let profileImage = nonprofit.profile_image_url;
+        
+        // If profile_image_url isn't valid, try to get from storage
+        if (!isValidImageUrl(profileImage)) {
+          const storageUrl = await getProfileImageFromStorage(nonprofit.id);
+          if (storageUrl) {
+            profileImage = storageUrl;
+            console.log(`Using storage URL for ${nonprofit.organization_name}: ${profileImage}`);
+          }
+        }
+        
         nonprofitMap.set(nonprofit.id, {
           name: nonprofit.organization_name,
-          profileImage: nonprofit.profile_image_url || null
+          profileImage: profileImage
         });
-      });
+      }
     } else {
       console.log('No nonprofits found in database, will check user profiles');
     }
@@ -125,11 +161,34 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
             ? currentUser.user.user_metadata.organization_name
             : (profile.full_name || 'User');
           
-          // Use avatar_url directly without validity check first
+          // Check if avatar_url is valid
+          let profileImage = profile.avatar_url;
+          
+          if (!isValidImageUrl(profileImage)) {
+            const storageUrl = await getProfileImageFromStorage(profile.id);
+            if (storageUrl) {
+              profileImage = storageUrl;
+              console.log(`Using storage URL for ${organizationName}: ${profileImage}`);
+            }
+          }
+          
           nonprofitMap.set(profile.id, {
             name: organizationName,
-            profileImage: profile.avatar_url || null
+            profileImage: profileImage
           });
+        }
+      }
+      
+      // For any remaining missing IDs, try storage directly
+      const stillMissingIds = missingIds.filter(id => !nonprofitMap.has(id));
+      for (const id of stillMissingIds) {
+        const storageUrl = await getProfileImageFromStorage(id);
+        if (storageUrl) {
+          nonprofitMap.set(id, {
+            name: NONPROFIT_NAME_MAP[id] || 'User',
+            profileImage: storageUrl
+          });
+          console.log(`Found image in storage for ID ${id}: ${storageUrl}`);
         }
       }
     }
@@ -159,16 +218,17 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     // Log before validation
     console.log(`Raw profile image from DB for ${organizationName}:`, profileImage);
     
-    // Validate the profileImage URL
-    if (profileImage && !isValidImageUrl(profileImage)) {
-      console.log(`Invalid profile image URL for ${organizationName}, will use fallback`);
-      profileImage = null;
-    }
-    
-    // If still no valid profileImage, use fallback
-    if (!profileImage) {
-      profileImage = generateFallbackImageUrl(event.nonprofit_id);
-      console.log(`Using fallback profile image for ${organizationName}:`, profileImage);
+    // If no valid profileImage from the map, try to get from storage directly
+    if (!profileImage || !isValidImageUrl(profileImage)) {
+      const storageUrl = await getProfileImageFromStorage(event.nonprofit_id);
+      if (storageUrl) {
+        profileImage = storageUrl;
+        console.log(`Using storage URL for ${organizationName}: ${profileImage}`);
+      } else {
+        // If still no valid profileImage, use fallback
+        profileImage = generateFallbackImageUrl(event.nonprofit_id);
+        console.log(`Using fallback profile image for ${organizationName}:`, profileImage);
+      }
     } else {
       console.log(`Using valid profile image for ${organizationName}:`, profileImage);
     }

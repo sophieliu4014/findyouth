@@ -65,6 +65,32 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   }
 }
 
+// Check if a profile image exists in storage
+async function checkProfileImageInStorage(nonprofitId: string): Promise<string | null> {
+  try {
+    // Common image extensions to check
+    const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+    
+    for (const ext of extensions) {
+      const { data, error } = await supabase
+        .storage
+        .from('profile-images')
+        .getPublicUrl(`${nonprofitId}.${ext}`);
+        
+      if (!error && data && data.publicUrl) {
+        console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
+        return data.publicUrl;
+      }
+    }
+    
+    console.log(`No profile image found in storage for ${nonprofitId}`);
+    return null;
+  } catch (error) {
+    console.error("Error checking profile image in storage:", error);
+    return null;
+  }
+}
+
 // Improved function to fetch nonprofit or user data for an event
 export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
   try {
@@ -91,6 +117,15 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
           profileImage: nonprofit.profile_image_url
         };
       } else {
+        // Try to get the image from storage
+        const storageUrl = await checkProfileImageInStorage(nonprofitId);
+        if (storageUrl) {
+          return {
+            name: nonprofit.organization_name,
+            profileImage: storageUrl
+          };
+        }
+        
         console.log(`Found nonprofit ${nonprofit.organization_name}, but image URL is invalid or missing`);
         return {
           name: nonprofit.organization_name,
@@ -122,15 +157,31 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       
       console.log(`Found profile for ${organizationName}, avatar: ${profile.avatar_url}`);
       
-      // Directly access the avatar_url without checking for validity first
-      if (profile.avatar_url) {
+      // Check if avatar_url is valid
+      if (profile.avatar_url && isValidImageUrl(profile.avatar_url)) {
         return {
           name: organizationName,
           profileImage: profile.avatar_url
         };
       } else {
-        console.log(`Avatar URL missing for ${organizationName}, using fallback`);
+        // Try to get the image from storage
+        const storageUrl = await checkProfileImageInStorage(nonprofitId);
+        if (storageUrl) {
+          return {
+            name: organizationName,
+            profileImage: storageUrl
+          };
+        }
       }
+    }
+    
+    // Try to get the image directly from storage as a last resort
+    const storageUrl = await checkProfileImageInStorage(nonprofitId);
+    if (storageUrl) {
+      return {
+        name: NONPROFIT_NAME_MAP[nonprofitId] || 'User',
+        profileImage: storageUrl
+      };
     }
   } catch (error) {
     console.error("Error fetching organization/user data:", error);
