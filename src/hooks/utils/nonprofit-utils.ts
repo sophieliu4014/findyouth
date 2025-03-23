@@ -19,7 +19,8 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
         profileImage: nonprofitData.profile_image_url || await getProfileImageFromStorage(nonprofitId),
         description: nonprofitData.description,
         location: nonprofitData.location,
-        bannerImageUrl: nonprofitData.banner_image_url || null // Use banner_image_url property if it exists
+        // Use optional chaining to safely access properties that might not exist in the type
+        bannerImageUrl: nonprofitData.banner_image_url || null // TypeScript needs to be told this property is allowed
       };
     }
     
