@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Define the event type that maps to our database
@@ -76,7 +77,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       console.log('No nonprofits found in database, will check user profiles');
     }
     
-    // For any IDs not found in nonprofits table, fetch from auth.users and profiles
+    // For any IDs not found in nonprofits table, fetch from profiles
     const missingIds = nonprofitIds.filter(id => !nonprofitMap.has(id));
     
     if (missingIds.length > 0) {
@@ -93,23 +94,20 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       } else if (profiles && profiles.length > 0) {
         console.log('Fetched user profiles:', profiles);
         
-        // For each profile, try to get the organization_name from user metadata
+        // Get the current user's metadata to check for organization_name
+        const { data: currentUser } = await supabase.auth.getUser();
+        
+        // For each profile, try to use current user's metadata if IDs match
         for (const profile of profiles) {
-          try {
-            const { data: user } = await supabase.auth.admin.getUserById(profile.id);
-            const organizationName = user?.user?.user_metadata?.organization_name || profile.full_name || 'User';
-            
-            nonprofitMap.set(profile.id, {
-              name: organizationName,
-              profileImage: profile.avatar_url
-            });
-          } catch (error) {
-            console.error(`Error fetching user metadata for ${profile.id}:`, error);
-            nonprofitMap.set(profile.id, {
-              name: profile.full_name || 'User',
-              profileImage: profile.avatar_url
-            });
-          }
+          const isCurrentUser = currentUser?.user?.id === profile.id;
+          const organizationName = isCurrentUser && currentUser?.user?.user_metadata?.organization_name
+            ? currentUser.user.user_metadata.organization_name
+            : (profile.full_name || 'User');
+          
+          nonprofitMap.set(profile.id, {
+            name: organizationName,
+            profileImage: profile.avatar_url
+          });
         }
       }
     }
@@ -120,7 +118,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
   console.log('Nonprofit/Profile map has entries:', nonprofitMap.size);
   
   // Transform each event with nonprofit/user data and better fallback handling
-  return dbEvents.map(event => {
+  return await Promise.all(dbEvents.map(async event => {
     // Get organization data from our map, or use fallbacks
     const organization = nonprofitMap.get(event.nonprofit_id);
     
@@ -133,11 +131,12 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
                           NONPROFIT_NAME_MAP[event.nonprofit_id] || 
                           'User';
                           
-    // For profile image, use a more distinctive fallback pattern
+    // For profile image, use a more consistent fallback pattern
     let profileImage = organization?.profileImage;
     if (!profileImage) {
       // Use a deterministic fallback based on ID
-      const idNumber = parseInt(event.nonprofit_id.replace(/\D/g, '').slice(-6), 10) % 100 || 42;
+      const idValue = event.nonprofit_id.slice(-6).replace(/\D/g, '');
+      const idNumber = idValue ? (parseInt(idValue, 10) % 100) : 42;
       profileImage = `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
     }
     
@@ -155,5 +154,5 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       createdAt: event.created_at || undefined,
       profileImage: profileImage
     };
-  });
+  }));
 };

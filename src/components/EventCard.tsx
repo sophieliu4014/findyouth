@@ -94,6 +94,16 @@ const EventCard = ({
   const getOrgInitial = () => {
     return organization ? organization.charAt(0).toUpperCase() : '?';
   };
+  
+  // Safely handle the profile image URL
+  const getProfileImageUrl = () => {
+    // Check if it's a valid URL string
+    if (typeof profileImage === 'string' && profileImage.startsWith('http')) {
+      return profileImage;
+    }
+    // Return undefined so the Avatar component shows the fallback
+    return undefined;
+  };
 
   return (
     <div 
@@ -108,8 +118,8 @@ const EventCard = ({
           onClick={handleOrganizationClick}
         >
           <AvatarImage 
-            src={profileImage} 
-            alt={organization} 
+            src={getProfileImageUrl()} 
+            alt={organization}
           />
           <AvatarFallback className="bg-youth-blue/10 text-youth-blue font-bold text-xl">
             {getOrgInitial()}
@@ -156,7 +166,7 @@ const EventCard = ({
       </div>
       
       {/* Optional event image */}
-      {imageUrl && (
+      {imageUrl && typeof imageUrl === 'string' && (
         <div className="mt-4 h-48 w-full overflow-hidden rounded-lg">
           <img 
             src={imageUrl} 
@@ -185,6 +195,6 @@ const EventCard = ({
       </div>
     </div>
   );
-};
+}
 
 export default EventCard;
