@@ -251,7 +251,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     const fileExt = file.name.split('.').pop();
     const filePath = `${actualIdentifier}.${fileExt}`;
     
-    console.log(`Uploading banner file to bucket 'banner-images', path: ${filePath}`);
+    console.log(`Uploading banner file to storage bucket 'banner-images', path: ${filePath}`);
     
     // Upload the file to the banner-images bucket
     const { data, error: uploadError } = await supabase.storage
@@ -283,6 +283,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     return publicUrl.split('?')[0]; // Return clean URL
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
+    toast.error(`Failed to upload banner image: ${error.message}`);
     throw new Error(`Failed to upload banner image: ${error.message}`);
   }
 };

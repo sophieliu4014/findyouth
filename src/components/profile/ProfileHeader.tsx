@@ -99,19 +99,23 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
+      console.log("Starting save profile process");
       
       let profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl || '';
       let bannerImageUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl || '';
       
       if (profileImage) {
+        console.log("Uploading profile image");
         const identifier = user?.id || Date.now().toString();
         const newImageUrl = await uploadProfileImage(profileImage, identifier);
         if (newImageUrl) {
           profileImageUrl = newImageUrl;
+          console.log('Profile image uploaded successfully to:', newImageUrl);
         }
       }
       
       if (bannerImage) {
+        console.log("Uploading banner image, file:", bannerImage.name, "Size:", bannerImage.size);
         const identifier = user?.id || Date.now().toString();
         // Always use banner- prefix for consistency
         const newBannerUrl = await uploadBannerImage(bannerImage, `banner-${identifier}`);
@@ -121,10 +125,15 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
           // Force refresh by updating the preview with cache busting
           const cacheBustUrl = `${newBannerUrl}?t=${Date.now()}`;
           setBannerImagePreview(cacheBustUrl);
+        } else {
+          console.error("Failed to get banner URL after upload");
         }
+      } else {
+        console.log("No banner image to upload");
       }
       
-      const { error } = await supabase.auth.updateUser({
+      console.log("Updating user metadata with image URLs:", { profileImageUrl, bannerImageUrl });
+      const { data, error } = await supabase.auth.updateUser({
         data: {
           nonprofit_data: {
             ...user?.user_metadata?.nonprofit_data,
@@ -134,9 +143,15 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error updating user metadata:", error);
+        throw error;
+      }
+      
+      console.log("User metadata updated successfully:", data);
       
       if (user?.id) {
+        console.log("Updating nonprofit database record");
         const { error: nonprofitError } = await supabase
           .from('nonprofits')
           .update({
@@ -166,8 +181,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
     }
   };
 
-  // Determine if a standalone save button should be shown
-  const showStandaloneSaveButton = profileImage && !bannerImage;
+  // Determine if a save button should be shown
+  const showSaveButton = profileImage !== null || bannerImage !== null;
 
   return (
     <>
@@ -182,7 +197,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
               src={bannerImagePreview} 
               alt="Banner" 
               className="w-full h-full object-cover"
-              key={bannerImagePreview}
+              key={`banner-preview-${previewKey}`}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-youth-blue/5 via-youth-purple/5 to-youth-blue/5">
@@ -214,7 +229,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
             email={user?.email}
           />
           
-          {showStandaloneSaveButton && (
+          {showSaveButton && !bannerImage && (
             <Button 
               onClick={handleSaveProfile}
               className="mt-4 bg-youth-blue hover:bg-youth-purple transition-colors"

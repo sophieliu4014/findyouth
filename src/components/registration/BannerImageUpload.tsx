@@ -28,8 +28,11 @@ const BannerImageUpload = ({
 
   // Update local preview when existingBannerUrl changes
   useEffect(() => {
-    setImagePreview(existingBannerUrl || null);
-  }, [existingBannerUrl]);
+    if (existingBannerUrl && existingBannerUrl !== imagePreview) {
+      console.log("BannerImageUpload: Updating preview from existingBannerUrl:", existingBannerUrl);
+      setImagePreview(existingBannerUrl);
+    }
+  }, [existingBannerUrl, imagePreview]);
 
   // Banner dimensions
   const BANNER_WIDTH = 1200;
