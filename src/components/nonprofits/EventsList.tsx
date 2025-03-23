@@ -2,7 +2,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import EventCard from '../EventCard';
-import { Event } from '@/hooks/event-types';
+import { Event } from '@/hooks/types/event-types';
 
 interface EventsListProps {
   title: string;

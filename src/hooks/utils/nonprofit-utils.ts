@@ -13,10 +13,10 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       .from('nonprofits')
       .select('organization_name, profile_image_url')
       .eq('id', nonprofitId)
-      .single();
+      .maybeSingle();
     
     if (nonprofitError) {
-      console.log(`No nonprofit found with ID ${nonprofitId}, error:`, nonprofitError);
+      console.log(`Error fetching nonprofit with ID ${nonprofitId}:`, nonprofitError);
     }
     
     if (nonprofit) {
@@ -51,15 +51,14 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       .from('profiles')
       .select('full_name, avatar_url')
       .eq('id', nonprofitId)
-      .single();
+      .maybeSingle();
       
     if (profileError) {
-      console.log(`No profile found with ID ${nonprofitId}, error:`, profileError);
+      console.log(`Error fetching profile with ID ${nonprofitId}:`, profileError);
     }
       
     if (profile) {
-      // No longer relying on user metadata for non-current users
-      // Instead, use the full_name from profiles or a fallback name
+      // Use the full_name from profiles or a fallback name
       const organizationName = profile.full_name || NONPROFIT_NAME_MAP[nonprofitId] || 'Organization';
       
       console.log(`Found profile for ${organizationName}, avatar: ${profile.avatar_url}`);
