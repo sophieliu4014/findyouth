@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -72,7 +73,7 @@ const EventForm = ({ userId }: EventFormProps) => {
 
       console.log('Creating event with payload:', eventPayload);
 
-      // Insert event into database
+      // Insert event into database first without the image
       const { data: createdEvent, error } = await supabase
         .from('events')
         .insert(eventPayload)
@@ -85,44 +86,58 @@ const EventForm = ({ userId }: EventFormProps) => {
 
       // Upload image if selected
       if (eventImage && createdEvent) {
-        const fileExt = eventImage.name.split('.').pop();
-        const filePath = `event-images/${createdEvent.id}.${fileExt}`;
-        
-        console.log('Uploading image to path:', filePath);
-        
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('event-images') 
-          .upload(filePath, eventImage, {
-            upsert: true,
-          });
-
-        if (uploadError) {
-          console.error('Error uploading image:', uploadError);
-          throw uploadError;
-        }
-
-        console.log('Image uploaded successfully:', uploadData);
-
-        // Get public URL
-        const { data: urlData } = supabase.storage
-          .from('event-images')
-          .getPublicUrl(filePath);
-
-        console.log('Image public URL:', urlData);
-
-        // Update event with image URL
-        if (urlData) {
-          const { error: updateError } = await supabase
-            .from('events')
-            .update({ image_url: urlData.publicUrl })
-            .eq('id', createdEvent.id);
-
-          if (updateError) {
-            console.error('Error updating event with image URL:', updateError);
-            throw updateError;
-          }
+        try {
+          const fileExt = eventImage.name.split('.').pop();
+          const filePath = `event-images/${createdEvent.id}.${fileExt}`;
           
-          console.log('Event updated with image URL:', urlData.publicUrl);
+          console.log('Uploading image to path:', filePath);
+          
+          // Check if bucket exists
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const eventImagesBucketExists = buckets?.some(bucket => bucket.name === 'event-images');
+          
+          if (!eventImagesBucketExists) {
+            console.log('event-images bucket does not exist, skipping image upload');
+            // Don't throw an error, just skip the image upload
+          } else {
+            const { error: uploadError, data: uploadData } = await supabase.storage
+              .from('event-images') 
+              .upload(filePath, eventImage, {
+                upsert: true,
+              });
+
+            if (uploadError) {
+              console.error('Error uploading image:', uploadError);
+              // Don't throw error, just log it and continue without the image
+            } else {
+              console.log('Image uploaded successfully:', uploadData);
+
+              // Get public URL
+              const { data: urlData } = supabase.storage
+                .from('event-images')
+                .getPublicUrl(filePath);
+
+              console.log('Image public URL:', urlData);
+
+              // Update event with image URL
+              if (urlData) {
+                const { error: updateError } = await supabase
+                  .from('events')
+                  .update({ image_url: urlData.publicUrl })
+                  .eq('id', createdEvent.id);
+
+                if (updateError) {
+                  console.error('Error updating event with image URL:', updateError);
+                  // Don't throw error, just log it
+                } else {
+                  console.log('Event updated with image URL:', urlData.publicUrl);
+                }
+              }
+            }
+          }
+        } catch (imageError) {
+          console.error('Error processing image upload:', imageError);
+          // Don't throw error, just log it
         }
       }
 
@@ -130,7 +145,6 @@ const EventForm = ({ userId }: EventFormProps) => {
       toast.success('Event created successfully!');
       
       // Use the navigate function from react-router-dom
-      // This is cleaner than using window.location.href
       navigate('/find-activities');
     } catch (error: any) {
       console.error('Error creating event:', error);
