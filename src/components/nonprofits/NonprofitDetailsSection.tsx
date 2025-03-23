@@ -37,11 +37,19 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
         {/* Profile Image */}
         <div className="md:w-1/4">
           <div className="w-32 h-32 md:w-full md:h-64 bg-gray-100 rounded-lg overflow-hidden">
-            <img 
-              src={nonprofit.profile_image_url || "https://via.placeholder.com/300"} 
-              alt={nonprofit.organization_name} 
-              className="w-full h-full object-cover"
-            />
+            {nonprofit.profile_image_url ? (
+              <img 
+                src={nonprofit.profile_image_url} 
+                alt={nonprofit.organization_name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-youth-blue/10 flex items-center justify-center">
+                <span className="text-4xl font-bold text-youth-blue">
+                  {nonprofit.organization_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
           
           {/* Contact Information */}
@@ -91,36 +99,44 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
               {renderStars(nonprofit.rating)}
             </div>
             
-            <div className="flex items-center text-youth-charcoal/70">
-              <MapPin className="h-4 w-4 mr-1" />
-              <span>{nonprofit.location}</span>
+            {nonprofit.location && (
+              <div className="flex items-center text-youth-charcoal/70">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span>{nonprofit.location}</span>
+              </div>
+            )}
+          </div>
+
+          {nonprofit.causes && nonprofit.causes.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-youth-charcoal mb-2">Cause Areas</h3>
+              <div className="flex flex-wrap gap-2">
+                {nonprofit.causes.map(cause => (
+                  <Link 
+                    key={cause} 
+                    to={`/cause/${encodeURIComponent(cause)}`}
+                    className="bg-youth-blue/10 text-youth-blue py-1 px-3 rounded-full text-sm hover:bg-youth-blue/20 transition-colors"
+                  >
+                    {cause}
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-youth-charcoal mb-2">Cause Areas</h3>
-            <div className="flex flex-wrap gap-2">
-              {nonprofit.causes.map(cause => (
-                <Link 
-                  key={cause} 
-                  to={`/cause/${encodeURIComponent(cause)}`}
-                  className="bg-youth-blue/10 text-youth-blue py-1 px-3 rounded-full text-sm hover:bg-youth-blue/20 transition-colors"
-                >
-                  {cause}
-                </Link>
-              ))}
+          {nonprofit.description && (
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-youth-charcoal mb-2">Description</h3>
+              <p className="text-youth-charcoal/80">{nonprofit.description}</p>
             </div>
-          </div>
+          )}
 
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-youth-charcoal mb-2">Description</h3>
-            <p className="text-youth-charcoal/80">{nonprofit.description}</p>
-          </div>
-
-          <div className="mb-4">
-            <h3 className="text-lg font-medium text-youth-charcoal mb-2">Mission</h3>
-            <p className="text-youth-charcoal/80">{nonprofit.mission}</p>
-          </div>
+          {nonprofit.mission && (
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-youth-charcoal mb-2">Mission</h3>
+              <p className="text-youth-charcoal/80">{nonprofit.mission}</p>
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-4">
             {nonprofit.website && (
@@ -134,15 +150,17 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
                 Website
               </a>
             )}
-            <a 
-              href={nonprofit.social_media} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-youth-blue hover:text-youth-purple"
-            >
-              <ExternalLink className="mr-1 h-4 w-4" />
-              Social Media
-            </a>
+            {nonprofit.social_media && (
+              <a 
+                href={nonprofit.social_media} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-youth-blue hover:text-youth-purple"
+              >
+                <ExternalLink className="mr-1 h-4 w-4" />
+                Social Media
+              </a>
+            )}
           </div>
         </div>
       </div>
