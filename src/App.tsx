@@ -1,21 +1,11 @@
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { HelmetProvider } from 'react-helmet-async';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Index from './pages/Index';
-import FindActivities from './pages/FindActivities';
-import Contact from './pages/Contact';
-import OurStory from './pages/OurStory';
-import WebsiteGuidelines from './pages/WebsiteGuidelines';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import NgoLogin from './pages/NgoLogin';
-import RegisterNgo from './pages/RegisterNgo';
-import Profile from './pages/Profile';
-import NonprofitProfile from './pages/NonprofitProfile';
-import CauseEvents from './pages/CauseEvents';
-import NotFound from './pages/NotFound';
-import OurInstagram from './pages/OurInstagram';
+import { Index, FindActivities, Contact, OurStory, WebsiteGuidelines, Login, 
+  Signup, NgoLogin, RegisterNgo, Profile, NonprofitProfile, CauseEvents, 
+  NotFound, OurInstagram, CreateEvent } from './pages';
 import { AuthProvider } from './components/auth/AuthProvider';
 import { ThemeProvider } from 'next-themes';
 import { useEffect } from 'react';

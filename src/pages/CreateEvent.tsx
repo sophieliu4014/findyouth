@@ -86,7 +86,7 @@ const CreateEvent = () => {
       const location = `${values.street}, ${values.city}, ${values.state} ${values.zip}`;
       
       // Prepare event data
-      const eventData = {
+      const eventPayload = {
         title: values.title,
         description: values.description,
         location,
@@ -104,18 +104,18 @@ const CreateEvent = () => {
       };
 
       // Insert event into database
-      const { data: eventData, error } = await supabase
+      const { data: createdEvent, error } = await supabase
         .from('events')
-        .insert(eventData)
+        .insert(eventPayload)
         .select('id')
         .single();
 
       if (error) throw error;
 
       // Upload image if selected
-      if (eventImage && eventData) {
+      if (eventImage && createdEvent) {
         const fileExt = eventImage.name.split('.').pop();
-        const filePath = `event-images/${eventData.id}.${fileExt}`;
+        const filePath = `event-images/${createdEvent.id}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
           .from('profile-images') // Using the existing bucket
@@ -135,7 +135,7 @@ const CreateEvent = () => {
           const { error: updateError } = await supabase
             .from('events')
             .update({ image_url: urlData.publicUrl })
-            .eq('id', eventData.id);
+            .eq('id', createdEvent.id);
 
           if (updateError) throw updateError;
         }
