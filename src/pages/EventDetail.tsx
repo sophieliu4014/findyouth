@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -49,7 +48,6 @@ const EventDetail = () => {
   const [isApplying, setIsApplying] = useState(false);
   const { toast } = useToast();
 
-  // Fetch event data
   useEffect(() => {
     const fetchEventData = async () => {
       if (!id) return;
@@ -67,7 +65,6 @@ const EventDetail = () => {
         if (eventData) {
           setEvent(eventData);
           
-          // Fetch organization info
           if (eventData.nonprofit_id) {
             try {
               const orgData = await fetchNonprofitData(eventData.nonprofit_id);
@@ -92,7 +89,6 @@ const EventDetail = () => {
     fetchEventData();
   }, [id, toast]);
 
-  // Handle Apply button click
   const handleApply = () => {
     setIsApplying(true);
     
@@ -110,19 +106,16 @@ const EventDetail = () => {
     }
   };
 
-  // Parse attached links if any
   const getAttachedLinks = () => {
     if (!event?.attached_links) return [];
     return event.attached_links.split('\n').filter(link => link.trim().length > 0);
   };
 
-  // Format date for display
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Date not specified';
     return dateString;
   };
 
-  // Get organization initial for avatar fallback
   const getOrgInitial = () => {
     return organization?.name ? organization.name.charAt(0).toUpperCase() : '?';
   };
@@ -157,14 +150,13 @@ const EventDetail = () => {
               </Link>
             </div>
 
-            {/* Event header with image */}
             <div className="mb-8 animate-fade-in">
               {event.image_url && (
-                <div className="w-full h-64 md:h-80 overflow-hidden rounded-lg mb-6">
+                <div className="w-full mb-6 flex justify-center">
                   <img 
                     src={event.image_url} 
                     alt={event.title} 
-                    className="w-full h-full object-cover"
+                    className="max-w-full rounded-lg max-h-[500px] object-contain"
                   />
                 </div>
               )}
@@ -201,7 +193,6 @@ const EventDetail = () => {
               </div>
             </div>
             
-            {/* Event details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <div className="md:col-span-2 space-y-6">
                 <Card>
