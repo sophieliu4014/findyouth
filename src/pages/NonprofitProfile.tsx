@@ -133,7 +133,6 @@ const NonprofitProfile = () => {
               mission: mission,
               location: location,
               profile_image_url: profileImageUrl,
-              banner_image_url: bannerImageUrl,
               website: website,
               social_media: socialMedia,
               email: email,
@@ -190,6 +189,9 @@ const NonprofitProfile = () => {
           avgRating = Math.round(sum / reviewsData.length);
         }
         
+        // Get banner_image_url using type assertion to avoid TypeScript error
+        const bannerImageUrl = (nonprofitData as any).banner_image_url || null;
+        
         // Create a proper Nonprofit object with the correct interface
         const finalNonprofit: Nonprofit = {
           id: nonprofitData.id,
@@ -204,7 +206,7 @@ const NonprofitProfile = () => {
           phone: nonprofitData.phone,
           causes: causes,
           rating: avgRating,
-          banner_image_url: (nonprofitData as any).banner_image_url || null
+          banner_image_url: bannerImageUrl
         };
         
         setNonprofit(finalNonprofit);
