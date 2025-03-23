@@ -38,6 +38,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         const metadataUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl;
         if (metadataUrl) {
           console.log('Using banner from metadata:', metadataUrl);
+          // Force cache bust with timestamp
           const cacheBustUrl = `${metadataUrl}?t=${Date.now()}`;
           setBannerImagePreview(cacheBustUrl);
           setIsLoadingBanner(false);
@@ -47,22 +48,24 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         // Then check storage with proper naming
         if (user?.id) {
           console.log("Checking storage for banner with ID:", user.id);
-          // Try with banner- prefix
+          // Always try with banner- prefix first
           const bannerId = `banner-${user.id}`;
           const storageUrl = await getBannerImageFromStorage(bannerId);
           
           if (storageUrl) {
             console.log('Using banner from storage with prefix:', storageUrl);
+            // Force cache bust with timestamp
             const cacheBustUrl = `${storageUrl}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
             setIsLoadingBanner(false);
             return;
           }
           
-          // Try without prefix as fallback
+          // Try without prefix as fallback (for legacy images)
           const regularStorageUrl = await getBannerImageFromStorage(user.id);
           if (regularStorageUrl) {
             console.log('Using banner from storage without prefix:', regularStorageUrl);
+            // Force cache bust with timestamp
             const cacheBustUrl = `${regularStorageUrl}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
             setIsLoadingBanner(false);
@@ -80,6 +83,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
             
           if (!error && nonprofitData?.banner_image_url) {
             console.log('Using banner from nonprofits table:', nonprofitData.banner_image_url);
+            // Force cache bust with timestamp
             const cacheBustUrl = `${nonprofitData.banner_image_url}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
           } else {

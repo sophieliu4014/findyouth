@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -26,7 +25,7 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
         // If banner URL is provided directly, use it
         if (bannerImageUrl) {
           console.log(`Using provided banner URL: ${bannerImageUrl}`);
-          // Add cache busting
+          // Force cache bust
           const cacheBustedUrl = `${bannerImageUrl}?t=${Date.now()}`;
           setFinalBannerUrl(cacheBustedUrl);
           setIsLoading(false);
@@ -42,7 +41,7 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           
           if (prefixedStorageUrl) {
             console.log(`Found banner with prefix in storage: ${prefixedStorageUrl}`);
-            // Add cache busting
+            // Force cache bust
             const cacheBustedUrl = `${prefixedStorageUrl}?t=${Date.now()}`;
             setFinalBannerUrl(cacheBustedUrl);
             setIsLoading(false);
@@ -55,7 +54,7 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           
           if (regularStorageUrl) {
             console.log(`Found banner in storage: ${regularStorageUrl}`);
-            // Add cache busting
+            // Force cache bust
             const cacheBustedUrl = `${regularStorageUrl}?t=${Date.now()}`;
             setFinalBannerUrl(cacheBustedUrl);
             setIsLoading(false);

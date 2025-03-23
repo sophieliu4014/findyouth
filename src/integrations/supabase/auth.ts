@@ -298,7 +298,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
       console.error(`Error verifying banner URL: ${publicUrl}`, e);
     }
     
-    return publicUrl.split('?')[0]; // Return clean URL
+    return publicUrl.split('?')[0]; // Return clean URL without query parameters
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
     toast.error(`Failed to upload banner image: ${error.message}`);
