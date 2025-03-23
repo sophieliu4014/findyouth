@@ -72,6 +72,10 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
@@ -95,6 +99,15 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-youth-purple/50;
   }
+  
+  /* Improved focus styles */
+  a:focus-visible, 
+  button:focus-visible, 
+  input:focus-visible, 
+  select:focus-visible, 
+  textarea:focus-visible {
+    @apply outline-none ring-2 ring-youth-blue/50 ring-offset-2;
+  }
 }
 
 @layer components {
@@ -112,7 +125,7 @@
   }
   
   .glass-panel {
-    @apply bg-white/90 backdrop-blur-md shadow-soft border border-white/10 rounded-xl;
+    @apply bg-white/90 backdrop-blur-md shadow-soft border border-white/10 rounded-xl transition-all hover:shadow-card;
   }
 
   .input-field {
@@ -120,11 +133,11 @@
   }
 
   .btn-primary {
-    @apply bg-youth-blue text-white px-6 py-3 rounded-full font-medium shadow-button hover:shadow-lg hover:bg-opacity-90 transition-all duration-300 focus:ring-2 focus:ring-youth-blue/30 focus:outline-none;
+    @apply bg-youth-blue text-white px-6 py-3 rounded-full font-medium shadow-button hover:shadow-lg hover:bg-opacity-90 transition-all duration-300 focus:ring-2 focus:ring-youth-blue/30 focus:outline-none transform hover:-translate-y-0.5;
   }
 
   .btn-secondary {
-    @apply bg-youth-purple text-white px-6 py-3 rounded-full font-medium shadow-button hover:shadow-lg hover:bg-opacity-90 transition-all duration-300 focus:ring-2 focus:ring-youth-purple/30 focus:outline-none;
+    @apply bg-youth-purple text-white px-6 py-3 rounded-full font-medium shadow-button hover:shadow-lg hover:bg-opacity-90 transition-all duration-300 focus:ring-2 focus:ring-youth-purple/30 focus:outline-none transform hover:-translate-y-0.5;
   }
 
   .btn-outline {
@@ -132,15 +145,15 @@
   }
 
   .section-title {
-    @apply text-3xl md:text-4xl font-bold text-youth-charcoal mb-4;
+    @apply text-3xl md:text-4xl font-bold text-youth-charcoal mb-4 tracking-tight;
   }
 
   .section-subtitle {
-    @apply text-xl text-youth-charcoal/80 mb-8 max-w-3xl mx-auto;
+    @apply text-xl text-youth-charcoal/80 mb-8 max-w-3xl mx-auto leading-relaxed;
   }
 
   .page-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20;
   }
 
   .navbar {
@@ -148,11 +161,11 @@
   }
 
   .dropdown-menu {
-    @apply absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50 border border-gray-100/30 py-1 animate-fade-in;
+    @apply absolute right-0 mt-2 w-48 rounded-xl shadow-lg z-50 border border-gray-100/30 py-1 animate-fade-in;
   }
   
   .dropdown-item {
-    @apply block px-4 py-2.5 text-sm text-gray-700 transition-colors duration-150;
+    @apply block px-4 py-2.5 text-sm text-gray-700 transition-colors duration-200 hover:bg-youth-purple/5;
   }
 
   /* Interactive element hover effects */
@@ -203,5 +216,17 @@
   .animate-delay-500 {
     animation-delay: 500ms;
   }
+  
+  /* New sleek components */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-hover hover:-translate-y-1;
+  }
+  
+  .shimmer {
+    @apply relative overflow-hidden before:absolute before:inset-0 before:w-full before:h-full before:bg-shimmer before:bg-[length:1000px_100%] before:animate-shimmer;
+  }
+  
+  .input-elegant {
+    @apply w-full px-4 py-3 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-youth-purple/40 focus:border-transparent transition-all duration-200;
+  }
 }
-

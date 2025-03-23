@@ -14,15 +14,15 @@ const OrganizationFilter = ({
 }: OrganizationFilterProps) => {
   return (
     <div className="space-y-2">
-      <label className="flex items-center text-sm font-medium text-youth-charcoal/80 mb-1">
-        <Calendar className="h-4 w-4 mr-2" />
+      <label className="flex items-center text-sm font-medium text-youth-charcoal/80 mb-2">
+        <Calendar className="h-4 w-4 mr-2 text-youth-blue" />
         Organization
       </label>
       <div className="relative">
         <select
           value={organization}
           onChange={(e) => onOrganizationChange(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 shadow-sm focus:border-youth-purple focus:ring-1 focus:ring-youth-purple/30 focus:outline-none appearance-none transition-all"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 shadow-sm focus:border-youth-purple focus:ring-1 focus:ring-youth-purple/30 focus:outline-none appearance-none transition-all bg-white"
         >
           <option value="All Organizations">All Organizations</option>
           {organizations.map((org) => (

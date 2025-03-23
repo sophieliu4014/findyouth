@@ -71,22 +71,22 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen w-full flex items-center justify-center">
-      {/* Background image with appropriate overlay */}
+    <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+      {/* Background image with improved overlay */}
       <div className="absolute inset-0 z-0">
         <img 
           src="/lovable-uploads/c8a5f090-6366-46c8-aa61-36e33745e1cd.png" 
           alt="Youth volunteers working together" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/50 backdrop-blur-[2px]"></div>
       </div>
       
       <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-white text-center">
-        <h1 className="text-5xl md:text-7xl font-work-sans mb-8 animate-fade-in drop-shadow-lg">
-          <span className="block font-light">Helping Youth to</span>
+        <h1 className="text-5xl md:text-7xl font-work-sans mb-10 animate-fade-in drop-shadow-lg">
+          <span className="block font-light tracking-wide">Helping Youth to</span>
           <div className="relative inline-block mt-2">
-            <span className="block font-bold text-white drop-shadow-sm">
+            <span className="block font-bold text-white drop-shadow-sm tracking-tight">
               Find Youth
             </span>
             <span className="absolute -bottom-4 left-0 right-0 w-full">
@@ -112,11 +112,11 @@ const Hero = () => {
           </div>
         </h1>
         
-        <p className="text-xl font-comfortaa max-w-3xl mx-auto mb-12 animate-fade-in animate-delay-100 drop-shadow-md">
+        <p className="text-xl font-comfortaa max-w-3xl mx-auto mb-14 animate-fade-in animate-delay-100 drop-shadow-md leading-relaxed">
           FindYouth strives to connect youth all across the globe, encouraging their leadership pursuits and helping them to become more involved in their communities.
         </p>
         
-        <div className="max-w-2xl mx-auto mb-10 animate-slide-up animate-delay-200">
+        <div className="max-w-2xl mx-auto mb-12 animate-slide-up animate-delay-200">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
@@ -127,7 +127,7 @@ const Hero = () => {
             />
             <button
               type="submit"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-youth-blue text-white px-4 py-2 rounded-full hover:bg-youth-blue/90 transition-all duration-300"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-youth-blue text-white px-4 py-2 rounded-full hover:bg-opacity-90 shadow-button transition-all duration-300"
             >
               <span className="flex items-center">
                 <Search className="h-5 w-5 mr-2" />
@@ -137,15 +137,15 @@ const Hero = () => {
           </form>
         </div>
         
-        {/* City Buttons - semi-transparent with rounded style */}
-        <div className="max-w-2xl mx-auto mb-12 animate-slide-up animate-delay-300">
-          <p className="text-white mb-4">Or explore by city</p>
+        {/* City Buttons with improved styling */}
+        <div className="max-w-2xl mx-auto mb-16 animate-slide-up animate-delay-300">
+          <p className="text-white mb-5 text-lg opacity-90">Or explore by city</p>
           <div className="flex flex-wrap justify-center gap-4">
             {popularCities.map((city) => (
               <button
                 key={city}
                 onClick={() => handleCityClick(city)}
-                className="bg-white/50 hover:bg-youth-blue text-youth-charcoal hover:text-white px-8 py-2.5 rounded-full transition-all duration-300 border border-white/20 shadow-md hover:shadow-lg"
+                className="bg-white/30 backdrop-blur-sm hover:bg-youth-blue text-white px-8 py-3 rounded-full transition-all duration-300 border border-white/20 shadow-md hover:shadow-lg transform hover:-translate-y-1"
               >
                 {city}
               </button>
@@ -153,11 +153,17 @@ const Hero = () => {
           </div>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-16 animate-slide-up animate-delay-400">
-          <Link to="/find-activities" className="w-full sm:w-auto bg-youth-blue hover:bg-youth-blue/90 text-white font-medium px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16 animate-slide-up animate-delay-400">
+          <Link 
+            to="/find-activities" 
+            className="w-full sm:w-auto bg-youth-blue hover:bg-youth-blue/90 text-white font-medium px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg tracking-wide"
+          >
             FIND OPPORTUNITIES
           </Link>
-          <Link to="/register-ngo" className="w-full sm:w-auto bg-youth-purple hover:bg-youth-purple/90 text-white font-medium px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg border border-white/10">
+          <Link 
+            to="/register-ngo" 
+            className="w-full sm:w-auto bg-youth-purple/90 hover:bg-youth-purple text-white font-medium px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-lg tracking-wide border border-white/10"
+          >
             LIST YOUR NONPROFIT
           </Link>
         </div>

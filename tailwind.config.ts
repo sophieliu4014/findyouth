@@ -79,7 +79,9 @@ export default {
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'2xl': '1.5rem',
+				'3xl': '2rem'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -118,6 +120,10 @@ export default {
 					'0%': { d: 'M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10' },
 					'50%': { d: 'M0,10 Q30,15 60,10 T120,10 T180,10 T240,10 T300,10' },
 					'100%': { d: 'M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10' }
+				},
+				shimmer: {
+					'0%': { backgroundPosition: '-1000px 0' },
+					'100%': { backgroundPosition: '1000px 0' }
 				}
 			},
 			animation: {
@@ -129,22 +135,27 @@ export default {
 				'pulse-slow': 'pulse 3s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'dash': 'dash 2s linear forwards',
-				'wavy': 'wavyAnimation 5s ease-in-out infinite'
+				'wavy': 'wavyAnimation 5s ease-in-out infinite',
+				'shimmer': 'shimmer 2s linear infinite'
 			},
 			boxShadow: {
 				'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
 				'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
 				'button': '0 4px 14px 0 rgba(0, 0, 0, 0.08)',
-				'card': '0 5px 25px rgba(0, 0, 0, 0.03)'
+				'card': '0 5px 25px rgba(0, 0, 0, 0.03)',
+				'elevated': '0 10px 30px -5px rgba(0, 0, 0, 0.1)',
+				'hover': '0 10px 40px -10px rgba(0, 0, 0, 0.2)'
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-blue': 'linear-gradient(90deg, hsla(221, 45%, 73%, 1) 0%, hsla(220, 78%, 29%, 1) 100%)',
 				'gradient-purple': 'linear-gradient(90deg, hsla(277, 75%, 84%, 1) 0%, hsla(297, 50%, 51%, 1) 100%)',
-				'gradient-youth': 'linear-gradient(135deg, #9b87f5 0%, #1EAEDB 100%)'
+				'gradient-youth': 'linear-gradient(135deg, #9b87f5 0%, #1EAEDB 100%)',
+				'shimmer': 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)'
 			},
 			backdropFilter: {
-				'glass': 'blur(4px)'
+				'glass': 'blur(4px)',
+				'glass-strong': 'blur(10px)'
 			},
 			strokeDasharray: {
 				'300': '300',

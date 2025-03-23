@@ -10,15 +10,15 @@ interface LocationFilterProps {
 const LocationFilter = ({ location, onLocationChange, locations }: LocationFilterProps) => {
   return (
     <div className="space-y-2">
-      <label className="flex items-center text-sm font-medium text-youth-charcoal/80 mb-1">
-        <MapPin className="h-4 w-4 mr-2" />
+      <label className="flex items-center text-sm font-medium text-youth-charcoal/80 mb-2">
+        <MapPin className="h-4 w-4 mr-2 text-youth-blue" />
         Location
       </label>
       <div className="relative">
         <select
           value={location}
           onChange={(e) => onLocationChange(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-gray-200 shadow-sm focus:border-youth-purple focus:ring-1 focus:ring-youth-purple/30 focus:outline-none appearance-none transition-all"
+          className="w-full px-4 py-3 rounded-lg border border-gray-200 shadow-sm focus:border-youth-purple focus:ring-1 focus:ring-youth-purple/30 focus:outline-none appearance-none transition-all bg-white"
         >
           {locations.map((loc) => (
             <option key={loc} value={loc}>
