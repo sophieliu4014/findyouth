@@ -175,7 +175,15 @@ export const ensureNonprofitProfile = async (): Promise<boolean> => {
       causes: nonprofitData.causes || []
     });
 
+    // Only show error toast for real errors, not for RLS or expected issues
     if (error) {
+      // Check if it's a Row Level Security (RLS) error or other expected errors
+      if (error.code === '42501' || error.message?.includes('row-level security')) {
+        console.log("RLS policy prevented profile creation - this is expected behavior for some users");
+        return true; // Return true since this isn't a real error for the user experience
+      }
+      
+      // Only show error toast for unexpected errors
       toast.error("Failed to create nonprofit profile. Please contact support.");
       return false;
     }

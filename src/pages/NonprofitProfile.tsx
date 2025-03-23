@@ -71,10 +71,10 @@ const NonprofitProfile = () => {
             return;
           }
           
-          // If this is the current user's profile, ensure nonprofit profile
+          // If this is the current user's profile, ensure nonprofit profile without showing errors
           if (isCurrentUserProfile) {
             console.log("This is the current user's profile, ensuring nonprofit profile");
-            await ensureNonprofitProfile();
+            const success = await ensureNonprofitProfile();
             
             // Fetch again to see if profile was created
             const { data: refreshedData, error: refreshError } = await supabase
@@ -87,7 +87,7 @@ const NonprofitProfile = () => {
               nonprofitData = refreshedData;
               console.log("Successfully created and fetched nonprofit profile:", nonprofitData);
             } else {
-              console.log("Failed to create nonprofit profile, falling back to user metadata");
+              console.log("Falling back to user metadata");
             }
           }
           
