@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -182,6 +181,8 @@ const EventCard = ({
         <Link 
           to={`/event/${id}`} 
           className="text-youth-blue hover:text-youth-purple transition-colors flex items-center text-sm font-medium"
+          target="_blank"
+          rel="noopener noreferrer"
         >
           View Details
           <ArrowRight className="ml-1 h-4 w-4" />

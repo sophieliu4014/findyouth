@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import CreateEvent from './pages/CreateEvent';
 import CauseEvents from './pages/CauseEvents';
 import NonprofitProfile from './pages/NonprofitProfile';
+import EventDetail from './pages/EventDetail';
 import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
     path: "/nonprofit/:id",
     element: <NonprofitProfile />,
+  },
+  {
+    path: "/event/:id",
+    element: <EventDetail />,
   },
 ]);
 
