@@ -38,6 +38,7 @@ interface ProfileEditFormProps {
 const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
   
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -76,6 +77,9 @@ const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => 
             const metadata = user.user_metadata;
             const nonprofitData = metadata.nonprofit_data || {};
             
+            // Store user email for later use
+            setUserEmail(user.email || "");
+            
             form.reset({
               organization_name: metadata.organization_name || "",
               description: nonprofitData.description || "",
@@ -88,6 +92,9 @@ const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => 
             });
           }
         } else if (nonprofitData) {
+          // Store email for later use
+          setUserEmail(nonprofitData.email || "");
+          
           // If we have nonprofit data, fetch the associated causes
           const { data: causesData } = await supabase
             .from('nonprofit_causes')
@@ -143,6 +150,7 @@ const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => 
       if (userUpdateError) throw userUpdateError;
       
       // Update the nonprofit profile in the nonprofits table
+      // Important: Include the email field which is required
       const { error: nonprofitError } = await supabase
         .from('nonprofits')
         .upsert({
@@ -154,6 +162,7 @@ const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => 
           website: values.website,
           phone: values.phone,
           social_media: values.social_media,
+          email: userEmail, // Add the required email field
           updated_at: new Date().toISOString()
         });
         
