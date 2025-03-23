@@ -1,14 +1,14 @@
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, Mail, Globe, Phone, Star, MapPin, ExternalLink } from 'lucide-react';
+import { Loader2, Mail, Globe, Phone, Star, MapPin, ExternalLink, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useOrganizationEvents } from '@/hooks';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { NonprofitHeader, NonprofitDetailsSection, EventsList } from '@/components/nonprofits';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -76,6 +76,7 @@ const NonprofitProfile = () => {
               : (profileData.full_name || 'Organization');
             
             // Create a nonprofit-like object from profile data
+            // We explicitly set each property to ensure type correctness
             nonprofitData = {
               id: profileData.id,
               organization_name: organizationName,
@@ -87,12 +88,20 @@ const NonprofitProfile = () => {
               social_media: userMetadata?.user?.user_metadata?.social_media || '',
               email: userMetadata?.user?.email || null,
               phone: userMetadata?.user?.user_metadata?.phone || null,
+              // Initialize with empty array, will be populated if needed
               causes: [],
               rating: 4 // Default rating
             };
             
             console.log('Created nonprofit-like object from profile data:', nonprofitData);
           }
+        } else {
+          // If this is a real nonprofit from the nonprofits table, 
+          // we need to initialize the causes array to match our Nonprofit interface
+          nonprofitData = {
+            ...nonprofitData,
+            causes: [] // Initialize with empty array
+          };
         }
         
         if (!nonprofitData) {
@@ -133,6 +142,7 @@ const NonprofitProfile = () => {
           avgRating = Math.round(sum / reviewsData.length);
         }
         
+        // Create the final nonprofit object with all the required fields
         setNonprofit({
           ...nonprofitData,
           causes,
