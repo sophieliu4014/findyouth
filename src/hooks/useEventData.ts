@@ -5,7 +5,7 @@ import { Event, DatabaseEvent, transformDatabaseEvents } from './event-types';
 import { filterEvents, EventFilters } from '@/utils/eventFilters';
 
 // Main hook for fetching event data
-export const useEventData = (filters: EventFilters = {
+const useEventData = (filters: EventFilters = {
   cause: '',
   location: '',
   organization: '',
@@ -24,11 +24,14 @@ export const useEventData = (filters: EventFilters = {
         throw new Error(error.message);
       }
 
-      // Transform database events to UI events and await the Promise
+      // Transform database events to UI events
       const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
+      console.log('Events loaded before filtering:', transformedEvents.length);
       
       // Apply filters to the returned data
-      return filterEvents(transformedEvents, filters);
+      const filteredEvents = filterEvents(transformedEvents, filters);
+      console.log('Events after filtering:', filteredEvents.length);
+      return filteredEvents;
     },
   });
 };

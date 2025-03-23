@@ -13,6 +13,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import CreateEvent from './pages/CreateEvent';
+import CauseEvents from './pages/CauseEvents';
+import NonprofitProfile from './pages/NonprofitProfile';
 import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
@@ -49,6 +51,14 @@ const router = createBrowserRouter([
   {
     path: "/create-event",
     element: <CreateEvent />,
+  },
+  {
+    path: "/cause/:cause",
+    element: <CauseEvents />,
+  },
+  {
+    path: "/nonprofit/:id",
+    element: <NonprofitProfile />,
   },
 ]);
 

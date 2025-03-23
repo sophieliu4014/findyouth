@@ -23,11 +23,14 @@ const useCauseEvents = (causeArea: string) => {
         throw new Error(error.message);
       }
 
-      // Transform database events to UI events and await the Promise
+      // Transform database events to UI events
       const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
+      console.log('All events fetched for filtering by cause:', transformedEvents.length);
       
       // Filter by cause area
-      return transformedEvents.filter(event => event.causeArea === causeArea);
+      const filteredEvents = transformedEvents.filter(event => event.causeArea === causeArea);
+      console.log('Events after filtering by cause area:', filteredEvents.length);
+      return filteredEvents;
     },
     enabled: !!causeArea,
   });

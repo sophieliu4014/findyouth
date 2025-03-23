@@ -22,8 +22,10 @@ const useOrganizationEvents = (organizationId: string) => {
         throw new Error(error.message);
       }
 
-      // Transform database events to UI events and await the Promise
-      return await transformDatabaseEvents(data as DatabaseEvent[]);
+      // Transform database events to UI events and await the result
+      const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
+      console.log('Organization events fetched:', transformedEvents.length);
+      return transformedEvents;
     },
     enabled: !!organizationId,
   });
