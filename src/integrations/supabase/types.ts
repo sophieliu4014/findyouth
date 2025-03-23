@@ -119,6 +119,7 @@ export type Database = {
       }
       nonprofits: {
         Row: {
+          banner_image_url: string | null
           created_at: string | null
           description: string
           email: string
@@ -133,6 +134,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          banner_image_url?: string | null
           created_at?: string | null
           description: string
           email: string
@@ -147,6 +149,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          banner_image_url?: string | null
           created_at?: string | null
           description?: string
           email?: string
