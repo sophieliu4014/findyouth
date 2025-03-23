@@ -92,37 +92,48 @@ const NonprofitProfile = () => {
           }
           
           if (!nonprofitData && profileData) {
-            // Get user metadata for the specific user ID we're viewing
-            let userMetadata = null;
+            // For the current user, use their metadata
+            let organizationName = profileData.full_name || 'Organization';
+            let description = 'No description available';
+            let mission = 'No mission statement available';
+            let location = 'Location not specified';
+            let website = null;
+            let socialMedia = '';
+            let email = null;
+            let phone = null;
+            let profileImageUrl = profileData.avatar_url;
             
-            // If this is the current user, we can use their metadata directly
-            if (isCurrentUserProfile && user) {
-              userMetadata = {
-                user: {
-                  id: user.id,
-                  email: user.email,
-                  user_metadata: user.user_metadata
-                }
-              };
-              console.log("Using current user's metadata:", userMetadata);
+            // If this is the current user, we can use their metadata
+            if (isCurrentUserProfile && user?.user_metadata) {
+              const metadata = user.user_metadata;
+              if (metadata.organization_name) {
+                organizationName = metadata.organization_name;
+              }
+              
+              if (metadata.nonprofit_data) {
+                description = metadata.nonprofit_data.description || description;
+                mission = metadata.nonprofit_data.mission || mission;
+                location = metadata.nonprofit_data.location || location;
+                website = metadata.nonprofit_data.website || website;
+                socialMedia = metadata.nonprofit_data.socialMedia || socialMedia;
+                email = user.email || email;
+                phone = metadata.nonprofit_data.phone || phone;
+                profileImageUrl = metadata.nonprofit_data.profileImageUrl || profileImageUrl;
+              }
             }
             
-            const organizationName = userMetadata?.user?.user_metadata?.organization_name
-              ? userMetadata.user.user_metadata.organization_name
-              : (profileData.full_name || 'Organization');
-            
-            // Create an object that matches the expected database structure
+            // Create a nonprofit-like object from profile data
             nonprofitData = {
               id: profileData.id,
               organization_name: organizationName,
-              description: userMetadata?.user?.user_metadata?.nonprofit_data?.description || 'No description available',
-              mission: userMetadata?.user?.user_metadata?.nonprofit_data?.mission || 'No mission statement available',
-              location: userMetadata?.user?.user_metadata?.nonprofit_data?.location || 'Location not specified',
-              profile_image_url: profileData.avatar_url || userMetadata?.user?.user_metadata?.nonprofit_data?.profileImageUrl,
-              website: userMetadata?.user?.user_metadata?.nonprofit_data?.website || null,
-              social_media: userMetadata?.user?.user_metadata?.nonprofit_data?.socialMedia || '',
-              email: userMetadata?.user?.email || null,
-              phone: userMetadata?.user?.user_metadata?.nonprofit_data?.phone || null,
+              description: description,
+              mission: mission,
+              location: location,
+              profile_image_url: profileImageUrl,
+              website: website,
+              social_media: socialMedia,
+              email: email,
+              phone: phone,
               created_at: profileData.updated_at || new Date().toISOString(),
               updated_at: profileData.updated_at || new Date().toISOString()
             };
@@ -246,19 +257,19 @@ const NonprofitProfile = () => {
   return (
     <>
       <Helmet>
-        <title>{nonprofit.organization_name} | FindYOUth</title>
-        <meta name="description" content={nonprofit.description.substring(0, 160)} />
+        <title>{nonprofit?.organization_name || 'Organization'} | FindYOUth</title>
+        <meta name="description" content={nonprofit?.description?.substring(0, 160) || 'Organization profile'} />
       </Helmet>
 
       <Navbar />
 
       <main className="page-container">
-        <NonprofitHeader title={nonprofit.organization_name} />
+        <NonprofitHeader title={nonprofit?.organization_name || 'Organization'} />
         
-        <NonprofitDetailsSection nonprofit={nonprofit} />
+        {nonprofit && <NonprofitDetailsSection nonprofit={nonprofit} />}
         
         <EventsList 
-          title={`Events by ${nonprofit.organization_name}`}
+          title={`Events by ${nonprofit?.organization_name || 'Organization'}`}
           events={events} 
           isLoading={eventsLoading} 
         />

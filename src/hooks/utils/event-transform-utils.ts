@@ -96,15 +96,9 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       } else if (profiles && profiles.length > 0) {
         console.log('Fetched user profiles:', profiles);
         
-        // Get the current user's metadata to check for organization_name
-        const { data: currentUser } = await supabase.auth.getUser();
-        
-        // For each profile, try to use current user's metadata if IDs match
+        // For each profile, use the full_name from the profiles table
         for (const profile of profiles) {
-          const isCurrentUser = currentUser?.user?.id === profile.id;
-          const organizationName = isCurrentUser && currentUser?.user?.user_metadata?.organization_name
-            ? currentUser.user.user_metadata.organization_name
-            : (profile.full_name || 'User');
+          const organizationName = profile.full_name || NONPROFIT_NAME_MAP[profile.id] || 'Organization';
           
           // Check if avatar_url is valid
           let profileImage = profile.avatar_url;
@@ -131,7 +125,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
         const storageUrl = await getProfileImageFromStorage(id);
         if (storageUrl) {
           nonprofitMap.set(id, {
-            name: NONPROFIT_NAME_MAP[id] || 'User',
+            name: NONPROFIT_NAME_MAP[id] || 'Organization',
             profileImage: storageUrl
           });
           console.log(`Found image in storage for ID ${id}: ${storageUrl}`);
@@ -155,7 +149,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     
     const organizationName = organization?.name || 
                           NONPROFIT_NAME_MAP[event.nonprofit_id] || 
-                          'User';
+                          'Organization';
                           
     // For profile image, first try the one from the map
     let profileImage = organization?.profileImage;

@@ -58,19 +58,14 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
     }
       
     if (profile) {
-      // Try to get user metadata through a public function call instead of admin API
-      const { data: userMetadata } = await supabase.auth.getUser();
-      
-      // Only use current user's metadata if the IDs match
-      const isCurrentUser = userMetadata?.user?.id === nonprofitId;
-      const organizationName = isCurrentUser && userMetadata?.user?.user_metadata?.organization_name
-        ? userMetadata.user.user_metadata.organization_name
-        : (profile.full_name || 'User');
+      // No longer relying on user metadata for non-current users
+      // Instead, use the full_name from profiles or a fallback name
+      const organizationName = profile.full_name || NONPROFIT_NAME_MAP[nonprofitId] || 'Organization';
       
       console.log(`Found profile for ${organizationName}, avatar: ${profile.avatar_url}`);
       
       // Check if avatar_url is valid
-      if (profile.avatar_url && isValidImageUrl(profile.avatar_url)) {
+      if (isValidImageUrl(profile.avatar_url)) {
         return {
           name: organizationName,
           profileImage: profile.avatar_url
@@ -91,7 +86,7 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
     const storageUrl = await getProfileImageFromStorage(nonprofitId);
     if (storageUrl) {
       return {
-        name: NONPROFIT_NAME_MAP[nonprofitId] || 'User',
+        name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
         profileImage: storageUrl
       };
     }
@@ -102,7 +97,7 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
   // Fallback case - use hardcoded map or generate consistent placeholder
   console.log(`Using fallback for ${nonprofitId}`);
   return {
-    name: NONPROFIT_NAME_MAP[nonprofitId] || 'User',
+    name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
     profileImage: generateFallbackImageUrl(nonprofitId)
   };
 }
