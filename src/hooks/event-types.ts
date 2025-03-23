@@ -41,18 +41,49 @@ export const NONPROFIT_NAME_MAP: Record<string, string> = {
 };
 
 // Transform database events to UI events
-export const transformDatabaseEvents = (dbEvents: DatabaseEvent[]): Event[] => {
-  return dbEvents.map(event => ({
-    id: event.id,
-    title: event.title,
-    organization: NONPROFIT_NAME_MAP[event.nonprofit_id] || 'Unknown Organization',
-    organizationId: event.nonprofit_id,
-    date: event.date,
-    location: event.location,
-    causeArea: event.cause_area || 'Environment', // Use the stored cause_area if available
-    rating: 4, // Default value
-    imageUrl: event.image_url || undefined,
-    description: event.description,
-    createdAt: event.created_at || undefined
-  }));
+export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promise<Event[]> => {
+  // Collect all nonprofit IDs to fetch in one query
+  const nonprofitIds = [...new Set(dbEvents.map(event => event.nonprofit_id))];
+  
+  // Fetch nonprofit data in a single query
+  const { data: nonprofits } = await supabase
+    .from('nonprofits')
+    .select('id, organization_name, profile_image_url')
+    .in('id', nonprofitIds);
+  
+  // Create a map for quick lookups
+  const nonprofitMap = new Map();
+  if (nonprofits) {
+    nonprofits.forEach(nonprofit => {
+      nonprofitMap.set(nonprofit.id, {
+        name: nonprofit.organization_name,
+        profileImage: nonprofit.profile_image_url
+      });
+    });
+  }
+
+  return dbEvents.map(event => {
+    // Get nonprofit data from our map, or use fallbacks
+    const nonprofit = nonprofitMap.get(event.nonprofit_id);
+    const organizationName = nonprofit?.name || 
+                             NONPROFIT_NAME_MAP[event.nonprofit_id] || 
+                             'Unknown Organization';
+    const profileImage = nonprofit?.profileImage || 
+                         `https://images.unsplash.com/photo-${1550000000000 + parseInt(event.nonprofit_id.slice(-4), 16) % 1000000}`;
+    
+    return {
+      id: event.id,
+      title: event.title,
+      organization: organizationName,
+      organizationId: event.nonprofit_id,
+      date: event.date,
+      location: event.location,
+      causeArea: event.cause_area || 'Environment',
+      rating: 4, // Default value
+      imageUrl: event.image_url || undefined,
+      description: event.description,
+      createdAt: event.created_at || undefined,
+      profileImage: profileImage
+    };
+  });
 };

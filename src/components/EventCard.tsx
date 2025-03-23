@@ -4,6 +4,7 @@ import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
+import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 
 interface EventCardProps {
   id: string;
@@ -80,6 +81,11 @@ const EventCard = ({
     navigate(`/cause/${encodeURIComponent(causeArea)}`);
   };
 
+  // Get organization initial for fallback
+  const getOrgInitial = () => {
+    return organization ? organization.charAt(0).toUpperCase() : '?';
+  };
+
   return (
     <div 
       className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden"
@@ -88,16 +94,18 @@ const EventCard = ({
     >
       <div className="flex">
         {/* Organization profile image */}
-        <div 
-          className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
+        <Avatar 
+          className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
           onClick={handleOrganizationClick}
         >
-          <img 
-            src={profileImage || "https://via.placeholder.com/50"} 
+          <AvatarImage 
+            src={profileImage} 
             alt={organization} 
-            className="w-full h-full object-cover"
           />
-        </div>
+          <AvatarFallback className="bg-youth-blue/10 text-youth-blue font-bold text-xl">
+            {getOrgInitial()}
+          </AvatarFallback>
+        </Avatar>
         
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-youth-charcoal truncate transition-colors duration-300">

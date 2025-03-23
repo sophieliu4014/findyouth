@@ -1,5 +1,6 @@
+
 import { Loader2 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import EventCard from '../EventCard';
 import { seedEvents } from '@/utils/seedEvents';
 import { Event } from '@/hooks/event-types';

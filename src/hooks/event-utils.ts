@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Event, NONPROFIT_NAME_MAP } from './event-types';
+import { Event, NONPROFIT_NAME_MAP, transformDatabaseEvents } from './event-types';
 
 // Check if the events table has a cause_area column
 export async function checkCauseAreaColumn(): Promise<boolean> {
@@ -53,14 +53,41 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
   return Math.round(sum / reviewsData.length);
 }
 
-// Transform event data from API format to application format
-export function transformEventData(
+// Async function to fetch nonprofit data for an event
+export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
+  try {
+    const { data: nonprofit } = await supabase
+      .from('nonprofits')
+      .select('organization_name, profile_image_url')
+      .eq('id', nonprofitId)
+      .single();
+    
+    if (nonprofit) {
+      return {
+        name: nonprofit.organization_name,
+        profileImage: nonprofit.profile_image_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+      };
+    }
+  } catch (error) {
+    console.error("Error fetching nonprofit data:", error);
+  }
+  
+  // Return defaults if nonprofit not found
+  return {
+    name: NONPROFIT_NAME_MAP[nonprofitId] || 'Unknown Organization',
+    profileImage: `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+  };
+}
+
+// Transform event data from API format to application format - Now an async function
+export async function transformEventData(
   event: any, 
   organizationId: string, 
   causeArea: string, 
   rating: number
-): Event {
-  const organizationName = NONPROFIT_NAME_MAP[organizationId] || 'Unknown Organization';
+): Promise<Event> {
+  // Fetch nonprofit data
+  const { name: organizationName, profileImage } = await fetchNonprofitData(organizationId);
   
   // Format date
   const formattedDate = formatEventDate(event.date);
@@ -75,6 +102,6 @@ export function transformEventData(
     causeArea: causeArea,
     rating: rating,
     imageUrl: event.image_url,
-    profileImage: `https://images.unsplash.com/photo-${1550000000000 + parseInt(organizationId.slice(-4), 16) % 1000000}`
+    profileImage: profileImage
   };
 }
