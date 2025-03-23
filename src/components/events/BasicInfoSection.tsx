@@ -8,6 +8,7 @@ import EventImageUpload from "./EventImageUpload";
 import { CAUSE_AREAS } from "./EventFormSchema";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Info } from "lucide-react";
+import CauseSelector from "@/components/form/CauseSelector";
 
 interface BasicInfoSectionProps {
   control: Control<EventFormValues>;
@@ -82,25 +83,27 @@ const BasicInfoSection = ({ control, onImageSelect }: BasicInfoSectionProps) => 
       
       <FormField
         control={control}
-        name="causeArea"
+        name="causeAreas"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Cause Area*</FormLabel>
+            <FormLabel>Cause Areas*</FormLabel>
             <FormControl>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                {...field}
-              >
-                <option value="">Select a cause area</option>
-                {CAUSE_AREAS.map((cause) => (
-                  <option key={cause} value={cause}>
-                    {cause}
-                  </option>
-                ))}
-              </select>
+              <CauseSelector
+                selectedCauses={field.value || []}
+                onCauseToggle={(cause) => {
+                  const currentValue = field.value || [];
+                  if (currentValue.includes(cause)) {
+                    field.onChange(currentValue.filter(c => c !== cause));
+                  } else if (currentValue.length < 3) {
+                    field.onChange([...currentValue, cause]);
+                  }
+                }}
+                maxCauses={3}
+                causeOptions={CAUSE_AREAS}
+              />
             </FormControl>
             <FormDescription>
-              Select the primary focus area of this volunteer activity
+              Select up to 3 cause areas that best represent this volunteer activity
             </FormDescription>
             <FormMessage />
           </FormItem>

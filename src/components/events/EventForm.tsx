@@ -39,7 +39,7 @@ const EventForm = ({ userId }: EventFormProps) => {
       zip: '',
       signupFormUrl: '',
       attachedLinks: '',
-      causeArea: '',
+      causeAreas: [],
     },
   });
 
@@ -66,7 +66,7 @@ const EventForm = ({ userId }: EventFormProps) => {
         zip: values.zip,
         signup_form_url: values.signupFormUrl || null,
         attached_links: values.attachedLinks || null,
-        cause_area: values.causeArea,
+        cause_area: values.causeAreas.join(', '), // Join cause areas as comma-separated string
         nonprofit_id: userId,
         created_at: new Date().toISOString(),
       };

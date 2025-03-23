@@ -25,7 +25,7 @@ export const eventFormSchema = z.object({
   zip: z.string().min(1, { message: 'ZIP code is required' }),
   signupFormUrl: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.string().length(0)),
   attachedLinks: z.string().optional(),
-  causeArea: z.string().min(1, { message: 'Cause area is required' }),
+  causeAreas: z.array(z.string()).min(1, { message: 'At least one cause area is required' }).max(3, { message: 'Maximum of 3 cause areas allowed' }),
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
