@@ -26,40 +26,64 @@ export type Database = {
       }
       events: {
         Row: {
+          application_deadline: string | null
+          attached_links: string | null
           cause_area: string | null
+          city: string | null
           created_at: string | null
           date: string
           description: string
           end_date: string | null
+          end_time: string | null
           id: string
           image_url: string | null
           location: string
           nonprofit_id: string
+          signup_form_url: string | null
+          start_time: string | null
+          state: string | null
           title: string
+          zip: string | null
         }
         Insert: {
+          application_deadline?: string | null
+          attached_links?: string | null
           cause_area?: string | null
+          city?: string | null
           created_at?: string | null
           date: string
           description: string
           end_date?: string | null
+          end_time?: string | null
           id?: string
           image_url?: string | null
           location: string
           nonprofit_id: string
+          signup_form_url?: string | null
+          start_time?: string | null
+          state?: string | null
           title: string
+          zip?: string | null
         }
         Update: {
+          application_deadline?: string | null
+          attached_links?: string | null
           cause_area?: string | null
+          city?: string | null
           created_at?: string | null
           date?: string
           description?: string
           end_date?: string | null
+          end_time?: string | null
           id?: string
           image_url?: string | null
           location?: string
           nonprofit_id?: string
+          signup_form_url?: string | null
+          start_time?: string | null
+          state?: string | null
           title?: string
+          zip?: string | null
         }
         Relationships: []
       }

@@ -1,14 +1,16 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, PlusCircle } from 'lucide-react';
 import Logo from '../ui/Logo';
 import UserMenu from '../auth/UserMenu';
+import { useAuthStore } from '@/lib/auth';
 
 const Navbar = () => {
   const [isVolunteersOpen, setIsVolunteersOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
   
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -37,6 +39,17 @@ const Navbar = () => {
             >
               Find Activities
             </Link>
+            
+            {isAuthenticated && (
+              <Link 
+                to="/create-event" 
+                className={`text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide flex items-center ${isActive('/create-event') ? 'font-semibold text-youth-purple' : ''}`}
+                onClick={closeDropdowns}
+              >
+                <PlusCircle className="mr-1 h-4 w-4" />
+                Create Post
+              </Link>
+            )}
             
             <div className="relative">
               <button 
