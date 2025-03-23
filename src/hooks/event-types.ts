@@ -94,13 +94,24 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       } else if (profiles && profiles.length > 0) {
         console.log('Fetched user profiles:', profiles);
         
-        // Add profile data to the nonprofit map
-        profiles.forEach(profile => {
-          nonprofitMap.set(profile.id, {
-            name: profile.full_name || 'User',
-            profileImage: profile.avatar_url
-          });
-        });
+        // For each profile, try to get the organization_name from user metadata
+        for (const profile of profiles) {
+          try {
+            const { data: user } = await supabase.auth.admin.getUserById(profile.id);
+            const organizationName = user?.user?.user_metadata?.organization_name || profile.full_name || 'User';
+            
+            nonprofitMap.set(profile.id, {
+              name: organizationName,
+              profileImage: profile.avatar_url
+            });
+          } catch (error) {
+            console.error(`Error fetching user metadata for ${profile.id}:`, error);
+            nonprofitMap.set(profile.id, {
+              name: profile.full_name || 'User',
+              profileImage: profile.avatar_url
+            });
+          }
+        }
       }
     }
   } catch (fetchError) {

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Event, NONPROFIT_NAME_MAP, transformDatabaseEvents } from './event-types';
 
@@ -53,6 +54,7 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
 // Async function to fetch nonprofit or user data for an event
 export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
   try {
+    // First try to get from nonprofits table
     const { data: nonprofit } = await supabase
       .from('nonprofits')
       .select('organization_name, profile_image_url')
@@ -66,6 +68,7 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       };
     }
     
+    // Then try to get from profiles table
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, avatar_url')
@@ -73,8 +76,13 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       .single();
       
     if (profile) {
+      // Get the user's metadata to check for organization_name
+      const { data: user } = await supabase.auth.admin.getUserById(nonprofitId);
+      
+      const organizationName = user?.user?.user_metadata?.organization_name || profile.full_name || 'User';
+      
       return {
-        name: profile.full_name || 'User',
+        name: organizationName,
         profileImage: profile.avatar_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
       };
     }
