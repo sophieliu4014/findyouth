@@ -1,12 +1,13 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
 import './App.css';
-import Home from './pages/Home';
+import Home from './pages/Index'; // Updated import path
 import FindActivities from './pages/FindActivities';
-import About from './pages/About';
+import About from './pages/OurStory'; // Updated import path
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
