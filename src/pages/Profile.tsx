@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -178,8 +179,9 @@ const Profile = () => {
               </Button>
             </div>
             
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-8 relative">
-              <div className="h-32 sm:h-48 w-full rounded-lg overflow-hidden bg-youth-blue/10 mb-4">
+            {/* Improved banner container with better styling */}
+            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8 relative">
+              <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/5 to-youth-purple/5">
                 {bannerImagePreview ? (
                   <img 
                     src={bannerImagePreview} 
@@ -192,7 +194,7 @@ const Profile = () => {
                   </div>
                 )}
                 
-                <div className="absolute top-8 right-8">
+                <div className="absolute top-4 right-4">
                   <BannerImageUpload 
                     setBannerImage={setBannerImage}
                     setBannerImageError={setBannerImageError}
@@ -203,10 +205,10 @@ const Profile = () => {
                 </div>
               </div>
               
-              <div className="text-center">
+              <div className="p-3 text-center">
                 {bannerImage && (
-                  <div className="mt-2 animate-fade-in">
-                    <p className="text-sm text-youth-blue mb-2">New banner selected. Save to apply changes.</p>
+                  <div className="animate-fade-in">
+                    <p className="text-sm text-youth-blue font-medium">New banner selected. Save to apply changes.</p>
                   </div>
                 )}
               </div>
