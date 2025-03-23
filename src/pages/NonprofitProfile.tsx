@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -75,8 +74,8 @@ const NonprofitProfile = () => {
               ? userMetadata.user.user_metadata.organization_name
               : (profileData.full_name || 'Organization');
             
-            // Create a nonprofit-like object from profile data
-            // We explicitly set each property to ensure type correctness
+            // Create an object with only the fields we need for our Nonprofit interface
+            // Do NOT add causes or rating here - we'll add those later to the final object
             nonprofitData = {
               id: profileData.id,
               organization_name: organizationName,
@@ -87,10 +86,7 @@ const NonprofitProfile = () => {
               website: userMetadata?.user?.user_metadata?.website || null,
               social_media: userMetadata?.user?.user_metadata?.social_media || '',
               email: userMetadata?.user?.email || null,
-              phone: userMetadata?.user?.user_metadata?.phone || null,
-              // These properties will be set later in the final nonprofit object
-              causes: [],
-              rating: 4
+              phone: userMetadata?.user?.user_metadata?.phone || null
             };
             
             console.log('Created nonprofit-like object from profile data:', nonprofitData);
@@ -135,8 +131,8 @@ const NonprofitProfile = () => {
           avgRating = Math.round(sum / reviewsData.length);
         }
         
-        // Create the final nonprofit object with all the required fields
         // Create a proper Nonprofit object with the correct interface
+        // We explicitly create a new object that matches our Nonprofit interface
         const finalNonprofit: Nonprofit = {
           id: nonprofitData.id,
           organization_name: nonprofitData.organization_name,
