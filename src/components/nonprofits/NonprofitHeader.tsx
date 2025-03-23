@@ -12,31 +12,67 @@ interface NonprofitHeaderProps {
 }
 
 const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeaderProps) => {
-  const [finalBannerUrl, setFinalBannerUrl] = useState<string | null>(bannerImageUrl || null);
-  const [isLoading, setIsLoading] = useState<boolean>(!bannerImageUrl && !!nonprofitId);
+  const [finalBannerUrl, setFinalBannerUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   
   // Try to get banner from storage if not provided
   useEffect(() => {
-    if (!bannerImageUrl && nonprofitId) {
-      const fetchBanner = async () => {
-        try {
-          const storageUrl = await getBannerImageFromStorage(nonprofitId);
-          if (storageUrl) {
-            console.log(`Found banner in storage for ${nonprofitId}: ${storageUrl}`);
-            setFinalBannerUrl(storageUrl);
-          }
-        } catch (error) {
-          console.error("Error fetching banner from storage:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
+    const fetchBanner = async () => {
+      setIsLoading(true);
+      console.log(`Fetching banner for ${title} with ID: ${nonprofitId}`);
+      console.log(`Initial banner URL: ${bannerImageUrl}`);
       
-      fetchBanner();
-    } else {
-      setIsLoading(false);
-    }
-  }, [bannerImageUrl, nonprofitId]);
+      try {
+        // If banner URL is provided directly, use it
+        if (bannerImageUrl) {
+          console.log(`Using provided banner URL: ${bannerImageUrl}`);
+          // Add cache busting
+          const cacheBustedUrl = `${bannerImageUrl}?t=${Date.now()}`;
+          setFinalBannerUrl(cacheBustedUrl);
+          setIsLoading(false);
+          return;
+        }
+        
+        // If no direct URL but we have an ID, check storage
+        if (nonprofitId) {
+          // First try with banner- prefix
+          const prefixedId = `banner-${nonprofitId}`;
+          console.log(`Checking storage with prefixed ID: ${prefixedId}`);
+          const prefixedStorageUrl = await getBannerImageFromStorage(prefixedId);
+          
+          if (prefixedStorageUrl) {
+            console.log(`Found banner with prefix in storage: ${prefixedStorageUrl}`);
+            // Add cache busting
+            const cacheBustedUrl = `${prefixedStorageUrl}?t=${Date.now()}`;
+            setFinalBannerUrl(cacheBustedUrl);
+            setIsLoading(false);
+            return;
+          }
+          
+          // Try without prefix as fallback
+          console.log(`Checking storage with regular ID: ${nonprofitId}`);
+          const regularStorageUrl = await getBannerImageFromStorage(nonprofitId);
+          
+          if (regularStorageUrl) {
+            console.log(`Found banner in storage: ${regularStorageUrl}`);
+            // Add cache busting
+            const cacheBustedUrl = `${regularStorageUrl}?t=${Date.now()}`;
+            setFinalBannerUrl(cacheBustedUrl);
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log(`No banner found in storage for ${nonprofitId}`);
+        }
+      } catch (error) {
+        console.error("Error fetching banner:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBanner();
+  }, [bannerImageUrl, nonprofitId, title]);
 
   return (
     <div className="relative">

@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, AlertCircle, Camera } from 'lucide-react';
+import { Upload, AlertCircle, Camera, Save } from 'lucide-react';
 
 interface BannerImageUploadProps {
   setBannerImage: (file: File | null) => void;
@@ -9,6 +9,8 @@ interface BannerImageUploadProps {
   bannerImageError: string | null;
   existingBannerUrl?: string | null;
   insideForm?: boolean;
+  fileSelected?: boolean;
+  onSaveClick?: () => void;
 }
 
 const BannerImageUpload = ({ 
@@ -16,7 +18,9 @@ const BannerImageUpload = ({
   setBannerImageError,
   bannerImageError,
   existingBannerUrl,
-  insideForm = false
+  insideForm = false,
+  fileSelected = false,
+  onSaveClick
 }: BannerImageUploadProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(existingBannerUrl || null);
   const [isDragging, setIsDragging] = useState(false);
@@ -125,13 +129,22 @@ const BannerImageUpload = ({
     return (
       <Button
         type="button"
-        variant="secondary"
+        variant={fileSelected ? "youth-blue" : "secondary"}
         size="sm"
-        onClick={triggerFileInput}
-        className="bg-white/80 hover:bg-white text-youth-charcoal border border-gray-200 mx-auto"
+        onClick={fileSelected && onSaveClick ? onSaveClick : triggerFileInput}
+        className={fileSelected ? "bg-youth-blue hover:bg-youth-purple text-white border border-transparent mx-auto" : "bg-white/80 hover:bg-white text-youth-charcoal border border-gray-200 mx-auto"}
       >
-        <Camera className="h-4 w-4 mr-2" />
-        Change Banner
+        {fileSelected ? (
+          <>
+            <Save className="h-4 w-4 mr-2" />
+            Save Banner
+          </>
+        ) : (
+          <>
+            <Camera className="h-4 w-4 mr-2" />
+            Change Banner
+          </>
+        )}
         <input
           type="file"
           accept="image/jpeg,image/png"

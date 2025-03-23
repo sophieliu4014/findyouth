@@ -58,9 +58,9 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
     
     console.log(`Checking banner image for nonprofit ID: ${nonprofitId}`);
     
-    // Ensure ID is prefixed with "banner-"
-    const idPrefix = nonprofitId.startsWith('banner-') ? '' : 'banner-';
-    const bannerId = `${idPrefix}${nonprofitId}`;
+    // Don't manipulate the ID - use it as provided
+    // This allows calling code to explicitly use "banner-{id}" format if needed
+    const bannerId = nonprofitId;
     
     // Common image extensions to check
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
@@ -84,18 +84,18 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
         try {
           const response = await fetch(cacheBustUrl, { method: 'HEAD', cache: 'no-cache' });
           if (response.ok) {
-            console.log(`Verified banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
+            console.log(`✅ Verified banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
             return data.publicUrl;
           } else {
-            console.log(`Banner image not accessible (status ${response.status}): ${data.publicUrl}`);
+            console.log(`❌ Banner image not accessible (status ${response.status}): ${data.publicUrl}`);
           }
         } catch (e) {
-          console.log(`Error accessing banner image: ${data.publicUrl}`, e);
+          console.log(`❌ Error accessing banner image: ${data.publicUrl}`, e);
         }
       }
     }
     
-    console.log(`No banner image found for nonprofit ID: ${nonprofitId}`);
+    console.log(`No banner image found for ID: ${nonprofitId}`);
     return null;
   } catch (error) {
     console.error("Error getting banner image from storage:", error);

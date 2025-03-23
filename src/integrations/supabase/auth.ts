@@ -272,17 +272,17 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     const timestamp = new Date().getTime();
     const { data: { publicUrl } } = supabase.storage
       .from('banner-images')
-      .getPublicUrl(`${filePath}?t=${timestamp}`);
+      .getPublicUrl(filePath);
 
     if (!publicUrl) {
       throw new Error('Failed to get public URL for uploaded banner image');
     }
 
     console.log('Banner file uploaded successfully, public URL:', publicUrl);
-    return publicUrl.split('?')[0]; // Remove cache-busting parameter before storing
+    
+    return publicUrl.split('?')[0]; // Return clean URL
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
-    toast.error(`Failed to upload banner image: ${error.message}`);
     throw new Error(`Failed to upload banner image: ${error.message}`);
   }
 };
