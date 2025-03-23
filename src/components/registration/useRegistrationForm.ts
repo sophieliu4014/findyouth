@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
-import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
+import { signUpWithEmail, createNonprofitProfile, uploadProfileImage, uploadBannerImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
 
 export const useRegistrationForm = () => {
@@ -11,6 +11,8 @@ export const useRegistrationForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
+  const [bannerImageError, setBannerImageError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -32,12 +34,14 @@ export const useRegistrationForm = () => {
   const resetForm = () => {
     form.reset();
     setProfileImage(null);
+    setBannerImage(null);
     setIsSuccess(false);
   };
 
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     setImageError(null);
+    setBannerImageError(null);
     console.log("Starting registration submission process");
     
     if (!profileImage) {
@@ -72,8 +76,33 @@ export const useRegistrationForm = () => {
         throw imageUploadError;
       }
       
+      // Upload banner image if provided
+      let bannerImageUrl = null;
+      if (bannerImage) {
+        console.log("Step 1b: Uploading banner image");
+        try {
+          const identifier = `banner-${data.organizationName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
+          bannerImageUrl = await uploadBannerImage(bannerImage, identifier);
+          
+          if (!bannerImageUrl) {
+            console.error("No banner image URL returned after upload");
+            throw new Error("Failed to get a valid banner image URL after upload");
+          }
+          console.log("Banner image uploaded successfully:", bannerImageUrl);
+        } catch (bannerUploadError: any) {
+          console.error("Banner image upload error:", bannerUploadError);
+          toast({
+            title: "Banner image upload failed",
+            description: bannerUploadError.message || "Failed to upload banner image",
+            variant: "destructive",
+          });
+          // Continue with registration even if banner upload fails
+          bannerImageUrl = null;
+        }
+      }
+      
       console.log("Step 2: Creating user account with Supabase Auth");
-      // Store the image URL in the nonprofit_data object
+      // Store the image URLs in the nonprofit_data object
       const nonprofitData = {
         phone: data.phone,
         website: data.website,
@@ -82,17 +111,18 @@ export const useRegistrationForm = () => {
         description: data.description,
         mission: data.mission,
         causes: data.causes,
-        profileImageUrl: imageUrl  // Make sure this is getting set correctly
+        profileImageUrl: imageUrl,
+        bannerImageUrl: bannerImageUrl
       };
       
-      console.log("Nonprofit data with profile image:", nonprofitData);
+      console.log("Nonprofit data with images:", nonprofitData);
       
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
         { 
           organization_name: data.organizationName,
-          nonprofit_data: nonprofitData  // Pass the nonprofit data object directly
+          nonprofit_data: nonprofitData
         }
       );
       
@@ -135,6 +165,10 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
+    bannerImage,
+    setBannerImage,
+    bannerImageError,
+    setBannerImageError,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };

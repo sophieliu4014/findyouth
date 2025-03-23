@@ -1,4 +1,3 @@
-
 import { supabase } from "./client";
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from "sonner";
@@ -19,6 +18,7 @@ export const createNonprofitProfile = async ({
   description,
   mission,
   profileImageUrl,
+  bannerImageUrl,
   causes
 }: {
   userId: string;
@@ -31,10 +31,11 @@ export const createNonprofitProfile = async ({
   description: string;
   mission: string;
   profileImageUrl: string;
+  bannerImageUrl?: string | null;
   causes: string[];
 }) => {
   try {
-    console.log("Creating nonprofit profile with image URL:", profileImageUrl);
+    console.log("Creating nonprofit profile with image URLs:", profileImageUrl, bannerImageUrl);
     
     // Check if profile already exists
     const { data: existingProfile } = await supabase
@@ -58,6 +59,7 @@ export const createNonprofitProfile = async ({
           description,
           mission,
           profile_image_url: profileImageUrl,
+          banner_image_url: bannerImageUrl,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
@@ -82,7 +84,8 @@ export const createNonprofitProfile = async ({
         location,
         description,
         mission,
-        profile_image_url: profileImageUrl
+        profile_image_url: profileImageUrl,
+        banner_image_url: bannerImageUrl
       })
       .select()
       .single();
@@ -172,6 +175,7 @@ export const ensureNonprofitProfile = async (): Promise<boolean> => {
       description: nonprofitData.description || '',
       mission: nonprofitData.mission || '',
       profileImageUrl: nonprofitData.profileImageUrl || '',
+      bannerImageUrl: nonprofitData.bannerImageUrl || '',
       causes: nonprofitData.causes || []
     });
 
@@ -202,7 +206,7 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     const fileExt = file.name.split('.').pop();
     const filePath = `${identifier}.${fileExt}`;
     
-    console.log(`Uploading file to bucket 'profile-images', path: ${filePath}`);
+    console.log(`Uploading profile file to bucket 'profile-images', path: ${filePath}`);
     
     // Upload the file to the profile-images bucket
     const { data, error: uploadError } = await supabase.storage
@@ -234,6 +238,47 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     console.error('Error uploading profile image:', error);
     toast.error(`Failed to upload image: ${error.message}`);
     throw new Error(`Failed to upload profile image: ${error.message}`);
+  }
+};
+
+// Upload banner image to Supabase storage
+export const uploadBannerImage = async (file: File, identifier: string): Promise<string | null> => {
+  try {
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${identifier}.${fileExt}`;
+    
+    console.log(`Uploading banner file to bucket 'banner-images', path: ${filePath}`);
+    
+    // Upload the file to the banner-images bucket
+    const { data, error: uploadError } = await supabase.storage
+      .from('banner-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('Banner upload error:', uploadError);
+      throw uploadError;
+    }
+
+    console.log('Banner upload successful, data:', data);
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('banner-images')
+      .getPublicUrl(filePath);
+
+    if (!publicUrl) {
+      throw new Error('Failed to get public URL for uploaded banner image');
+    }
+
+    console.log('Banner file uploaded successfully, public URL:', publicUrl);
+    return publicUrl;
+  } catch (error: any) {
+    console.error('Error uploading banner image:', error);
+    toast.error(`Failed to upload banner image: ${error.message}`);
+    throw new Error(`Failed to upload banner image: ${error.message}`);
   }
 };
 
