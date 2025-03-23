@@ -244,28 +244,23 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
 // Upload banner image to Supabase storage
 export const uploadBannerImage = async (file: File, identifier: string): Promise<string | null> => {
   try {
+    console.log(`Starting banner upload for identifier: ${identifier}`);
+    
     // Ensure identifier starts with "banner-"
     const idPrefix = identifier.startsWith('banner-') ? '' : 'banner-';
     const actualIdentifier = `${idPrefix}${identifier}`;
     
-    // Get file extension from the original filename and ensure it's lowercase
+    // Get file extension from the original filename
     const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const filePath = `${actualIdentifier}.${fileExt}`;
     
-    console.log(`Uploading banner file to storage bucket 'banner-images', path: ${filePath}, file type: ${file.type}`);
+    console.log(`Uploading banner file to bucket 'banner-images', path: ${filePath}, file type: ${file.type}, size: ${file.size} bytes`);
     
-    // Create a proper content type based on the file extension
-    let contentType = 'image/jpeg'; // default
-    if (fileExt === 'png') contentType = 'image/png';
-    if (fileExt === 'gif') contentType = 'image/gif';
-    
-    // Upload the file to the banner-images bucket with explicit content type
+    // Simplified upload approach - match the profile image upload pattern
     const { data, error: uploadError } = await supabase.storage
       .from('banner-images')
       .upload(filePath, file, {
-        cacheControl: '0', // No caching to prevent stale images
-        upsert: true,
-        contentType: contentType
+        upsert: true
       });
 
     if (uploadError) {
@@ -285,20 +280,8 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     }
 
     console.log('Banner file uploaded successfully, public URL:', publicUrl);
+    return publicUrl;
     
-    // Test the URL to make sure it's accessible
-    try {
-      const response = await fetch(publicUrl, { method: 'HEAD' });
-      if (!response.ok) {
-        console.error(`Banner URL not accessible (status ${response.status}): ${publicUrl}`);
-      } else {
-        console.log(`Banner URL verified accessible: ${publicUrl}`);
-      }
-    } catch (e) {
-      console.error(`Error verifying banner URL: ${publicUrl}`, e);
-    }
-    
-    return publicUrl.split('?')[0]; // Return clean URL without query parameters
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
     toast.error(`Failed to upload banner image: ${error.message}`);
