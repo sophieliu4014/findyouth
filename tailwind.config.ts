@@ -109,6 +109,15 @@ export default {
 				float: {
 					'0%, 100%': { transform: 'translateY(0)' },
 					'50%': { transform: 'translateY(-10px)' }
+				},
+				dash: {
+					'0%': { 'stroke-dashoffset': '300' },
+					'100%': { 'stroke-dashoffset': '0' }
+				},
+				wavyAnimation: {
+					'0%': { d: 'M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10' },
+					'50%': { d: 'M0,10 Q30,15 60,10 T120,10 T180,10 T240,10 T300,10' },
+					'100%': { d: 'M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10' }
 				}
 			},
 			animation: {
@@ -118,7 +127,9 @@ export default {
 				'slide-up': 'slideUp 0.5s ease-out',
 				'slide-down': 'slideDown 0.5s ease-out',
 				'pulse-slow': 'pulse 3s ease-in-out infinite',
-				'float': 'float 3s ease-in-out infinite'
+				'float': 'float 3s ease-in-out infinite',
+				'dash': 'dash 2s linear forwards',
+				'wavy': 'wavyAnimation 5s ease-in-out infinite'
 			},
 			boxShadow: {
 				'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
@@ -134,6 +145,12 @@ export default {
 			},
 			backdropFilter: {
 				'glass': 'blur(4px)'
+			},
+			strokeDasharray: {
+				'300': '300',
+			},
+			strokeDashoffset: {
+				'300': '300',
 			}
 		}
 	},

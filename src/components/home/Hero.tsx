@@ -84,15 +84,36 @@ const Hero = () => {
       
       <div className="relative z-10 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 text-white text-center">
         <h1 className="text-5xl md:text-7xl font-work-sans mb-8 animate-fade-in drop-shadow-lg">
-          <span className="block font-light">Empowering</span>
-          <span className="block mt-2 font-bold text-[#7B99F4] drop-shadow-sm">
-            Student Leaders
-          </span>
-          <span className="block mt-2 font-light">Connecting Volunteers</span>
+          <span className="block font-light">Helping Youth to</span>
+          <div className="relative inline-block mt-2">
+            <span className="block font-bold text-white drop-shadow-sm">
+              Find Youth
+            </span>
+            <span className="absolute -bottom-4 left-0 right-0 w-full">
+              <svg className="w-full" viewBox="0 0 300 20" xmlns="http://www.w3.org/2000/svg">
+                <path 
+                  d="M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10" 
+                  fill="none" 
+                  stroke="#FFE44D" 
+                  strokeWidth="6"
+                  className="animate-dash"
+                >
+                  <animate 
+                    attributeName="d" 
+                    values="M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10;
+                            M0,10 Q30,15 60,10 T120,10 T180,10 T240,10 T300,10;
+                            M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10" 
+                    dur="5s" 
+                    repeatCount="indefinite" 
+                  />
+                </path>
+              </svg>
+            </span>
+          </div>
         </h1>
         
         <p className="text-xl font-comfortaa max-w-3xl mx-auto mb-12 animate-fade-in animate-delay-100 drop-shadow-md">
-          FindYouth strives to connect youth all across Greater Vancouver, encouraging their leadership pursuits and helping them to become more involved in their communities.
+          FindYouth strives to connect youth all across the globe, encouraging their leadership pursuits and helping them to become more involved in their communities.
         </p>
         
         <div className="max-w-2xl mx-auto mb-10 animate-slide-up animate-delay-200">
