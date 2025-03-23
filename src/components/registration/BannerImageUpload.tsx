@@ -8,7 +8,6 @@ interface BannerImageUploadProps {
   setBannerImageError: (error: string | null) => void;
   bannerImageError: string | null;
   existingBannerUrl?: string | null;
-  // Add a new prop to determine if this component is used within a form
   insideForm?: boolean;
 }
 
@@ -117,7 +116,7 @@ const BannerImageUpload = ({
   };
 
   // In the Profile component, we want to display just a button rather than the full upload area
-  if (imagePreview && existingBannerUrl) {
+  if (!insideForm && existingBannerUrl) {
     return (
       <Button
         type="button"
@@ -141,13 +140,13 @@ const BannerImageUpload = ({
 
   // In registration/other contexts, display the full upload area
   return (
-    <div className="space-y-2">
+    <div className="space-y-3 w-full">
       {/* Use a regular label when outside a form context */}
       <label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
         Banner Image (Optional)
       </label>
       <div 
-        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors ${
+        className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-lg transition-colors w-full ${
           isDragging 
             ? 'border-primary bg-primary/5' 
             : bannerImageError 
@@ -157,7 +156,7 @@ const BannerImageUpload = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        style={{ height: '150px', width: '100%' }}
+        style={{ minHeight: '180px' }}
       >
         <input
           type="file"
@@ -168,8 +167,8 @@ const BannerImageUpload = ({
         />
         
         {imagePreview ? (
-          <div className="flex flex-col items-center gap-4 w-full">
-            <div className="relative w-full h-24 overflow-hidden rounded-lg">
+          <div className="flex flex-col items-center gap-4 w-full p-4">
+            <div className="relative w-full h-32 sm:h-40 overflow-hidden rounded-lg">
               <img 
                 src={imagePreview} 
                 alt="Banner preview" 
@@ -187,15 +186,21 @@ const BannerImageUpload = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              <Upload className="h-5 w-5 text-gray-400" />
+          <div className="flex flex-col items-center gap-3 py-8 px-6 w-full">
+            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
+              <Upload className="h-6 w-6 text-gray-500" />
             </div>
             <div className="text-center">
-              <Button type="button" variant="outline" size="sm" onClick={triggerFileInput}>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={triggerFileInput}
+                className="mb-2"
+              >
                 Choose Banner Image
               </Button>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 PNG or JPG (1200×300 recommended, max. 3MB)
               </p>
             </div>
@@ -204,7 +209,7 @@ const BannerImageUpload = ({
       </div>
       {bannerImageError && (
         <div className="flex items-center mt-1 text-destructive">
-          <AlertCircle className="h-4 w-4 mr-1" />
+          <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
           <p className="text-xs font-medium">{bannerImageError}</p>
         </div>
       )}
