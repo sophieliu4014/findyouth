@@ -101,6 +101,7 @@ const CreateEvent = () => {
         attached_links: values.attachedLinks || null,
         cause_area: values.causeArea,
         nonprofit_id: user.id,
+        created_at: new Date().toISOString(), // Ensure we record when the event was created
       };
 
       // Insert event into database
@@ -142,6 +143,7 @@ const CreateEvent = () => {
       }
 
       toast.success('Event created successfully!');
+      // Redirect to the find activities page to show the newly created event
       navigate('/find-activities');
     } catch (error: any) {
       console.error('Error creating event:', error);

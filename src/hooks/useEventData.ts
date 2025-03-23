@@ -16,7 +16,8 @@ export const useEventData = (filters: EventFilters = {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false }); // Order by creation date, newest first
 
       if (error) {
         console.error('Error fetching events:', error);

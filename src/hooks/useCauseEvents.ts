@@ -12,11 +12,11 @@ const useCauseEvents = (causeArea: string) => {
         return [];
       }
       
-      // This is a placeholder - in a real app, you'd query by cause area
-      // For now, we'll return all events and filter client-side
+      // Query events, sorted by creation date (newest first)
       const { data, error } = await supabase
         .from('events')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching cause events:', error);

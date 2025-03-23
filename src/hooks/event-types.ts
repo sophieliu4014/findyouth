@@ -12,6 +12,7 @@ export interface DatabaseEvent {
   nonprofit_id: string;
   image_url?: string | null;
   created_at?: string | null;
+  cause_area?: string | null;
 }
 
 // Define the event type with additional fields for the UI
@@ -27,6 +28,7 @@ export interface Event {
   imageUrl?: string;
   profileImage?: string;
   description?: string;
+  createdAt?: string;
 }
 
 // Map for hardcoded nonprofit names (for development only)
@@ -47,9 +49,10 @@ export const transformDatabaseEvents = (dbEvents: DatabaseEvent[]): Event[] => {
     organizationId: event.nonprofit_id,
     date: event.date,
     location: event.location,
-    causeArea: 'Environment', // Default value or you could fetch this
+    causeArea: event.cause_area || 'Environment', // Use the stored cause_area if available
     rating: 4, // Default value
     imageUrl: event.image_url || undefined,
-    description: event.description
+    description: event.description,
+    createdAt: event.created_at || undefined
   }));
 };
