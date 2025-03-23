@@ -16,6 +16,7 @@ interface FilterBarProps {
   }) => void;
   onCauseChange?: (cause: string) => void;
   onOrganizationChange?: (organization: string) => void;
+  onLocationChange?: (location: string) => void;
   organizations?: string[];
   initialFilters?: {
     cause: string;
@@ -28,6 +29,7 @@ const FilterBar = ({
   onFilterChange, 
   onCauseChange,
   onOrganizationChange,
+  onLocationChange,
   organizations = [],
   initialFilters 
 }: FilterBarProps) => {
@@ -50,6 +52,14 @@ const FilterBar = ({
     setCause(newCause);
     if (onCauseChange) {
       onCauseChange(newCause === "All Causes" ? "" : newCause);
+    }
+  };
+
+  // Handle location change
+  const handleLocationChange = (newLocation: string) => {
+    setLocation(newLocation);
+    if (onLocationChange) {
+      onLocationChange(newLocation === "All Locations" ? "" : newLocation);
     }
   };
 
@@ -85,6 +95,10 @@ const FilterBar = ({
     
     if (onCauseChange) {
       onCauseChange("");
+    }
+    
+    if (onLocationChange) {
+      onLocationChange("");
     }
     
     if (onOrganizationChange) {
@@ -127,7 +141,7 @@ const FilterBar = ({
             {/* Location Filter */}
             <LocationFilter 
               location={location} 
-              onLocationChange={setLocation} 
+              onLocationChange={handleLocationChange} 
               locations={locations} 
             />
             
@@ -143,7 +157,7 @@ const FilterBar = ({
           <ActiveFilters 
             activeFilters={{ cause, location, organization }}
             onCauseReset={() => handleCauseChange("All Causes")}
-            onLocationReset={() => setLocation("All Locations")}
+            onLocationReset={() => handleLocationChange("All Locations")}
             onOrganizationReset={() => handleOrganizationChange("All Organizations")}
           />
           

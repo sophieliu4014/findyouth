@@ -33,8 +33,12 @@ export const filterEvents = (events: Event[], filters: EventFilters = {
     results = results.filter(event => event.causeArea === filters.cause);
   }
   
+  // Fix for location filter - case insensitive partial matching
   if (filters.location) {
-    results = results.filter(event => event.location === filters.location);
+    const lowerLocation = filters.location.toLowerCase();
+    results = results.filter(event => 
+      event.location && event.location.toLowerCase().includes(lowerLocation)
+    );
   }
   
   if (filters.organization) {

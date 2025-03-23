@@ -74,6 +74,14 @@ const ActivitySearch = ({
     });
   };
 
+  const handleLocationChange = (selectedLocation: string) => {
+    setCity(selectedLocation);
+    setFilters({
+      ...filters,
+      location: selectedLocation
+    });
+  };
+
   const handleOrganizationChange = (selectedOrg: string) => {
     setOrganization(selectedOrg);
     setFilters({
@@ -124,6 +132,7 @@ const ActivitySearch = ({
           
           <FilterBar 
             onCauseChange={handleCauseChange}
+            onLocationChange={handleLocationChange}
             onOrganizationChange={handleOrganizationChange}
             organizations={uniqueOrganizations}
           />
