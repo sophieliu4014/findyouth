@@ -69,7 +69,7 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
             return data.publicUrl;
           }
         } catch (e) {
-          console.log(`URL exists but image not accessible: ${data.publicUrl}`);
+          console.log(`URL exists but banner image not accessible: ${data.publicUrl}`);
         }
       }
     }

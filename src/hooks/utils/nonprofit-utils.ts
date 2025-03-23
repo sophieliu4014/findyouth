@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { generateFallbackImageUrl } from './image-utils';
 import { NONPROFIT_NAME_MAP } from '../types/event-types';
-import { getProfileImageFromStorage } from './image-utils';
+import { getProfileImageFromStorage, getBannerImageFromStorage } from './image-utils';
 
 export const fetchNonprofitData = async (nonprofitId: string) => {
   try {
@@ -32,12 +32,19 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
     
     if (nonprofitData) {
       console.log('Successfully fetched nonprofit data from nonprofits table');
+      
+      // Get banner image from storage if not in database
+      let bannerImageUrl = nonprofitData.banner_image_url;
+      if (!bannerImageUrl) {
+        bannerImageUrl = await getBannerImageFromStorage(nonprofitId);
+      }
+      
       return {
         name: nonprofitData.organization_name,
         profileImage: nonprofitData.profile_image_url || await getProfileImageFromStorage(nonprofitId),
         description: nonprofitData.description || 'No description available',
         location: nonprofitData.location || '',
-        bannerImageUrl: nonprofitData.banner_image_url || null
+        bannerImageUrl: bannerImageUrl
       };
     }
     
@@ -56,12 +63,18 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
         const metadata = userData.user.user_metadata || {};
         const nonprofitData = metadata.nonprofit_data || {};
         
+        // Get banner image from storage if not in metadata
+        let bannerImageUrl = nonprofitData.bannerImageUrl;
+        if (!bannerImageUrl) {
+          bannerImageUrl = await getBannerImageFromStorage(nonprofitId);
+        }
+        
         return {
           name: metadata.organization_name || NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
           profileImage: nonprofitData.profileImageUrl || await getProfileImageFromStorage(nonprofitId),
           description: nonprofitData.description || 'No description available',
           location: nonprofitData.location || '',
-          bannerImageUrl: nonprofitData.bannerImageUrl || null
+          bannerImageUrl: bannerImageUrl
         };
       }
     } catch (userDataError) {
@@ -76,7 +89,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
       profileImage: generateFallbackImageUrl(nonprofitId),
       description: 'No description available',
       location: '',
-      bannerImageUrl: null
+      bannerImageUrl: await getBannerImageFromStorage(nonprofitId)
     };
   } catch (error) {
     console.error('Error in fetchNonprofitData:', error);
