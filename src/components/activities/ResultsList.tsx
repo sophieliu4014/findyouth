@@ -1,6 +1,6 @@
 
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import EventCard from '../EventCard';
 import { seedEvents } from '@/utils/seedEvents';
 import { Event } from '@/hooks/event-types';
@@ -14,6 +14,7 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
   // Seed events if none are found
   useEffect(() => {
     if (!isLoading && events.length === 0) {
+      console.log('No events found, seeding events...');
       seedEvents();
     }
   }, [events, isLoading]);
@@ -27,6 +28,8 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
     );
   }
 
+  console.log('Rendering events:', events);
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
       {events && events.length > 0 ? (
@@ -36,7 +39,18 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
             className="animate-slide-up" 
             style={{ animationDelay: `${(index + 1) * 100}ms` }}
           >
-            <EventCard {...event} />
+            <EventCard 
+              id={event.id}
+              title={event.title}
+              organization={event.organization}
+              date={event.date}
+              location={event.location}
+              causeArea={event.causeArea}
+              rating={event.rating}
+              imageUrl={event.imageUrl}
+              profileImage={event.profileImage}
+              organizationId={event.organizationId}
+            />
           </div>
         ))
       ) : (

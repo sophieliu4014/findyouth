@@ -37,6 +37,15 @@ const EventCard = ({
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
 
+  console.log('EventCard rendering with:', { 
+    id, 
+    title, 
+    organization, 
+    organizationId, 
+    imageUrl, 
+    profileImage 
+  });
+
   // Render 5 stars with appropriate filled/unfilled state
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, i) => (

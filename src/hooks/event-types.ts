@@ -63,20 +63,21 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       
     if (error) {
       console.error('Error fetching nonprofits:', error);
-    } else {
+    } else if (nonprofits && nonprofits.length > 0) {
       console.log('Fetched nonprofits data:', nonprofits);
       
       // Populate the nonprofit map
-      if (nonprofits && nonprofits.length > 0) {
-        nonprofits.forEach(nonprofit => {
-          nonprofitMap.set(nonprofit.id, {
-            name: nonprofit.organization_name,
-            profileImage: nonprofit.profile_image_url
-          });
+      nonprofits.forEach(nonprofit => {
+        nonprofitMap.set(nonprofit.id, {
+          name: nonprofit.organization_name,
+          profileImage: nonprofit.profile_image_url
         });
-      } else {
-        console.log('No nonprofits found in database, using fallback data');
-      }
+      });
+      console.log('Nonprofit map populated with data:', 
+        Array.from(nonprofitMap.entries()).map(([id, data]) => ({ id, data }))
+      );
+    } else {
+      console.log('No nonprofits found in database, using fallback data');
     }
   } catch (fetchError) {
     console.error('Exception while fetching nonprofits:', fetchError);
@@ -90,11 +91,9 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     const nonprofit = nonprofitMap.get(event.nonprofit_id);
     
     // Use console.log to debug nonprofit data for each event
-    if (nonprofit) {
-      console.log(`Found nonprofit for event ${event.id}:`, nonprofit);
-    } else {
-      console.log(`No nonprofit found for ID ${event.nonprofit_id}, using fallback`);
-    }
+    console.log(`Processing event ${event.id} for nonprofit ${event.nonprofit_id}`);
+    console.log(`Nonprofit data found:`, nonprofit);
+    console.log(`Event image_url:`, event.image_url);
     
     const organizationName = nonprofit?.name || 
                           NONPROFIT_NAME_MAP[event.nonprofit_id] || 
@@ -104,8 +103,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     let profileImage = nonprofit?.profileImage;
     if (!profileImage) {
       // Use a deterministic fallback based on nonprofit ID
-      const idNumber = parseInt(event.nonprofit_id.replace(/\D/g, '').slice(-6), 10) || 0;
-      profileImage = `https://images.unsplash.com/photo-${1550000000000 + idNumber % 1000000}`;
+      const idNumber = parseInt(event.nonprofit_id.replace(/\D/g, '').slice(-6), 10) % 100 || 42;
+      profileImage = `https://source.unsplash.com/random/300x300?nonprofit=${idNumber}`;
     }
     
     return {

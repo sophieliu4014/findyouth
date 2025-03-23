@@ -71,6 +71,8 @@ const EventForm = ({ userId }: EventFormProps) => {
         created_at: new Date().toISOString(), // Ensure we record when the event was created
       };
 
+      console.log('Creating event with payload:', eventPayload);
+
       // Insert event into database
       const { data: createdEvent, error } = await supabase
         .from('events')
@@ -80,23 +82,34 @@ const EventForm = ({ userId }: EventFormProps) => {
 
       if (error) throw error;
 
+      console.log('Event created successfully:', createdEvent);
+
       // Upload image if selected
       if (eventImage && createdEvent) {
         const fileExt = eventImage.name.split('.').pop();
         const filePath = `event-images/${createdEvent.id}.${fileExt}`;
         
-        const { error: uploadError } = await supabase.storage
-          .from('event-images') // Changed to use the event-images bucket
+        console.log('Uploading image to path:', filePath);
+        
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('event-images') 
           .upload(filePath, eventImage, {
             upsert: true,
           });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Error uploading image:', uploadError);
+          throw uploadError;
+        }
+
+        console.log('Image uploaded successfully:', uploadData);
 
         // Get public URL
         const { data: urlData } = supabase.storage
           .from('event-images')
           .getPublicUrl(filePath);
+
+        console.log('Image public URL:', urlData);
 
         // Update event with image URL
         if (urlData) {
@@ -105,7 +118,12 @@ const EventForm = ({ userId }: EventFormProps) => {
             .update({ image_url: urlData.publicUrl })
             .eq('id', createdEvent.id);
 
-          if (updateError) throw updateError;
+          if (updateError) {
+            console.error('Error updating event with image URL:', updateError);
+            throw updateError;
+          }
+          
+          console.log('Event updated with image URL:', urlData.publicUrl);
         }
       }
 

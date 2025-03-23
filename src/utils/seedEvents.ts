@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { checkCauseAreaColumn } from '@/hooks/event-utils';
 
@@ -89,7 +90,8 @@ export const seedEvents = async () => {
             mission: `Our mission is to empower youth and make a positive impact in our community.`,
             location: 'Greater Vancouver, BC',
             social_media: 'https://instagram.com/sample',
-            email: `info@${nonprofit.organization_name.toLowerCase().replace(/\s+/g, '')}.org`
+            email: `info@${nonprofit.organization_name.toLowerCase().replace(/\s+/g, '')}.org`,
+            profile_image_url: `https://source.unsplash.com/random/300x300?nonprofit=${nonprofit.id.slice(-2)}`
           });
           
         if (insertError) {
