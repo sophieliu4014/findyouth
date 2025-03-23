@@ -248,17 +248,24 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     const idPrefix = identifier.startsWith('banner-') ? '' : 'banner-';
     const actualIdentifier = `${idPrefix}${identifier}`;
     
-    const fileExt = file.name.split('.').pop();
+    // Get file extension from the original filename and ensure it's lowercase
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
     const filePath = `${actualIdentifier}.${fileExt}`;
     
-    console.log(`Uploading banner file to storage bucket 'banner-images', path: ${filePath}`);
+    console.log(`Uploading banner file to storage bucket 'banner-images', path: ${filePath}, file type: ${file.type}`);
     
-    // Upload the file to the banner-images bucket
+    // Create a proper content type based on the file extension
+    let contentType = 'image/jpeg'; // default
+    if (fileExt === 'png') contentType = 'image/png';
+    if (fileExt === 'gif') contentType = 'image/gif';
+    
+    // Upload the file to the banner-images bucket with explicit content type
     const { data, error: uploadError } = await supabase.storage
       .from('banner-images')
       .upload(filePath, file, {
         cacheControl: '0', // No caching to prevent stale images
-        upsert: true
+        upsert: true,
+        contentType: contentType
       });
 
     if (uploadError) {
@@ -268,8 +275,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
 
     console.log('Banner upload successful, data:', data);
 
-    // Get the public URL with a cache-busting parameter
-    const timestamp = new Date().getTime();
+    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('banner-images')
       .getPublicUrl(filePath);
@@ -279,6 +285,18 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     }
 
     console.log('Banner file uploaded successfully, public URL:', publicUrl);
+    
+    // Test the URL to make sure it's accessible
+    try {
+      const response = await fetch(publicUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        console.error(`Banner URL not accessible (status ${response.status}): ${publicUrl}`);
+      } else {
+        console.log(`Banner URL verified accessible: ${publicUrl}`);
+      }
+    } catch (e) {
+      console.error(`Error verifying banner URL: ${publicUrl}`, e);
+    }
     
     return publicUrl.split('?')[0]; // Return clean URL
   } catch (error: any) {

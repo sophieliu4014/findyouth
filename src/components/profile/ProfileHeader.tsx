@@ -115,7 +115,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
       }
       
       if (bannerImage) {
-        console.log("Uploading banner image, file:", bannerImage.name, "Size:", bannerImage.size);
+        console.log("Uploading banner image, file:", bannerImage.name, "Size:", bannerImage.size, "Type:", bannerImage.type);
         const identifier = user?.id || Date.now().toString();
         // Always use banner- prefix for consistency
         const newBannerUrl = await uploadBannerImage(bannerImage, `banner-${identifier}`);
@@ -127,6 +127,9 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
           setBannerImagePreview(cacheBustUrl);
         } else {
           console.error("Failed to get banner URL after upload");
+          toast.error("Failed to upload banner image");
+          setIsSaving(false);
+          return;
         }
       } else {
         console.log("No banner image to upload");
