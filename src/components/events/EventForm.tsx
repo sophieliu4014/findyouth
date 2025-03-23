@@ -23,6 +23,7 @@ const EventForm = ({ userId }: EventFormProps) => {
   const navigate = useNavigate();
   const [eventImage, setEventImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -45,6 +46,13 @@ const EventForm = ({ userId }: EventFormProps) => {
 
   const onSubmit = async (values: EventFormValues) => {
     if (!userId) return;
+    
+    // Validate image is uploaded
+    if (!eventImage) {
+      setImageError("Please upload an event image");
+      toast.error("Event image is required");
+      return;
+    }
     
     try {
       setIsSubmitting(true);
@@ -154,8 +162,17 @@ const EventForm = ({ userId }: EventFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <BasicInfoSection 
           control={form.control} 
-          onImageSelect={setEventImage} 
+          onImageSelect={(file) => {
+            setEventImage(file);
+            setImageError(null);
+          }}
         />
+        
+        {imageError && (
+          <div className="text-destructive text-sm font-medium">
+            {imageError}
+          </div>
+        )}
         
         <DateTimeSection control={form.control} />
         

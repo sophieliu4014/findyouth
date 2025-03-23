@@ -112,7 +112,7 @@ const BasicInfoSection = ({ control, onImageSelect }: BasicInfoSectionProps) => 
       
       <div>
         <div className="mb-2">
-          <FormLabel>Event Image</FormLabel>
+          <FormLabel>Event Image*</FormLabel>
         </div>
         <EventImageUpload
           onImageSelect={onImageSelect}

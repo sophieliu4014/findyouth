@@ -3,14 +3,16 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Save, Upload } from 'lucide-react';
+import { Loader2, Save, Upload, Edit, User } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useAuthStore } from '@/lib/auth';
 import { signOut, uploadProfileImage } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import ProfileEditForm from '@/components/profile/ProfileEditForm';
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading, refreshAuth } = useAuthStore();
@@ -110,13 +112,17 @@ const Profile = () => {
       }
       
       await refreshAuth();
-      toast.success('Profile updated successfully');
+      toast.success('Profile image updated successfully');
     } catch (error: any) {
       console.error('Error saving profile:', error);
       toast.error(`Failed to update profile: ${error.message}`);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleProfileUpdated = async () => {
+    await refreshAuth();
   };
 
   if (isLoading) {
@@ -157,49 +163,79 @@ const Profile = () => {
               </Button>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-1">
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                  <div className="text-center">
-                    <div className="relative w-32 h-32 mx-auto mb-4">
-                      {imagePreview ? (
-                        <img 
-                          src={imagePreview} 
-                          alt="Profile" 
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-youth-blue/10 rounded-full flex items-center justify-center">
-                          <span className="text-4xl font-bold text-youth-blue">
-                            {organizationName.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                      
-                      <label 
-                        htmlFor="profile-image-upload" 
-                        className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-50 border border-gray-200"
-                      >
-                        <Upload className="h-4 w-4 text-youth-blue" />
-                        <input
-                          id="profile-image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-                      </label>
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-8">
+              <div className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  {imagePreview ? (
+                    <img 
+                      src={imagePreview} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-youth-blue/10 rounded-full flex items-center justify-center">
+                      <span className="text-4xl font-bold text-youth-blue">
+                        {organizationName.charAt(0).toUpperCase()}
+                      </span>
                     </div>
-                    <h2 className="text-xl font-semibold">{organizationName}</h2>
-                    <p className="text-youth-charcoal/70">{user?.email}</p>
-                    <p className="text-xs text-youth-charcoal/50 mt-2">
-                      Click the edit icon to change your profile picture
-                    </p>
-                  </div>
+                  )}
+                  
+                  <label 
+                    htmlFor="profile-image-upload" 
+                    className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-50 border border-gray-200"
+                  >
+                    <Upload className="h-4 w-4 text-youth-blue" />
+                    <input
+                      id="profile-image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
+                <h2 className="text-xl font-semibold">{organizationName}</h2>
+                <p className="text-youth-charcoal/70">{user?.email}</p>
+                <p className="text-xs text-youth-charcoal/50 mt-2">
+                  Click the upload icon to change your profile picture
+                </p>
+                
+                {profileImage && (
+                  <Button 
+                    onClick={handleSaveProfile}
+                    className="mt-4 bg-youth-blue hover:bg-youth-purple transition-colors"
+                    disabled={isSaving}
+                    size="sm"
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Profile Image
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
+            </div>
+            
+            <Tabs defaultValue="account">
+              <TabsList className="grid w-full grid-cols-2 mb-8">
+                <TabsTrigger value="account" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Account Information
+                </TabsTrigger>
+                <TabsTrigger value="profile" className="flex items-center gap-2">
+                  <Edit className="h-4 w-4" />
+                  Edit Public Profile
+                </TabsTrigger>
+              </TabsList>
               
-              <div className="md:col-span-2">
+              <TabsContent value="account">
                 <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
                   <h3 className="text-xl font-semibold mb-4">Account Information</h3>
                   
@@ -254,7 +290,34 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </TabsContent>
+              
+              <TabsContent value="profile">
+                <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-semibold mb-4">Edit Public Profile</h3>
+                  <p className="text-youth-charcoal/70 mb-6">
+                    This information will be displayed on your public profile page.
+                  </p>
+                  
+                  {user?.id && (
+                    <ProfileEditForm 
+                      userId={user.id} 
+                      onProfileUpdated={handleProfileUpdated}
+                    />
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <div className="mt-8 text-center">
+              <a 
+                href={`/nonprofit/${user?.id}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-youth-blue hover:underline text-sm"
+              >
+                View your public profile page →
+              </a>
             </div>
           </div>
         </div>
