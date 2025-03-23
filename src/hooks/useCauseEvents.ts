@@ -5,7 +5,7 @@ import { Event, DatabaseEvent, transformDatabaseEvents } from './event-types';
 
 // Hook for fetching events by cause area
 const useCauseEvents = (causeArea: string) => {
-  return useQuery({
+  const result = useQuery({
     queryKey: ['causeEvents', causeArea],
     queryFn: async () => {
       if (!causeArea) {
@@ -31,6 +31,12 @@ const useCauseEvents = (causeArea: string) => {
     },
     enabled: !!causeArea,
   });
+
+  return {
+    events: result.data || [],
+    isLoading: result.isLoading,
+    error: result.error
+  };
 };
 
 export default useCauseEvents;

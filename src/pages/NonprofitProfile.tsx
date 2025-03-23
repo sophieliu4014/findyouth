@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import { Star, ArrowLeft, MapPin, Calendar, ExternalLink } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
-import { useOrganizationEvents } from '@/hooks/useEventData';
+import { useOrganizationEvents } from '@/hooks'; // Updated import path
 import { supabase } from '@/integrations/supabase/client';
 import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';

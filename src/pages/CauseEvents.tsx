@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
-import { useCauseEvents } from '@/hooks/useEventData';
+import { useCauseEvents } from '@/hooks'; // Updated import path
 import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 
