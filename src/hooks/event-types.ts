@@ -61,14 +61,22 @@ async function getProfileImageFromStorage(nonprofitId: string): Promise<string |
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
     for (const ext of extensions) {
-      const { data, error } = await supabase
+      const { data } = supabase
         .storage
         .from('profile-images')
         .getPublicUrl(`${nonprofitId}.${ext}`);
         
-      if (!error && data && data.publicUrl) {
-        console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
-        return data.publicUrl;
+      if (data && data.publicUrl) {
+        // Try to fetch the URL to verify it exists
+        try {
+          const response = await fetch(data.publicUrl, { method: 'HEAD' });
+          if (response.ok) {
+            console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
+            return data.publicUrl;
+          }
+        } catch (e) {
+          console.log(`URL exists but image not accessible: ${data.publicUrl}`);
+        }
       }
     }
     
