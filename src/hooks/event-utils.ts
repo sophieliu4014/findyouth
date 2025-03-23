@@ -56,8 +56,10 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   
   try {
-    // Check if it's a URL with http or https protocol
-    return url.startsWith('http://') || url.startsWith('https://');
+    // Check if it's a URL with http or https protocol, or a Supabase storage URL
+    return url.startsWith('http://') || 
+           url.startsWith('https://') || 
+           url.includes('supabase.co/storage/v1/object/public/');
   } catch (e) {
     return false;
   }
@@ -79,18 +81,22 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       console.log(`No nonprofit found with ID ${nonprofitId}, error:`, nonprofitError);
     }
     
-    if (nonprofit && isValidImageUrl(nonprofit.profile_image_url)) {
+    if (nonprofit) {
       console.log(`Found nonprofit: ${nonprofit.organization_name}, image: ${nonprofit.profile_image_url}`);
-      return {
-        name: nonprofit.organization_name,
-        profileImage: nonprofit.profile_image_url
-      };
-    } else if (nonprofit) {
-      console.log(`Found nonprofit: ${nonprofit.organization_name}, but image URL is invalid`);
-      return {
-        name: nonprofit.organization_name,
-        profileImage: generateFallbackImageUrl(nonprofitId)
-      };
+      
+      // Check if the profile image URL is valid
+      if (isValidImageUrl(nonprofit.profile_image_url)) {
+        return {
+          name: nonprofit.organization_name,
+          profileImage: nonprofit.profile_image_url
+        };
+      } else {
+        console.log(`Found nonprofit ${nonprofit.organization_name}, but image URL is invalid or missing`);
+        return {
+          name: nonprofit.organization_name,
+          profileImage: generateFallbackImageUrl(nonprofitId)
+        };
+      }
     }
     
     // Then try to get from profiles table
@@ -114,14 +120,16 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
         ? userMetadata.user.user_metadata.organization_name
         : (profile.full_name || 'User');
       
-      if (isValidImageUrl(profile.avatar_url)) {
-        console.log(`Found profile for ${organizationName}, valid avatar: ${profile.avatar_url}`);
+      console.log(`Found profile for ${organizationName}, avatar: ${profile.avatar_url}`);
+      
+      // Directly access the avatar_url without checking for validity first
+      if (profile.avatar_url) {
         return {
           name: organizationName,
           profileImage: profile.avatar_url
         };
       } else {
-        console.log(`Found profile for ${organizationName}, but avatar URL is invalid or missing`);
+        console.log(`Avatar URL missing for ${organizationName}, using fallback`);
       }
     }
   } catch (error) {

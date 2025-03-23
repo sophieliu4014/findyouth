@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -46,7 +45,6 @@ const EventCard = ({
     profileImage 
   });
 
-  // Render 5 stars with appropriate filled/unfilled state
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, i) => (
       <Star
@@ -68,7 +66,6 @@ const EventCard = ({
 
     setIsApplying(true);
     
-    // Simulate API call
     setTimeout(() => {
       toast({
         title: "Application submitted",
@@ -90,23 +87,31 @@ const EventCard = ({
     navigate(`/cause/${encodeURIComponent(causeArea)}`);
   };
 
-  // Get organization initial for fallback
   const getOrgInitial = () => {
     return organization ? organization.charAt(0).toUpperCase() : '?';
   };
   
-  // Safely handle the profile image URL
   const getProfileImageUrl = () => {
-    // Check if it's a valid URL string
-    if (typeof profileImage === 'string' && 
-        (profileImage.startsWith('http://') || profileImage.startsWith('https://'))) {
+    if (!profileImage) {
+      console.log(`Profile image for ${organization} is null or undefined`);
+      return undefined;
+    }
+    
+    if (typeof profileImage !== 'string') {
+      console.log(`Profile image for ${organization} is not a string:`, profileImage);
+      return undefined;
+    }
+    
+    if (profileImage.startsWith('http://') || 
+        profileImage.startsWith('https://') || 
+        profileImage.includes('supabase.co/storage/v1/object/public/')) {
       return profileImage;
     }
-    // Return undefined so the Avatar component shows the fallback
+    
+    console.log(`Profile image for ${organization} is not a valid URL:`, profileImage);
     return undefined;
   };
 
-  // Debug profile image
   console.log('Profile image for', organization, ':', profileImage, 
               'Type:', typeof profileImage, 
               'Valid URL:', getProfileImageUrl() ? 'Yes' : 'No');
@@ -118,7 +123,6 @@ const EventCard = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="flex">
-        {/* Organization profile image */}
         <Avatar 
           className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
           onClick={handleOrganizationClick}
@@ -171,7 +175,6 @@ const EventCard = ({
         </div>
       </div>
       
-      {/* Optional event image */}
       {imageUrl && typeof imageUrl === 'string' && (
         <div className="mt-4 h-48 w-full overflow-hidden rounded-lg">
           <img 

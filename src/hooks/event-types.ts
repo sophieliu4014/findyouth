@@ -45,8 +45,10 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   
   try {
-    // Check if it's a URL with http or https protocol
-    return url.startsWith('http://') || url.startsWith('https://');
+    // Check if it's a URL with http or https protocol, or a Supabase storage URL
+    return url.startsWith('http://') || 
+           url.startsWith('https://') || 
+           url.includes('supabase.co/storage/v1/object/public/');
   } catch (e) {
     return false;
   }
@@ -85,13 +87,11 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     } else if (nonprofits && nonprofits.length > 0) {
       console.log('Fetched nonprofits data:', nonprofits);
       
-      // Populate the nonprofit map, validating image URLs
+      // Populate the nonprofit map with direct access to profile_image_url
       nonprofits.forEach(nonprofit => {
         nonprofitMap.set(nonprofit.id, {
           name: nonprofit.organization_name,
-          profileImage: isValidImageUrl(nonprofit.profile_image_url) 
-            ? nonprofit.profile_image_url 
-            : null
+          profileImage: nonprofit.profile_image_url || null
         });
       });
     } else {
@@ -125,9 +125,10 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
             ? currentUser.user.user_metadata.organization_name
             : (profile.full_name || 'User');
           
+          // Use avatar_url directly without validity check first
           nonprofitMap.set(profile.id, {
             name: organizationName,
-            profileImage: isValidImageUrl(profile.avatar_url) ? profile.avatar_url : null
+            profileImage: profile.avatar_url || null
           });
         }
       }
@@ -152,12 +153,24 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
                           NONPROFIT_NAME_MAP[event.nonprofit_id] || 
                           'User';
                           
-    // For profile image, use a more consistent fallback pattern
+    // For profile image, first try the one from the map
     let profileImage = organization?.profileImage;
+    
+    // Log before validation
+    console.log(`Raw profile image from DB for ${organizationName}:`, profileImage);
+    
+    // Validate the profileImage URL
+    if (profileImage && !isValidImageUrl(profileImage)) {
+      console.log(`Invalid profile image URL for ${organizationName}, will use fallback`);
+      profileImage = null;
+    }
+    
+    // If still no valid profileImage, use fallback
     if (!profileImage) {
-      // Use a deterministic fallback based on ID
       profileImage = generateFallbackImageUrl(event.nonprofit_id);
       console.log(`Using fallback profile image for ${organizationName}:`, profileImage);
+    } else {
+      console.log(`Using valid profile image for ${organizationName}:`, profileImage);
     }
     
     return {
