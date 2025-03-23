@@ -51,6 +51,18 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
   return Math.round(sum / reviewsData.length);
 }
 
+// Validate image URL format
+function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  
+  try {
+    // Check if it's a URL with http or https protocol
+    return url.startsWith('http://') || url.startsWith('https://');
+  } catch (e) {
+    return false;
+  }
+}
+
 // Improved function to fetch nonprofit or user data for an event
 export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
   try {
@@ -67,11 +79,17 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       console.log(`No nonprofit found with ID ${nonprofitId}, error:`, nonprofitError);
     }
     
-    if (nonprofit) {
-      console.log(`Found nonprofit: ${nonprofit.organization_name}, image: ${nonprofit.profile_image_url || 'none'}`);
+    if (nonprofit && isValidImageUrl(nonprofit.profile_image_url)) {
+      console.log(`Found nonprofit: ${nonprofit.organization_name}, image: ${nonprofit.profile_image_url}`);
       return {
         name: nonprofit.organization_name,
-        profileImage: nonprofit.profile_image_url || generateFallbackImageUrl(nonprofitId)
+        profileImage: nonprofit.profile_image_url
+      };
+    } else if (nonprofit) {
+      console.log(`Found nonprofit: ${nonprofit.organization_name}, but image URL is invalid`);
+      return {
+        name: nonprofit.organization_name,
+        profileImage: generateFallbackImageUrl(nonprofitId)
       };
     }
     
@@ -96,12 +114,15 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
         ? userMetadata.user.user_metadata.organization_name
         : (profile.full_name || 'User');
       
-      console.log(`Found profile for ${organizationName}, avatar: ${profile.avatar_url || 'none'}`);
-      
-      return {
-        name: organizationName,
-        profileImage: profile.avatar_url || generateFallbackImageUrl(nonprofitId)
-      };
+      if (isValidImageUrl(profile.avatar_url)) {
+        console.log(`Found profile for ${organizationName}, valid avatar: ${profile.avatar_url}`);
+        return {
+          name: organizationName,
+          profileImage: profile.avatar_url
+        };
+      } else {
+        console.log(`Found profile for ${organizationName}, but avatar URL is invalid or missing`);
+      }
     }
   } catch (error) {
     console.error("Error fetching organization/user data:", error);

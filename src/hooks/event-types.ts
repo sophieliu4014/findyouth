@@ -40,6 +40,25 @@ export const NONPROFIT_NAME_MAP: Record<string, string> = {
   '550e8400-e29b-41d4-a716-446655440004': 'North Shore Animal Rescue',
 };
 
+// Validate image URL format
+function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  
+  try {
+    // Check if it's a URL with http or https protocol
+    return url.startsWith('http://') || url.startsWith('https://');
+  } catch (e) {
+    return false;
+  }
+}
+
+// Generate a deterministic fallback image URL
+function generateFallbackImageUrl(id: string): string {
+  const idValue = id.slice(-6).replace(/\D/g, '');
+  const idNumber = idValue ? (parseInt(idValue, 10) % 100) : 42;
+  return `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
+}
+
 // Transform database events to UI events with improved organization data fetching
 export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promise<Event[]> => {
   if (!dbEvents || dbEvents.length === 0) {
@@ -66,11 +85,13 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     } else if (nonprofits && nonprofits.length > 0) {
       console.log('Fetched nonprofits data:', nonprofits);
       
-      // Populate the nonprofit map
+      // Populate the nonprofit map, validating image URLs
       nonprofits.forEach(nonprofit => {
         nonprofitMap.set(nonprofit.id, {
           name: nonprofit.organization_name,
-          profileImage: nonprofit.profile_image_url
+          profileImage: isValidImageUrl(nonprofit.profile_image_url) 
+            ? nonprofit.profile_image_url 
+            : null
         });
       });
     } else {
@@ -106,7 +127,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           
           nonprofitMap.set(profile.id, {
             name: organizationName,
-            profileImage: profile.avatar_url
+            profileImage: isValidImageUrl(profile.avatar_url) ? profile.avatar_url : null
           });
         }
       }
@@ -135,9 +156,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     let profileImage = organization?.profileImage;
     if (!profileImage) {
       // Use a deterministic fallback based on ID
-      const idValue = event.nonprofit_id.slice(-6).replace(/\D/g, '');
-      const idNumber = idValue ? (parseInt(idValue, 10) % 100) : 42;
-      profileImage = `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
+      profileImage = generateFallbackImageUrl(event.nonprofit_id);
+      console.log(`Using fallback profile image for ${organizationName}:`, profileImage);
     }
     
     return {

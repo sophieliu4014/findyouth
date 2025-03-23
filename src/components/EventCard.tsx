@@ -98,12 +98,18 @@ const EventCard = ({
   // Safely handle the profile image URL
   const getProfileImageUrl = () => {
     // Check if it's a valid URL string
-    if (typeof profileImage === 'string' && profileImage.startsWith('http')) {
+    if (typeof profileImage === 'string' && 
+        (profileImage.startsWith('http://') || profileImage.startsWith('https://'))) {
       return profileImage;
     }
     // Return undefined so the Avatar component shows the fallback
     return undefined;
   };
+
+  // Debug profile image
+  console.log('Profile image for', organization, ':', profileImage, 
+              'Type:', typeof profileImage, 
+              'Valid URL:', getProfileImageUrl() ? 'Yes' : 'No');
 
   return (
     <div 
