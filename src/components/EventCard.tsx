@@ -78,8 +78,16 @@ const EventCard = ({
 
   const handleOrganizationClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    console.log(`Navigating to nonprofit profile with ID: ${organizationId}`);
     if (organizationId) {
       navigate(`/nonprofit/${organizationId}`);
+    } else {
+      console.error('No organization ID available for navigation');
+      toast({
+        title: "Navigation error",
+        description: "Cannot navigate to organization profile because the ID is missing",
+        variant: "destructive",
+      });
     }
   };
 

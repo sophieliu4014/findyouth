@@ -71,7 +71,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
         
         nonprofitMap.set(nonprofit.id, {
           name: nonprofit.organization_name,
-          profileImage: profileImage
+          profileImage: profileImage,
+          id: nonprofit.id  // Make sure we're storing the ID
         });
       }
     } else {
@@ -118,7 +119,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           
           nonprofitMap.set(profile.id, {
             name: organizationName,
-            profileImage: profileImage
+            profileImage: profileImage,
+            id: profile.id  // Make sure we're storing the ID
           });
         }
       }
@@ -150,7 +152,6 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     // Use console.log to debug data for each event
     console.log(`Processing event ${event.id} for org/user ${event.nonprofit_id}`);
     console.log(`Organization/User data found:`, organization);
-    console.log(`Event image_url:`, event.image_url);
     
     const organizationName = organization?.name || 
                           NONPROFIT_NAME_MAP[event.nonprofit_id] || 
@@ -181,7 +182,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       id: event.id,
       title: event.title,
       organization: organizationName,
-      organizationId: event.nonprofit_id,
+      organizationId: event.nonprofit_id,  // Always use the original nonprofit_id
       date: event.date,
       location: event.location,
       causeArea: event.cause_area || 'Environment',
