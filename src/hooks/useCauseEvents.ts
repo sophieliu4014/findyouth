@@ -1,7 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, DatabaseEvent, transformDatabaseEvents } from './event-types';
+import { Event, DatabaseEvent } from './types/event-types';
+import { transformDatabaseEvents } from './utils/event-transform-utils';
 
 // Hook for fetching events by cause area
 const useCauseEvents = (causeArea: string) => {
