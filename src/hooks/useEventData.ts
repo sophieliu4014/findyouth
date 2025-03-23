@@ -24,8 +24,8 @@ export const useEventData = (filters: EventFilters = {
         throw new Error(error.message);
       }
 
-      // Transform database events to UI events
-      const transformedEvents = transformDatabaseEvents(data as DatabaseEvent[]);
+      // Transform database events to UI events and await the Promise
+      const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
       
       // Apply filters to the returned data
       return filterEvents(transformedEvents, filters);
