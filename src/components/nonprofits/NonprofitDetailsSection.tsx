@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, MapPin, ExternalLink } from 'lucide-react';
+import { Star, MapPin, ExternalLink, Mail, Phone, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface NonprofitDetailsSectionProps {
@@ -15,6 +15,8 @@ interface NonprofitDetailsSectionProps {
     social_media: string;
     causes: string[];
     rating: number;
+    email?: string | null;
+    phone?: string | null;
   };
 }
 
@@ -40,6 +42,41 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
               alt={nonprofit.organization_name} 
               className="w-full h-full object-cover"
             />
+          </div>
+          
+          {/* Contact Information */}
+          <div className="mt-4 space-y-2">
+            {nonprofit.email && (
+              <a 
+                href={`mailto:${nonprofit.email}`}
+                className="flex items-center text-youth-blue hover:text-youth-purple transition-colors text-sm"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                {nonprofit.email}
+              </a>
+            )}
+            
+            {nonprofit.phone && (
+              <a 
+                href={`tel:${nonprofit.phone}`}
+                className="flex items-center text-youth-blue hover:text-youth-purple transition-colors text-sm"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                {nonprofit.phone}
+              </a>
+            )}
+            
+            {nonprofit.website && (
+              <a 
+                href={nonprofit.website} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center text-youth-blue hover:text-youth-purple transition-colors text-sm"
+              >
+                <Globe className="h-4 w-4 mr-2" />
+                Website
+              </a>
+            )}
           </div>
         </div>
 

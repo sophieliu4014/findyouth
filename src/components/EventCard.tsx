@@ -105,7 +105,7 @@ const EventCard = ({
     >
       <div className="flex">
         <Avatar 
-          className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer"
+          className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={handleOrganizationClick}
         >
           {profileImage && !profileImageError ? (
