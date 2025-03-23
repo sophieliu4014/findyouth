@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -127,14 +126,12 @@ const EventForm = ({ userId }: EventFormProps) => {
         }
       }
 
-      // Show success toast
+      // Show success toast and navigate
       toast.success('Event created successfully!');
       
-      // Ensure the navigation happens after the toast is displayed
-      setTimeout(() => {
-        // Use window.location.href for a full page redirect
-        window.location.href = '/find-activities';
-      }, 500);
+      // Use the navigate function from react-router-dom
+      // This is cleaner than using window.location.href
+      navigate('/find-activities');
     } catch (error: any) {
       console.error('Error creating event:', error);
       toast.error(`Failed to create event: ${error.message}`);
