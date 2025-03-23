@@ -88,20 +88,13 @@ const NonprofitProfile = () => {
               social_media: userMetadata?.user?.user_metadata?.social_media || '',
               email: userMetadata?.user?.email || null,
               phone: userMetadata?.user?.user_metadata?.phone || null,
-              // Initialize with empty array, will be populated if needed
+              // These properties will be set later in the final nonprofit object
               causes: [],
-              rating: 4 // Default rating
+              rating: 4
             };
             
             console.log('Created nonprofit-like object from profile data:', nonprofitData);
           }
-        } else {
-          // If this is a real nonprofit from the nonprofits table, 
-          // we need to initialize the causes array to match our Nonprofit interface
-          nonprofitData = {
-            ...nonprofitData,
-            causes: [] // Initialize with empty array
-          };
         }
         
         if (!nonprofitData) {
@@ -143,11 +136,23 @@ const NonprofitProfile = () => {
         }
         
         // Create the final nonprofit object with all the required fields
-        setNonprofit({
-          ...nonprofitData,
-          causes,
+        // Create a proper Nonprofit object with the correct interface
+        const finalNonprofit: Nonprofit = {
+          id: nonprofitData.id,
+          organization_name: nonprofitData.organization_name,
+          description: nonprofitData.description,
+          mission: nonprofitData.mission,
+          location: nonprofitData.location,
+          profile_image_url: nonprofitData.profile_image_url,
+          website: nonprofitData.website,
+          social_media: nonprofitData.social_media,
+          email: nonprofitData.email,
+          phone: nonprofitData.phone,
+          causes: causes,
           rating: avgRating
-        });
+        };
+        
+        setNonprofit(finalNonprofit);
         
         toast({
           title: "Profile loaded",
