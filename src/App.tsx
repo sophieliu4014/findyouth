@@ -5,16 +5,22 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import './App.css';
-import Home from './pages/Index'; // Updated import path
-import FindActivities from './pages/FindActivities';
-import About from './pages/OurStory'; // Updated import path
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Profile from './pages/Profile';
-import CreateEvent from './pages/CreateEvent';
-import CauseEvents from './pages/CauseEvents';
-import NonprofitProfile from './pages/NonprofitProfile';
+import { 
+  Index as Home,
+  FindActivities,
+  RegisterNgo,
+  OurStory,
+  OurInstagram,
+  WebsiteGuidelines,
+  Contact,
+  Login,
+  Signup,
+  Profile,
+  NonprofitProfile,
+  CauseEvents,
+  NotFound,
+  CreateEvent
+} from './pages';
 import EventDetail from './pages/EventDetail';
 import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -30,8 +36,20 @@ const router = createBrowserRouter([
     element: <FindActivities />,
   },
   {
-    path: "/about",
-    element: <About />,
+    path: "/register-ngo",
+    element: <RegisterNgo />,
+  },
+  {
+    path: "/website-guidelines",
+    element: <WebsiteGuidelines />,
+  },
+  {
+    path: "/our-story",
+    element: <OurStory />,
+  },
+  {
+    path: "/our-instagram",
+    element: <OurInstagram />,
   },
   {
     path: "/contact",
@@ -65,6 +83,10 @@ const router = createBrowserRouter([
     path: "/event/:id",
     element: <EventDetail />,
   },
+  {
+    path: "*",
+    element: <NotFound />,
+  }
 ]);
 
 const queryClient = new QueryClient();
