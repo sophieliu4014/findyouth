@@ -116,14 +116,14 @@ const BannerImageUpload = ({
   };
 
   // In the Profile component, we want to display just a button rather than the full upload area
-  if (!insideForm && existingBannerUrl) {
+  if (!insideForm) {
     return (
       <Button
         type="button"
         variant="secondary"
         size="sm"
         onClick={triggerFileInput}
-        className="bg-white/80 hover:bg-white text-youth-charcoal border border-gray-200"
+        className="bg-white/80 hover:bg-white text-youth-charcoal border border-gray-200 mx-auto"
       >
         <Camera className="h-4 w-4 mr-2" />
         Change Banner

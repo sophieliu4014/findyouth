@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -179,8 +178,7 @@ const Profile = () => {
               </Button>
             </div>
             
-            {/* Improved banner container with better styling */}
-            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8 relative">
+            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8">
               <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/10 to-youth-purple/10">
                 {bannerImagePreview ? (
                   <img 
@@ -193,21 +191,19 @@ const Profile = () => {
                     {/* No text here, just a subtle gradient background */}
                   </div>
                 )}
-                
-                <div className="absolute top-4 right-4">
-                  <BannerImageUpload 
-                    setBannerImage={setBannerImage}
-                    setBannerImageError={setBannerImageError}
-                    bannerImageError={bannerImageError}
-                    existingBannerUrl={bannerImagePreview}
-                    insideForm={false}
-                  />
-                </div>
               </div>
               
               <div className="p-3 text-center">
+                <BannerImageUpload 
+                  setBannerImage={setBannerImage}
+                  setBannerImageError={setBannerImageError}
+                  bannerImageError={bannerImageError}
+                  existingBannerUrl={bannerImagePreview}
+                  insideForm={false}
+                />
+                
                 {bannerImage && (
-                  <div className="animate-fade-in">
+                  <div className="animate-fade-in mt-2">
                     <p className="text-sm text-youth-blue font-medium">New banner selected. Save to apply changes.</p>
                   </div>
                 )}
