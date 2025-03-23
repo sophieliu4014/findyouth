@@ -48,6 +48,39 @@ export async function getProfileImageFromStorage(nonprofitId: string): Promise<s
   }
 }
 
+// Check if a banner image exists in storage and get its URL
+export async function getBannerImageFromStorage(nonprofitId: string): Promise<string | null> {
+  try {
+    // Common image extensions to check
+    const extensions = ['jpg', 'jpeg', 'png', 'gif'];
+    
+    for (const ext of extensions) {
+      const { data } = supabase
+        .storage
+        .from('banner-images')
+        .getPublicUrl(`banner-${nonprofitId}.${ext}`);
+        
+      if (data && data.publicUrl) {
+        // Try to fetch the URL to verify it exists
+        try {
+          const response = await fetch(data.publicUrl, { method: 'HEAD' });
+          if (response.ok) {
+            console.log(`Found banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
+            return data.publicUrl;
+          }
+        } catch (e) {
+          console.log(`URL exists but image not accessible: ${data.publicUrl}`);
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error getting banner image from storage:", error);
+    return null;
+  }
+}
+
 // Generate a deterministic fallback image URL
 export function generateFallbackImageUrl(id: string): string {
   const idValue = id.slice(-6).replace(/\D/g, '');

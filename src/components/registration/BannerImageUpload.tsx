@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, AlertCircle, Camera } from 'lucide-react';
 
@@ -21,6 +21,11 @@ const BannerImageUpload = ({
   const [imagePreview, setImagePreview] = useState<string | null>(existingBannerUrl || null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update local preview when existingBannerUrl changes
+  useEffect(() => {
+    setImagePreview(existingBannerUrl || null);
+  }, [existingBannerUrl]);
 
   // Banner dimensions
   const BANNER_WIDTH = 1200;
