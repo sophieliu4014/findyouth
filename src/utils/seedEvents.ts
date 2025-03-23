@@ -35,32 +35,80 @@ export const seedEvents = async () => {
       return;
     }
     
-    // Instead of creating nonprofits in the database (which is blocked by RLS),
-    // let's use hardcoded sample nonprofits for local development
-    const sampleNonprofits: SeedNonprofit[] = [
-      {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        organization_name: "Vancouver Youth Coalition"
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440001',
-        organization_name: "Burnaby Environmental Network"
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440002',
-        organization_name: "Richmond Youth Arts Collective"
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440003',
-        organization_name: "Surrey Community Food Bank"
-      },
-      {
-        id: '550e8400-e29b-41d4-a716-446655440004',
-        organization_name: "North Shore Animal Rescue"
-      }
-    ];
+    // First, let's check if we have any nonprofits in the database
+    const { data: existingNonprofits, error: nonprofitsError } = await supabase
+      .from('nonprofits')
+      .select('id, organization_name');
+      
+    if (nonprofitsError) {
+      console.error("Error checking nonprofits:", nonprofitsError);
+    }
     
-    console.log(`Using ${sampleNonprofits.length} sample nonprofits to create events.`);
+    let nonprofits: SeedNonprofit[] = [];
+    
+    // If we have nonprofits in the database, use them
+    if (existingNonprofits && existingNonprofits.length > 0) {
+      console.log(`Found ${existingNonprofits.length} nonprofits in database.`);
+      nonprofits = existingNonprofits as SeedNonprofit[];
+    } else {
+      // Otherwise use hardcoded sample nonprofits
+      console.log("No nonprofits found in database. Creating sample nonprofits.");
+      
+      // Sample nonprofits for local development
+      const sampleNonprofits: SeedNonprofit[] = [
+        {
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          organization_name: "Vancouver Youth Coalition"
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440001',
+          organization_name: "Burnaby Environmental Network"
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440002',
+          organization_name: "Richmond Youth Arts Collective"
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440003',
+          organization_name: "Surrey Community Food Bank"
+        },
+        {
+          id: '550e8400-e29b-41d4-a716-446655440004',
+          organization_name: "North Shore Animal Rescue"
+        }
+      ];
+      
+      // Try to insert sample nonprofits into the database
+      for (const nonprofit of sampleNonprofits) {
+        const { error: insertError } = await supabase
+          .from('nonprofits')
+          .insert({
+            id: nonprofit.id,
+            organization_name: nonprofit.organization_name,
+            description: `${nonprofit.organization_name} is a youth-led nonprofit organization.`,
+            mission: `Our mission is to empower youth and make a positive impact in our community.`,
+            location: 'Greater Vancouver, BC',
+            social_media: 'https://instagram.com/sample',
+            email: `info@${nonprofit.organization_name.toLowerCase().replace(/\s+/g, '')}.org`
+          });
+          
+        if (insertError) {
+          console.log(`Could not insert nonprofit ${nonprofit.organization_name}: ${insertError.message}`);
+        } else {
+          console.log(`Created nonprofit: ${nonprofit.organization_name}`);
+        }
+      }
+      
+      // Use sample nonprofits for the events
+      nonprofits = sampleNonprofits;
+    }
+    
+    console.log(`Using ${nonprofits.length} nonprofits to create events.`);
+    
+    if (nonprofits.length === 0) {
+      console.error("No nonprofits available for creating events.");
+      return;
+    }
     
     // Prepare some example events
     const locations = [
@@ -110,7 +158,7 @@ export const seedEvents = async () => {
     const eventPromises = [];
     
     for (let i = 0; i < 10; i++) {
-      const nonprofit = randomItem(sampleNonprofits);
+      const nonprofit = randomItem(nonprofits);
       const eventType = randomItem(eventTypes);
       const location = randomItem(locations);
       const date = getRandomFutureDate();
@@ -132,18 +180,18 @@ export const seedEvents = async () => {
         eventData.cause_area = randomItem(causeAreas);
       }
       
-      console.log(`Creating event: ${eventData.title} for ${nonprofit.organization_name}`);
+      console.log(`Creating event for nonprofit ID: ${nonprofit.id}, name: ${nonprofit.organization_name}`);
       
       const promise = supabase
         .from('events')
         .insert(eventData)
         .then(({ data, error }) => {
           if (error) {
-            console.error(`Error creating event for ${nonprofit.organization_name}:`, error);
+            console.error(`Error creating event for nonprofit ID: ${nonprofit.id}, name: ${nonprofit.organization_name}:`, error);
             return null;
           }
           
-          console.log(`Created event: ${eventData.title} for ${nonprofit.organization_name}`);
+          console.log(`Created event: ${eventData.title} for nonprofit ID: ${nonprofit.id}, name: ${nonprofit.organization_name}`);
           return data;
         });
       
@@ -151,7 +199,7 @@ export const seedEvents = async () => {
     }
     
     await Promise.all(eventPromises);
-    console.log("Seeding completed successfully! Created 10 example events.");
+    console.log("Seeding completed successfully! Created example events.");
     
   } catch (error) {
     console.error("Error in seed function:", error);

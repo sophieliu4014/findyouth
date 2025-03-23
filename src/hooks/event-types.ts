@@ -42,34 +42,71 @@ export const NONPROFIT_NAME_MAP: Record<string, string> = {
 
 // Transform database events to UI events
 export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promise<Event[]> => {
+  if (!dbEvents || dbEvents.length === 0) {
+    console.log('No events to transform');
+    return [];
+  }
+  
   // Collect all nonprofit IDs to fetch in one query
   const nonprofitIds = [...new Set(dbEvents.map(event => event.nonprofit_id))];
+  console.log('Nonprofit IDs to fetch:', nonprofitIds);
   
-  // Fetch nonprofit data in a single query
-  const { data: nonprofits } = await supabase
-    .from('nonprofits')
-    .select('id, organization_name, profile_image_url')
-    .in('id', nonprofitIds);
-  
-  // Create a map for quick lookups
+  // Create a map for storing nonprofit data
   const nonprofitMap = new Map();
-  if (nonprofits) {
-    nonprofits.forEach(nonprofit => {
-      nonprofitMap.set(nonprofit.id, {
-        name: nonprofit.organization_name,
-        profileImage: nonprofit.profile_image_url
-      });
-    });
+  
+  try {
+    // Fetch nonprofit data in a single query
+    const { data: nonprofits, error } = await supabase
+      .from('nonprofits')
+      .select('id, organization_name, profile_image_url')
+      .in('id', nonprofitIds);
+      
+    if (error) {
+      console.error('Error fetching nonprofits:', error);
+    } else {
+      console.log('Fetched nonprofits data:', nonprofits);
+      
+      // Populate the nonprofit map
+      if (nonprofits && nonprofits.length > 0) {
+        nonprofits.forEach(nonprofit => {
+          nonprofitMap.set(nonprofit.id, {
+            name: nonprofit.organization_name,
+            profileImage: nonprofit.profile_image_url
+          });
+        });
+      } else {
+        console.log('No nonprofits found in database, using fallback data');
+      }
+    }
+  } catch (fetchError) {
+    console.error('Exception while fetching nonprofits:', fetchError);
   }
-
+  
+  console.log('Nonprofit map has entries:', nonprofitMap.size);
+  
+  // Transform each event with nonprofit data
   return dbEvents.map(event => {
     // Get nonprofit data from our map, or use fallbacks
     const nonprofit = nonprofitMap.get(event.nonprofit_id);
+    
+    // Use console.log to debug nonprofit data for each event
+    if (nonprofit) {
+      console.log(`Found nonprofit for event ${event.id}:`, nonprofit);
+    } else {
+      console.log(`No nonprofit found for ID ${event.nonprofit_id}, using fallback`);
+    }
+    
     const organizationName = nonprofit?.name || 
-                             NONPROFIT_NAME_MAP[event.nonprofit_id] || 
-                             'Unknown Organization';
-    const profileImage = nonprofit?.profileImage || 
-                         `https://images.unsplash.com/photo-${1550000000000 + parseInt(event.nonprofit_id.slice(-4), 16) % 1000000}`;
+                          NONPROFIT_NAME_MAP[event.nonprofit_id] || 
+                          'Unknown Organization';
+                          
+    // For profile image, use a more distinctive fallback pattern
+    let profileImage = nonprofit?.profileImage;
+    if (!profileImage) {
+      // Use a deterministic fallback based on nonprofit ID
+      const idNumber = parseInt(event.nonprofit_id.replace(/\D/g, '').slice(-6), 10) || 0;
+      profileImage = `https://images.unsplash.com/photo-${1550000000000 + idNumber % 1000000}`;
+    }
     
     return {
       id: event.id,
