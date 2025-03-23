@@ -29,7 +29,7 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      {events.length > 0 ? (
+      {events && events.length > 0 ? (
         events.map((event, index) => (
           <div 
             key={event.id} 

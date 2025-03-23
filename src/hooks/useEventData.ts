@@ -33,40 +33,4 @@ export const useEventData = (filters: EventFilters = {
   });
 };
 
-// Hook for fetching events for a specific cause
-export const useCauseEvents = (cause: string) => {
-  const { data, isLoading, error } = useEventData({ 
-    cause, 
-    location: '', 
-    organization: '',
-    searchKeyword: ''
-  });
-
-  return {
-    events: data || [],
-    isLoading,
-    error
-  };
-};
-
-// Hook for fetching events for a specific organization
-export const useOrganizationEvents = (organizationId: string) => {
-  const { data, isLoading, error } = useEventData({
-    cause: '',
-    location: '',
-    organization: '',
-    searchKeyword: ''
-  });
-  
-  const filteredEvents = data?.filter(event => 
-    event.organizationId === organizationId
-  ) || [];
-
-  return {
-    events: filteredEvents,
-    isLoading,
-    error
-  };
-};
-
 export default useEventData;

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import CitySelector from './CitySelector';
 import FilterBar from '@/components/form/FilterBar';
 import { EventFilters } from '@/utils/eventFilters';
-import useEventData from '@/hooks/useEventData';
+import { useEventData } from '@/hooks'; // Updated import to use the hooks index
 import ResultsList from './ResultsList';
 
 // Define available cities
@@ -50,10 +50,12 @@ const ActivitySearch = ({
         searchKeyword: initialKeyword || ''
       });
     }
-  }, [initialLocation, initialKeyword]);
+  }, [initialLocation, initialKeyword, cause, organization]);
 
   const { data: eventsData, isLoading } = useEventData(filters);
   const events = eventsData || [];
+  
+  // Extract unique organizations from events after they're loaded
   const uniqueOrganizations = [...new Set(events.map(event => event.organization))];
   
   const handleCitySelect = (selectedCity: string) => {
@@ -88,6 +90,9 @@ const ActivitySearch = ({
       searchKeyword: value
     });
   };
+
+  console.log("Current filters:", filters);
+  console.log("Events loaded:", events.length);
 
   return (
     <div className="container mx-auto py-8">
