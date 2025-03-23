@@ -44,7 +44,12 @@ const UserMenu = () => {
   }
 
   // Get profile image URL from user metadata
+  // Fix: Correctly access the profileImageUrl from nonprofit_data in user metadata
   const profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl;
+  
+  console.log("User metadata:", user?.user_metadata);
+  console.log("Profile image URL:", profileImageUrl);
+  
   const initials = user?.user_metadata?.organization_name?.charAt(0).toUpperCase() || 
                   user?.email?.charAt(0).toUpperCase() || 
                   'U';
@@ -59,10 +64,11 @@ const UserMenu = () => {
         <Avatar className="h-8 w-8">
           {profileImageUrl ? (
             <AvatarImage src={profileImageUrl} alt="Profile" />
-          ) : null}
-          <AvatarFallback className="bg-youth-blue text-white">
-            {initials}
-          </AvatarFallback>
+          ) : (
+            <AvatarFallback className="bg-youth-blue text-white">
+              {initials}
+            </AvatarFallback>
+          )}
         </Avatar>
       </Button>
       
