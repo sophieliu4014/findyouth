@@ -25,7 +25,7 @@ const EventsList = ({ title, events, isLoading }: EventsListProps) => {
         toast({
           title: "Some event data may be incomplete",
           description: "Not all events could be fully loaded. Please refresh to try again.",
-          variant: "warning"
+          variant: "destructive" // Changed from "warning" to "destructive" to match allowed variants
         });
       }
     }
