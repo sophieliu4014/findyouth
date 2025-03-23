@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, Mail, Globe, Phone } from 'lucide-react';
+import { Loader2, Mail, Globe, Phone, Star, MapPin, ExternalLink } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useOrganizationEvents } from '@/hooks';
