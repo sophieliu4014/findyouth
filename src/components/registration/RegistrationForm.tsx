@@ -63,6 +63,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             setBannerImage={setBannerImage}
             setBannerImageError={setBannerImageError}
             bannerImageError={bannerImageError}
+            insideForm={true}
           />
           
           <div className="pt-4">

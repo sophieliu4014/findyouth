@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -35,12 +34,10 @@ const Profile = () => {
       setOrganizationName(user.user_metadata.organization_name);
     }
 
-    // Set image preview from the existing profile image URL
     if (user?.user_metadata?.nonprofit_data?.profileImageUrl) {
       setImagePreview(user.user_metadata.nonprofit_data.profileImageUrl);
     }
     
-    // Set banner image preview from the existing banner image URL
     if (user?.user_metadata?.nonprofit_data?.bannerImageUrl) {
       setBannerImagePreview(user.user_metadata.nonprofit_data.bannerImageUrl);
     }
@@ -56,7 +53,6 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Basic validation
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
@@ -67,7 +63,6 @@ const Profile = () => {
       return;
     }
     
-    // Preview the selected image
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
@@ -84,7 +79,6 @@ const Profile = () => {
       let profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl || '';
       let bannerImageUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl || '';
       
-      // Upload new profile image if selected
       if (profileImage) {
         const identifier = user?.id || Date.now().toString();
         const newImageUrl = await uploadProfileImage(profileImage, identifier);
@@ -93,7 +87,6 @@ const Profile = () => {
         }
       }
       
-      // Upload new banner image if selected
       if (bannerImage) {
         const identifier = `banner-${user?.id || Date.now().toString()}`;
         const newBannerUrl = await uploadBannerImage(bannerImage, identifier);
@@ -102,7 +95,6 @@ const Profile = () => {
         }
       }
       
-      // Update user metadata
       const { error } = await supabase.auth.updateUser({
         data: {
           organization_name: organizationName,
@@ -116,7 +108,6 @@ const Profile = () => {
       
       if (error) throw error;
       
-      // Also update the nonprofits table if needed
       if (user?.id) {
         const { error: nonprofitError } = await supabase
           .from('nonprofits')
@@ -135,7 +126,6 @@ const Profile = () => {
       await refreshAuth();
       toast.success('Profile updated successfully');
       
-      // Clear the file selections after successful upload
       setProfileImage(null);
       setBannerImage(null);
     } catch (error: any) {
@@ -188,7 +178,6 @@ const Profile = () => {
               </Button>
             </div>
             
-            {/* Banner Image Upload Section */}
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-8 relative">
               <div className="h-32 sm:h-48 w-full rounded-lg overflow-hidden bg-youth-blue/10 mb-4">
                 {bannerImagePreview ? (
@@ -208,6 +197,8 @@ const Profile = () => {
                     setBannerImage={setBannerImage}
                     setBannerImageError={setBannerImageError}
                     bannerImageError={bannerImageError}
+                    existingBannerUrl={bannerImagePreview}
+                    insideForm={false}
                   />
                 </div>
               </div>

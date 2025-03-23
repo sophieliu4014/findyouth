@@ -1,6 +1,5 @@
 
 import React, { useRef, useState } from 'react';
-import { FormLabel } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Upload, AlertCircle, Camera } from 'lucide-react';
 
@@ -9,13 +8,16 @@ interface BannerImageUploadProps {
   setBannerImageError: (error: string | null) => void;
   bannerImageError: string | null;
   existingBannerUrl?: string | null;
+  // Add a new prop to determine if this component is used within a form
+  insideForm?: boolean;
 }
 
 const BannerImageUpload = ({ 
   setBannerImage, 
   setBannerImageError,
   bannerImageError,
-  existingBannerUrl
+  existingBannerUrl,
+  insideForm = false
 }: BannerImageUploadProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(existingBannerUrl || null);
   const [isDragging, setIsDragging] = useState(false);
@@ -140,7 +142,10 @@ const BannerImageUpload = ({
   // In registration/other contexts, display the full upload area
   return (
     <div className="space-y-2">
-      <FormLabel>Banner Image (Optional)</FormLabel>
+      {/* Use a regular label when outside a form context */}
+      <label className="block text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        Banner Image (Optional)
+      </label>
       <div 
         className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors ${
           isDragging 
