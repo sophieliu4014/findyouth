@@ -3,17 +3,21 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, Upload } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useAuthStore } from '@/lib/auth';
-import { signOut } from '@/integrations/supabase/auth';
+import { signOut, uploadProfileImage } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
-  const { user, isAuthenticated, isLoading } = useAuthStore();
-  const [fullName, setFullName] = useState('');
+  const { user, isAuthenticated, isLoading, refreshAuth } = useAuthStore();
+  const [organizationName, setOrganizationName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,8 +25,13 @@ const Profile = () => {
       navigate('/login');
     }
     
-    if (user?.user_metadata?.full_name) {
-      setFullName(user.user_metadata.full_name);
+    if (user?.user_metadata?.organization_name) {
+      setOrganizationName(user.user_metadata.organization_name);
+    }
+
+    // Set image preview from the existing profile image URL
+    if (user?.user_metadata?.nonprofit_data?.profileImageUrl) {
+      setImagePreview(user.user_metadata.nonprofit_data.profileImageUrl);
     }
   }, [isAuthenticated, isLoading, navigate, user]);
 
@@ -32,14 +41,82 @@ const Profile = () => {
     navigate('/');
   };
   
-  const handleSaveProfile = () => {
-    setIsSaving(true);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     
-    // Simulate saving profile (would connect to Supabase in a real implementation)
-    setTimeout(() => {
-      setIsSaving(false);
+    // Basic validation
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image size must be less than 2MB');
+      return;
+    }
+    
+    // Preview the selected image
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    setProfileImage(file);
+  };
+  
+  const handleSaveProfile = async () => {
+    try {
+      setIsSaving(true);
+      
+      let profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl || '';
+      
+      // Upload new profile image if selected
+      if (profileImage) {
+        const identifier = user?.id || Date.now().toString();
+        const newImageUrl = await uploadProfileImage(profileImage, identifier);
+        if (newImageUrl) {
+          profileImageUrl = newImageUrl;
+        }
+      }
+      
+      // Update user metadata
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          organization_name: organizationName,
+          nonprofit_data: {
+            ...user?.user_metadata?.nonprofit_data,
+            profileImageUrl
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Also update the nonprofits table if needed
+      if (user?.id) {
+        const { error: nonprofitError } = await supabase
+          .from('nonprofits')
+          .update({
+            organization_name: organizationName,
+            profile_image_url: profileImageUrl
+          })
+          .eq('id', user.id);
+        
+        if (nonprofitError) {
+          console.error('Error updating nonprofit profile:', nonprofitError);
+        }
+      }
+      
+      await refreshAuth();
       toast.success('Profile updated successfully');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Error saving profile:', error);
+      toast.error(`Failed to update profile: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -84,13 +161,40 @@ const Profile = () => {
               <div className="md:col-span-1">
                 <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                   <div className="text-center">
-                    <div className="w-32 h-32 bg-youth-blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-4xl font-bold text-youth-blue">
-                        {fullName.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="relative w-32 h-32 mx-auto mb-4">
+                      {imagePreview ? (
+                        <img 
+                          src={imagePreview} 
+                          alt="Profile" 
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-youth-blue/10 rounded-full flex items-center justify-center">
+                          <span className="text-4xl font-bold text-youth-blue">
+                            {organizationName.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <label 
+                        htmlFor="profile-image-upload" 
+                        className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-md cursor-pointer hover:bg-gray-50 border border-gray-200"
+                      >
+                        <Upload className="h-4 w-4 text-youth-blue" />
+                        <input
+                          id="profile-image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
-                    <h2 className="text-xl font-semibold">{fullName}</h2>
+                    <h2 className="text-xl font-semibold">{organizationName}</h2>
                     <p className="text-youth-charcoal/70">{user?.email}</p>
+                    <p className="text-xs text-youth-charcoal/50 mt-2">
+                      Click the edit icon to change your profile picture
+                    </p>
                   </div>
                 </div>
               </div>
@@ -101,15 +205,15 @@ const Profile = () => {
                   
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="fullName" className="block text-sm font-medium text-youth-charcoal mb-1">
-                        Full Name
+                      <label htmlFor="organizationName" className="block text-sm font-medium text-youth-charcoal mb-1">
+                        Organization Name
                       </label>
-                      <input
-                        id="fullName"
+                      <Input
+                        id="organizationName"
                         type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-youth-blue"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
+                        value={organizationName}
+                        onChange={(e) => setOrganizationName(e.target.value)}
+                        className="w-full"
                       />
                     </div>
                     
@@ -117,12 +221,12 @@ const Profile = () => {
                       <label htmlFor="email" className="block text-sm font-medium text-youth-charcoal mb-1">
                         Email Address
                       </label>
-                      <input
+                      <Input
                         id="email"
                         type="email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                         value={user?.email || ''}
                         disabled
+                        className="w-full bg-gray-50"
                       />
                       <p className="mt-1 text-xs text-youth-charcoal/70">
                         Email cannot be changed
