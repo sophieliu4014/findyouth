@@ -19,8 +19,8 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
         profileImage: nonprofitData.profile_image_url || await getProfileImageFromStorage(nonprofitId),
         description: nonprofitData.description,
         location: nonprofitData.location,
-        // Use optional chaining to safely access properties that might not exist in the type
-        bannerImageUrl: nonprofitData.banner_image_url || null // TypeScript needs to be told this property is allowed
+        // Since banner_image_url doesn't exist in the type, use an alternate approach
+        bannerImageUrl: (nonprofitData as any).banner_image_url || null
       };
     }
     
@@ -36,7 +36,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
         profileImage: nonprofitData.profileImageUrl || await getProfileImageFromStorage(nonprofitId),
         description: nonprofitData.description,
         location: nonprofitData.location,
-        bannerImageUrl: nonprofitData.bannerImageUrl || null // Added banner image URL
+        bannerImageUrl: nonprofitData.bannerImageUrl || null
       };
     }
     
@@ -45,7 +45,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
       name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
       profileImage: generateFallbackImageUrl(nonprofitId),
       location: '',
-      bannerImageUrl: null // Added banner image URL with null fallback
+      bannerImageUrl: null
     };
   } catch (error) {
     console.error('Error fetching nonprofit data:', error);
@@ -53,7 +53,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
       name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
       profileImage: generateFallbackImageUrl(nonprofitId),
       location: '',
-      bannerImageUrl: null // Added banner image URL with null fallback
+      bannerImageUrl: null
     };
   }
 };
