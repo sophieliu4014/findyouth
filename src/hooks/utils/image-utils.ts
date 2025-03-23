@@ -51,29 +51,51 @@ export async function getProfileImageFromStorage(nonprofitId: string): Promise<s
 // Check if a banner image exists in storage and get its URL
 export async function getBannerImageFromStorage(nonprofitId: string): Promise<string | null> {
   try {
+    if (!nonprofitId) {
+      console.log("No nonprofit ID provided for banner image lookup");
+      return null;
+    }
+    
+    console.log(`Checking banner image for nonprofit ID: ${nonprofitId}`);
+    
+    // Ensure ID is prefixed with "banner-"
+    const idPrefix = nonprofitId.startsWith('banner-') ? '' : 'banner-';
+    const bannerId = `${idPrefix}${nonprofitId}`;
+    
     // Common image extensions to check
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
     for (const ext of extensions) {
+      const filename = `${bannerId}.${ext}`;
+      console.log(`Checking for banner image: ${filename}`);
+      
       const { data } = supabase
         .storage
         .from('banner-images')
-        .getPublicUrl(`banner-${nonprofitId}.${ext}`);
+        .getPublicUrl(filename);
         
       if (data && data.publicUrl) {
+        console.log(`Found potential banner URL: ${data.publicUrl}`);
+        
+        // Add cache-busting parameter to prevent stale images
+        const cacheBustUrl = `${data.publicUrl}?t=${new Date().getTime()}`;
+        
         // Try to fetch the URL to verify it exists
         try {
-          const response = await fetch(data.publicUrl, { method: 'HEAD' });
+          const response = await fetch(cacheBustUrl, { method: 'HEAD', cache: 'no-cache' });
           if (response.ok) {
-            console.log(`Found banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
+            console.log(`Verified banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
             return data.publicUrl;
+          } else {
+            console.log(`Banner image not accessible (status ${response.status}): ${data.publicUrl}`);
           }
         } catch (e) {
-          console.log(`URL exists but banner image not accessible: ${data.publicUrl}`);
+          console.log(`Error accessing banner image: ${data.publicUrl}`, e);
         }
       }
     }
     
+    console.log(`No banner image found for nonprofit ID: ${nonprofitId}`);
     return null;
   } catch (error) {
     console.error("Error getting banner image from storage:", error);

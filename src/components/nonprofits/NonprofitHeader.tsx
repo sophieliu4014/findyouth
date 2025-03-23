@@ -1,24 +1,57 @@
 
-import React from 'react';
-import { ArrowLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { getBannerImageFromStorage } from '@/hooks/utils/image-utils';
 
 interface NonprofitHeaderProps {
   title: string;
   bannerImageUrl?: string | null;
+  nonprofitId?: string;
 }
 
-const NonprofitHeader = ({ title, bannerImageUrl }: NonprofitHeaderProps) => {
+const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeaderProps) => {
+  const [finalBannerUrl, setFinalBannerUrl] = useState<string | null>(bannerImageUrl || null);
+  const [isLoading, setIsLoading] = useState<boolean>(!bannerImageUrl && !!nonprofitId);
+  
+  // Try to get banner from storage if not provided
+  useEffect(() => {
+    if (!bannerImageUrl && nonprofitId) {
+      const fetchBanner = async () => {
+        try {
+          const storageUrl = await getBannerImageFromStorage(nonprofitId);
+          if (storageUrl) {
+            console.log(`Found banner in storage for ${nonprofitId}: ${storageUrl}`);
+            setFinalBannerUrl(storageUrl);
+          }
+        } catch (error) {
+          console.error("Error fetching banner from storage:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchBanner();
+    } else {
+      setIsLoading(false);
+    }
+  }, [bannerImageUrl, nonprofitId]);
+
   return (
     <div className="relative">
       {/* Banner image with fallback */}
       <div className="w-full h-48 md:h-64 bg-gradient-to-r from-youth-blue to-youth-purple overflow-hidden">
-        {bannerImageUrl ? (
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-white" />
+          </div>
+        ) : finalBannerUrl ? (
           <img 
-            src={bannerImageUrl} 
+            src={finalBannerUrl} 
             alt={`${title} banner`} 
             className="w-full h-full object-cover"
+            key={finalBannerUrl} // Force image refresh when URL changes
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

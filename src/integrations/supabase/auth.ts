@@ -244,8 +244,12 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
 // Upload banner image to Supabase storage
 export const uploadBannerImage = async (file: File, identifier: string): Promise<string | null> => {
   try {
+    // Ensure identifier starts with "banner-"
+    const idPrefix = identifier.startsWith('banner-') ? '' : 'banner-';
+    const actualIdentifier = `${idPrefix}${identifier}`;
+    
     const fileExt = file.name.split('.').pop();
-    const filePath = `${identifier}.${fileExt}`;
+    const filePath = `${actualIdentifier}.${fileExt}`;
     
     console.log(`Uploading banner file to bucket 'banner-images', path: ${filePath}`);
     
@@ -253,7 +257,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     const { data, error: uploadError } = await supabase.storage
       .from('banner-images')
       .upload(filePath, file, {
-        cacheControl: '3600',
+        cacheControl: '0', // No caching to prevent stale images
         upsert: true
       });
 
@@ -264,17 +268,18 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
 
     console.log('Banner upload successful, data:', data);
 
-    // Get the public URL
+    // Get the public URL with a cache-busting parameter
+    const timestamp = new Date().getTime();
     const { data: { publicUrl } } = supabase.storage
       .from('banner-images')
-      .getPublicUrl(filePath);
+      .getPublicUrl(`${filePath}?t=${timestamp}`);
 
     if (!publicUrl) {
       throw new Error('Failed to get public URL for uploaded banner image');
     }
 
     console.log('Banner file uploaded successfully, public URL:', publicUrl);
-    return publicUrl;
+    return publicUrl.split('?')[0]; // Remove cache-busting parameter before storing
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
     toast.error(`Failed to upload banner image: ${error.message}`);

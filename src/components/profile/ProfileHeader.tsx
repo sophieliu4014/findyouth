@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -7,6 +6,7 @@ import BannerImageUpload from '@/components/registration/BannerImageUpload';
 import ProfileImageSection from './ProfileImageSection';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadProfileImage, uploadBannerImage } from '@/integrations/supabase/auth';
+import { getBannerImageFromStorage } from '@/hooks/utils/image-utils';
 
 interface ProfileHeaderProps {
   user: any;
@@ -21,10 +21,53 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   );
   const [bannerImage, setBannerImage] = useState<File | null>(null);
   const [bannerImageError, setBannerImageError] = useState<string | null>(null);
-  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(
-    user?.user_metadata?.nonprofit_data?.bannerImageUrl || null
-  );
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
+  const [isLoadingBanner, setIsLoadingBanner] = useState(true);
   const organizationName = user?.user_metadata?.organization_name || '';
+
+  useEffect(() => {
+    const fetchBannerImage = async () => {
+      setIsLoadingBanner(true);
+      try {
+        const metadataUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl;
+        if (metadataUrl) {
+          console.log('Using banner from metadata:', metadataUrl);
+          setBannerImagePreview(metadataUrl);
+          setIsLoadingBanner(false);
+          return;
+        }
+        
+        if (user?.id) {
+          const storageUrl = await getBannerImageFromStorage(user.id);
+          if (storageUrl) {
+            console.log('Using banner from storage:', storageUrl);
+            setBannerImagePreview(storageUrl);
+            setIsLoadingBanner(false);
+            return;
+          }
+        }
+        
+        if (user?.id) {
+          const { data: nonprofitData, error } = await supabase
+            .from('nonprofits')
+            .select('banner_image_url')
+            .eq('id', user.id)
+            .single();
+            
+          if (!error && nonprofitData?.banner_image_url) {
+            console.log('Using banner from nonprofits table:', nonprofitData.banner_image_url);
+            setBannerImagePreview(nonprofitData.banner_image_url);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching banner image:', error);
+      } finally {
+        setIsLoadingBanner(false);
+      }
+    };
+    
+    fetchBannerImage();
+  }, [user]);
 
   const handleSaveProfile = async () => {
     try {
@@ -42,10 +85,11 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
       }
       
       if (bannerImage) {
-        const identifier = `banner-${user?.id || Date.now().toString()}`;
-        const newBannerUrl = await uploadBannerImage(bannerImage, identifier);
+        const identifier = user?.id || Date.now().toString();
+        const newBannerUrl = await uploadBannerImage(bannerImage, `banner-${identifier}`);
         if (newBannerUrl) {
           bannerImageUrl = newBannerUrl;
+          setBannerImagePreview(newBannerUrl);
         }
       }
       
@@ -92,11 +136,16 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
     <>
       <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8">
         <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/10 to-youth-purple/10">
-          {bannerImagePreview ? (
+          {isLoadingBanner ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-youth-blue" />
+            </div>
+          ) : bannerImagePreview ? (
             <img 
               src={bannerImagePreview} 
               alt="Banner" 
               className="w-full h-full object-cover"
+              key={bannerImagePreview}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-youth-blue/5 via-youth-purple/5 to-youth-blue/5">
