@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, Mail, Globe, Phone, Star, MapPin, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useOrganizationEvents } from '@/hooks';
@@ -11,6 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { NonprofitHeader, NonprofitDetailsSection, EventsList } from '@/components/nonprofits';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuthStore } from '@/lib/auth';
+import { ensureNonprofitProfile } from '@/integrations/supabase/auth';
 
 interface Nonprofit {
   id: string;
@@ -33,6 +35,10 @@ const NonprofitProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { events, isLoading: eventsLoading } = useOrganizationEvents(id || '');
   const { toast } = useToast();
+  const { user } = useAuthStore();
+  
+  // Check if this is the current user's profile
+  const isCurrentUserProfile = user?.id === id;
 
   useEffect(() => {
     const fetchNonprofitData = async () => {
@@ -65,29 +71,58 @@ const NonprofitProfile = () => {
             return;
           }
           
-          if (profileData) {
-            // Get user metadata if available
-            const { data: userMetadata } = await supabase.auth.getUser();
+          // If this is the current user's profile, ensure nonprofit profile
+          if (isCurrentUserProfile) {
+            console.log("This is the current user's profile, ensuring nonprofit profile");
+            await ensureNonprofitProfile();
             
-            // Use metadata if this is current user, otherwise use profile data
-            const isCurrentUser = userMetadata?.user?.id === id;
-            const organizationName = isCurrentUser && userMetadata?.user?.user_metadata?.organization_name
+            // Fetch again to see if profile was created
+            const { data: refreshedData, error: refreshError } = await supabase
+              .from('nonprofits')
+              .select('*')
+              .eq('id', id)
+              .single();
+              
+            if (!refreshError && refreshedData) {
+              nonprofitData = refreshedData;
+              console.log("Successfully created and fetched nonprofit profile:", nonprofitData);
+            } else {
+              console.log("Failed to create nonprofit profile, falling back to user metadata");
+            }
+          }
+          
+          if (!nonprofitData && profileData) {
+            // Get user metadata for the specific user ID we're viewing
+            let userMetadata = null;
+            
+            // If this is the current user, we can use their metadata directly
+            if (isCurrentUserProfile && user) {
+              userMetadata = {
+                user: {
+                  id: user.id,
+                  email: user.email,
+                  user_metadata: user.user_metadata
+                }
+              };
+              console.log("Using current user's metadata:", userMetadata);
+            }
+            
+            const organizationName = userMetadata?.user?.user_metadata?.organization_name
               ? userMetadata.user.user_metadata.organization_name
               : (profileData.full_name || 'Organization');
             
             // Create an object that matches the expected database structure
-            // Include all required fields, including created_at and updated_at
             nonprofitData = {
               id: profileData.id,
               organization_name: organizationName,
-              description: userMetadata?.user?.user_metadata?.description || 'No description available',
-              mission: userMetadata?.user?.user_metadata?.mission || 'No mission statement available',
-              location: userMetadata?.user?.user_metadata?.location || 'Location not specified',
-              profile_image_url: profileData.avatar_url,
-              website: userMetadata?.user?.user_metadata?.website || null,
-              social_media: userMetadata?.user?.user_metadata?.social_media || '',
+              description: userMetadata?.user?.user_metadata?.nonprofit_data?.description || 'No description available',
+              mission: userMetadata?.user?.user_metadata?.nonprofit_data?.mission || 'No mission statement available',
+              location: userMetadata?.user?.user_metadata?.nonprofit_data?.location || 'Location not specified',
+              profile_image_url: profileData.avatar_url || userMetadata?.user?.user_metadata?.nonprofit_data?.profileImageUrl,
+              website: userMetadata?.user?.user_metadata?.nonprofit_data?.website || null,
+              social_media: userMetadata?.user?.user_metadata?.nonprofit_data?.socialMedia || '',
               email: userMetadata?.user?.email || null,
-              phone: userMetadata?.user?.user_metadata?.phone || null,
+              phone: userMetadata?.user?.user_metadata?.nonprofit_data?.phone || null,
               created_at: profileData.updated_at || new Date().toISOString(),
               updated_at: profileData.updated_at || new Date().toISOString()
             };
@@ -104,7 +139,8 @@ const NonprofitProfile = () => {
         
         // Fetch causes if this is a real nonprofit
         let causes: string[] = [];
-        if (nonprofitData && nonprofitData.organization_name !== 'Organization') {
+        if (nonprofitData) {
+          // First check nonprofit_causes table
           const { data: causesData, error: causesError } = await supabase
             .from('nonprofit_causes')
             .select('causes(name)')
@@ -112,8 +148,13 @@ const NonprofitProfile = () => {
             
           if (causesError) {
             console.error('Error fetching causes:', causesError);
-          } else if (causesData) {
+          } else if (causesData && causesData.length > 0) {
             causes = causesData.map(item => item.causes.name) || [];
+          } 
+          // If no causes found in table and this is current user, try to get from metadata
+          else if (isCurrentUserProfile && user?.user_metadata?.nonprofit_data?.causes) {
+            causes = user.user_metadata.nonprofit_data.causes || [];
+            console.log("Using causes from user metadata:", causes);
           }
         }
         
@@ -135,7 +176,6 @@ const NonprofitProfile = () => {
         }
         
         // Create a proper Nonprofit object with the correct interface
-        // We explicitly create a new object that matches our Nonprofit interface
         const finalNonprofit: Nonprofit = {
           id: nonprofitData.id,
           organization_name: nonprofitData.organization_name,
@@ -165,7 +205,7 @@ const NonprofitProfile = () => {
     };
     
     fetchNonprofitData();
-  }, [id, toast]);
+  }, [id, toast, user, isCurrentUserProfile]);
 
   if (isLoading) {
     return (

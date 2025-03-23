@@ -36,6 +36,39 @@ export const createNonprofitProfile = async ({
   try {
     console.log("Creating nonprofit profile with image URL:", profileImageUrl);
     
+    // Check if profile already exists
+    const { data: existingProfile } = await supabase
+      .from('nonprofits')
+      .select('id')
+      .eq('id', userId)
+      .single();
+      
+    if (existingProfile) {
+      console.log("Nonprofit profile already exists, updating instead");
+      // Update the profile instead of inserting
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('nonprofits')
+        .update({
+          organization_name: organizationName,
+          email,
+          phone,
+          website,
+          social_media: socialMedia,
+          location,
+          description,
+          mission,
+          profile_image_url: profileImageUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select();
+        
+      if (updateError) throw updateError;
+      
+      // Return the updated profile
+      return { nonprofit: updatedProfile, error: null };
+    }
+    
     // Insert the nonprofit profile
     const { data: nonprofit, error: profileError } = await supabase
       .from('nonprofits')
