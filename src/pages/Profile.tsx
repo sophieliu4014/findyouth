@@ -181,7 +181,7 @@ const Profile = () => {
             
             {/* Improved banner container with better styling */}
             <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8 relative">
-              <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/5 to-youth-purple/5">
+              <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/10 to-youth-purple/10">
                 {bannerImagePreview ? (
                   <img 
                     src={bannerImagePreview} 
@@ -189,8 +189,8 @@ const Profile = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-youth-charcoal/50 text-sm">No banner image</p>
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-youth-blue/5 via-youth-purple/5 to-youth-blue/5">
+                    {/* No text here, just a subtle gradient background */}
                   </div>
                 )}
                 

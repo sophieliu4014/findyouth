@@ -156,7 +156,7 @@ const BannerImageUpload = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        style={{ minHeight: '180px' }}
+        style={{ minHeight: '220px' }}
       >
         <input
           type="file"
@@ -167,8 +167,8 @@ const BannerImageUpload = ({
         />
         
         {imagePreview ? (
-          <div className="flex flex-col items-center gap-4 w-full p-4">
-            <div className="relative w-full h-32 sm:h-40 overflow-hidden rounded-lg">
+          <div className="flex flex-col items-center gap-4 w-full p-6">
+            <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-lg">
               <img 
                 src={imagePreview} 
                 alt="Banner preview" 
@@ -179,16 +179,16 @@ const BannerImageUpload = ({
                 variant="outline" 
                 size="sm"
                 onClick={triggerFileInput}
-                className="absolute bottom-2 right-2 bg-white/80 hover:bg-white"
+                className="absolute bottom-3 right-3 bg-white/90 hover:bg-white shadow-sm"
               >
                 Change
               </Button>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 py-8 px-6 w-full">
-            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-              <Upload className="h-6 w-6 text-gray-500" />
+          <div className="flex flex-col items-center justify-center gap-4 py-10 px-6 w-full h-full">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
+              <Upload className="h-8 w-8 text-gray-500" />
             </div>
             <div className="text-center">
               <Button 
@@ -196,7 +196,7 @@ const BannerImageUpload = ({
                 variant="outline" 
                 size="sm" 
                 onClick={triggerFileInput}
-                className="mb-2"
+                className="mb-3"
               >
                 Choose Banner Image
               </Button>
