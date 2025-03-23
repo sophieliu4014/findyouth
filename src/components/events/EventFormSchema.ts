@@ -4,7 +4,12 @@ import { causeAreas } from '../form/filters/FilterConstants';
 
 // Form validation schema
 export const eventFormSchema = z.object({
-  title: z.string().min(5, { message: 'Title must be at least 5 characters' }),
+  title: z.string()
+    .min(5, { message: 'Title must be at least 5 characters' })
+    .refine(
+      (value) => value.trim().split(/\s+/).length <= 10,
+      { message: 'Title must be 10 words or fewer' }
+    ),
   description: z.string()
     .refine(
       (value) => value.trim().split(/\s+/).length >= 25,
