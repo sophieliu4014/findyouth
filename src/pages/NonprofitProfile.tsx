@@ -1,15 +1,16 @@
 
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Star, ArrowLeft, MapPin, Calendar, ExternalLink } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
-import { useOrganizationEvents } from '@/hooks'; // Updated import path
+import { useOrganizationEvents } from '@/hooks';
 import { supabase } from '@/integrations/supabase/client';
-import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { NonprofitHeader, NonprofitDetailsSection, EventsList } from '@/components/nonprofits';
 
 interface Nonprofit {
   id: string;
@@ -91,16 +92,6 @@ const NonprofitProfile = () => {
     
     fetchNonprofitData();
   }, [id]);
-  
-  // Render stars for rating
-  const renderStars = (rating: number) => {
-    return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        className={`h-5 w-5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-      />
-    ));
-  };
 
   if (isLoading) {
     return (
@@ -148,126 +139,13 @@ const NonprofitProfile = () => {
       <Navbar />
 
       <main className="page-container">
-        <div className="mb-8">
-          <Link 
-            to="/find-activities" 
-            className="inline-flex items-center text-youth-blue hover:text-youth-purple"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Activities
-          </Link>
-        </div>
-
-        <div className="glass-panel mb-8">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Profile Image */}
-            <div className="md:w-1/4">
-              <div className="w-32 h-32 md:w-full md:h-64 bg-gray-100 rounded-lg overflow-hidden">
-                <img 
-                  src={nonprofit.profile_image_url || "https://via.placeholder.com/300"} 
-                  alt={nonprofit.organization_name} 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Nonprofit Details */}
-            <div className="md:w-3/4">
-              <h1 className="text-3xl font-bold text-youth-charcoal mb-2">
-                {nonprofit.organization_name}
-              </h1>
-
-              <div className="flex items-center mb-4">
-                <div className="flex mr-4">
-                  {renderStars(nonprofit.rating)}
-                </div>
-                
-                <div className="flex items-center text-youth-charcoal/70">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span>{nonprofit.location}</span>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-youth-charcoal mb-2">Cause Areas</h3>
-                <div className="flex flex-wrap gap-2">
-                  {nonprofit.causes.map(cause => (
-                    <Link 
-                      key={cause} 
-                      to={`/cause/${encodeURIComponent(cause)}`}
-                      className="bg-youth-blue/10 text-youth-blue py-1 px-3 rounded-full text-sm hover:bg-youth-blue/20 transition-colors"
-                    >
-                      {cause}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-youth-charcoal mb-2">Description</h3>
-                <p className="text-youth-charcoal/80">{nonprofit.description}</p>
-              </div>
-
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-youth-charcoal mb-2">Mission</h3>
-                <p className="text-youth-charcoal/80">{nonprofit.mission}</p>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                {nonprofit.website && (
-                  <a 
-                    href={nonprofit.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-youth-blue hover:text-youth-purple"
-                  >
-                    <ExternalLink className="mr-1 h-4 w-4" />
-                    Website
-                  </a>
-                )}
-                <a 
-                  href={nonprofit.social_media} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-youth-blue hover:text-youth-purple"
-                >
-                  <ExternalLink className="mr-1 h-4 w-4" />
-                  Social Media
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <h2 className="text-2xl font-bold text-youth-charcoal mb-6">
-          Events by {nonprofit.organization_name}
-        </h2>
-
-        {eventsLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-youth-blue" />
-            <span className="ml-2">Loading events...</span>
-          </div>
-        ) : events.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            {events.map((event, index) => (
-              <div 
-                key={event.id} 
-                className="animate-slide-up" 
-                style={{ animationDelay: `${(index + 1) * 100}ms` }}
-              >
-                <EventCard {...event} />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 glass-panel">
-            <h3 className="text-xl font-medium text-youth-charcoal mb-2">No events found</h3>
-            <p className="text-youth-charcoal/70">
-              This organization hasn't published any events yet.
-            </p>
-          </div>
-        )}
+        <NonprofitHeader title={nonprofit.organization_name} />
+        <NonprofitDetailsSection nonprofit={nonprofit} />
+        <EventsList 
+          title={`Events by ${nonprofit.organization_name}`}
+          events={events} 
+          isLoading={eventsLoading} 
+        />
       </main>
 
       <Footer />
