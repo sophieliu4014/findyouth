@@ -1,11 +1,63 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useEventData } from '@/hooks';
+
+// Fallback cities in case we can't determine popular ones
+const fallbackCities = [
+  "Vancouver",
+  "Burnaby",
+  "Richmond",
+  "Surrey"
+];
 
 const Hero = () => {
   const [keyword, setKeyword] = useState('');
   const navigate = useNavigate();
+
+  // Fetch all events to determine popular cities
+  const { data: eventsData } = useEventData({
+    cause: '',
+    location: '',
+    organization: '',
+    searchKeyword: ''
+  });
+
+  // Calculate popular cities from event data
+  const popularCities = useMemo(() => {
+    if (!eventsData || eventsData.length === 0) {
+      return fallbackCities;
+    }
+
+    // Count city frequencies
+    const cityCounts: Record<string, number> = {};
+    eventsData.forEach(event => {
+      // Extract city from location field
+      const locationParts = event.location?.split(',') || [];
+      
+      if (locationParts.length > 1) {
+        // Try to get city from second part of location (usually City, State format)
+        const possibleCity = locationParts[1]?.trim();
+        if (possibleCity && possibleCity.length > 0) {
+          cityCounts[possibleCity] = (cityCounts[possibleCity] || 0) + 1;
+        }
+      } else if (locationParts.length === 1) {
+        // If only one part, assume it's the city
+        const city = locationParts[0]?.trim();
+        if (city && city.length > 0) {
+          cityCounts[city] = (cityCounts[city] || 0) + 1;
+        }
+      }
+    });
+
+    // Sort cities by frequency and take top 4
+    const sortedCities = Object.keys(cityCounts)
+      .sort((a, b) => cityCounts[b] - cityCounts[a])
+      .slice(0, 4);
+
+    return sortedCities.length > 0 ? sortedCities : fallbackCities;
+  }, [eventsData]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +120,7 @@ const Hero = () => {
         <div className="max-w-2xl mx-auto mb-12 animate-slide-up animate-delay-300">
           <p className="text-white mb-4">Or explore by city</p>
           <div className="flex flex-wrap justify-center gap-4">
-            {['Vancouver', 'Burnaby', 'Richmond', 'Surrey'].map((city) => (
+            {popularCities.map((city) => (
               <button
                 key={city}
                 onClick={() => handleCityClick(city)}
