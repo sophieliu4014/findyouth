@@ -127,9 +127,14 @@ const EventForm = ({ userId }: EventFormProps) => {
         }
       }
 
+      // Show success toast
       toast.success('Event created successfully!');
-      // Redirect to the find activities page to show the newly created event
-      navigate('/find-activities');
+      
+      // Ensure the navigation happens after the toast is displayed
+      setTimeout(() => {
+        // Use window.location.href for a full page redirect
+        window.location.href = '/find-activities';
+      }, 500);
     } catch (error: any) {
       console.error('Error creating event:', error);
       toast.error(`Failed to create event: ${error.message}`);
