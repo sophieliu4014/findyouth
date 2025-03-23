@@ -3,6 +3,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 import EventCard from '../EventCard';
 import { Event } from '@/hooks/types/event-types';
+import { useToast } from '@/components/ui/use-toast';
 
 interface EventsListProps {
   title: string;
@@ -11,6 +12,25 @@ interface EventsListProps {
 }
 
 const EventsList = ({ title, events, isLoading }: EventsListProps) => {
+  const { toast } = useToast();
+  
+  // Check for events with missing data and toast a warning
+  React.useEffect(() => {
+    if (!isLoading && events.length > 0) {
+      const hasIncompleteData = events.some(
+        event => !event.organization || !event.title || !event.date
+      );
+      
+      if (hasIncompleteData) {
+        toast({
+          title: "Some event data may be incomplete",
+          description: "Not all events could be fully loaded. Please refresh to try again.",
+          variant: "warning"
+        });
+      }
+    }
+  }, [events, isLoading, toast]);
+  
   return (
     <>
       <h2 className="text-2xl font-bold text-youth-charcoal mb-6">

@@ -39,44 +39,79 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
   
   console.log(`Transforming ${dbEvents.length} events`);
   
-  // Process each event individually to ensure we get proper organization data
-  return await Promise.all(dbEvents.map(async event => {
-    try {
-      const orgData = await fetchNonprofitData(event.nonprofit_id);
-      
-      console.log(`Processed event ${event.id} for organization ${orgData.name}`);
-      
-      return {
-        id: event.id,
-        title: event.title,
-        organization: orgData.name,
-        organizationId: event.nonprofit_id,
-        date: event.date,
-        location: event.location,
-        causeArea: event.cause_area || 'Environment',
-        rating: 4, // Default value
-        imageUrl: event.image_url || undefined,
-        description: event.description,
-        createdAt: event.created_at || undefined,
-        profileImage: orgData.profileImage
-      };
-    } catch (error) {
-      console.error(`Error transforming event ${event.id}:`, error);
-      
-      // Return a fallback event with basic information
-      return {
-        id: event.id,
-        title: event.title,
-        organization: NONPROFIT_NAME_MAP[event.nonprofit_id] || 'Organization',
-        organizationId: event.nonprofit_id,
-        date: event.date,
-        location: event.location,
-        causeArea: event.cause_area || 'Environment',
-        rating: 4,
-        imageUrl: event.image_url || undefined,
-        description: event.description,
-        profileImage: generateFallbackImageUrl(event.nonprofit_id)
-      };
-    }
-  }));
+  // Process events in batches to optimize performance
+  const batchSize = 5;
+  const results: Event[] = [];
+  
+  // Get unique nonprofit IDs to fetch data once for each organization
+  const nonprofitIds = [...new Set(dbEvents.map(event => event.nonprofit_id))];
+  
+  // Pre-fetch nonprofit data for all unique organizations
+  const nonprofitDataMap = new Map<string, {name: string, profileImage: string}>();
+  
+  await Promise.all(
+    nonprofitIds.map(async (id) => {
+      try {
+        const data = await fetchNonprofitData(id);
+        nonprofitDataMap.set(id, data);
+      } catch (error) {
+        console.error(`Error pre-fetching data for nonprofit ${id}:`, error);
+        nonprofitDataMap.set(id, {
+          name: NONPROFIT_NAME_MAP[id] || 'Organization',
+          profileImage: generateFallbackImageUrl(id)
+        });
+      }
+    })
+  );
+  
+  // Process events in batches using pre-fetched org data
+  for (let i = 0; i < dbEvents.length; i += batchSize) {
+    const batch = dbEvents.slice(i, i + batchSize);
+    
+    const batchResults = await Promise.all(batch.map(async event => {
+      try {
+        // Get org data from our pre-fetched map
+        const orgData = nonprofitDataMap.get(event.nonprofit_id) || {
+          name: NONPROFIT_NAME_MAP[event.nonprofit_id] || 'Organization',
+          profileImage: generateFallbackImageUrl(event.nonprofit_id)
+        };
+        
+        return {
+          id: event.id,
+          title: event.title,
+          organization: orgData.name,
+          organizationId: event.nonprofit_id,
+          date: event.date,
+          location: event.location,
+          causeArea: event.cause_area || 'Environment',
+          rating: 4, // Default value
+          imageUrl: event.image_url || undefined,
+          description: event.description,
+          createdAt: event.created_at || undefined,
+          profileImage: orgData.profileImage
+        };
+      } catch (error) {
+        console.error(`Error transforming event ${event.id}:`, error);
+        
+        // Return a fallback event with basic information
+        return {
+          id: event.id,
+          title: event.title,
+          organization: NONPROFIT_NAME_MAP[event.nonprofit_id] || 'Organization',
+          organizationId: event.nonprofit_id,
+          date: event.date,
+          location: event.location,
+          causeArea: event.cause_area || 'Environment',
+          rating: 4,
+          imageUrl: event.image_url || undefined,
+          description: event.description,
+          profileImage: generateFallbackImageUrl(event.nonprofit_id)
+        };
+      }
+    }));
+    
+    results.push(...batchResults);
+  }
+  
+  return results;
 };
