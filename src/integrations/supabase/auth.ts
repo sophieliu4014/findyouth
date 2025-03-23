@@ -163,7 +163,7 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
     
     console.log(`Uploading file to bucket 'profile-images', path: ${filePath}`);
     
-    // Try the upload without checking for bucket existence first
+    // Upload the file to the profile-images bucket
     const { data, error: uploadError } = await supabase.storage
       .from('profile-images')
       .upload(filePath, file, {
