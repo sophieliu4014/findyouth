@@ -68,7 +68,7 @@ const EventForm = ({ userId }: EventFormProps) => {
         attached_links: values.attachedLinks || null,
         cause_area: values.causeArea,
         nonprofit_id: userId,
-        created_at: new Date().toISOString(), // Ensure we record when the event was created
+        created_at: new Date().toISOString(),
       };
 
       console.log('Creating event with payload:', eventPayload);
@@ -92,59 +92,54 @@ const EventForm = ({ userId }: EventFormProps) => {
           
           console.log('Uploading image to path:', filePath);
           
-          // Check if bucket exists
-          const { data: buckets } = await supabase.storage.listBuckets();
-          const eventImagesBucketExists = buckets?.some(bucket => bucket.name === 'event-images');
-          
-          if (!eventImagesBucketExists) {
-            console.log('event-images bucket does not exist, skipping image upload');
-            // Don't throw an error, just skip the image upload
+          const { error: uploadError, data: uploadData } = await supabase.storage
+            .from('event-images') 
+            .upload(filePath, eventImage, {
+              upsert: true,
+            });
+
+          if (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            toast.error(`Image upload failed: ${uploadError.message}`, {
+              description: "Event was created but without an image."
+            });
           } else {
-            const { error: uploadError, data: uploadData } = await supabase.storage
-              .from('event-images') 
-              .upload(filePath, eventImage, {
-                upsert: true,
-              });
+            console.log('Image uploaded successfully:', uploadData);
 
-            if (uploadError) {
-              console.error('Error uploading image:', uploadError);
-              // Don't throw error, just log it and continue without the image
-            } else {
-              console.log('Image uploaded successfully:', uploadData);
+            // Get public URL
+            const { data: urlData } = supabase.storage
+              .from('event-images')
+              .getPublicUrl(filePath);
 
-              // Get public URL
-              const { data: urlData } = supabase.storage
-                .from('event-images')
-                .getPublicUrl(filePath);
+            console.log('Image public URL:', urlData);
 
-              console.log('Image public URL:', urlData);
+            // Update event with image URL
+            if (urlData) {
+              const { error: updateError } = await supabase
+                .from('events')
+                .update({ image_url: urlData.publicUrl })
+                .eq('id', createdEvent.id);
 
-              // Update event with image URL
-              if (urlData) {
-                const { error: updateError } = await supabase
-                  .from('events')
-                  .update({ image_url: urlData.publicUrl })
-                  .eq('id', createdEvent.id);
-
-                if (updateError) {
-                  console.error('Error updating event with image URL:', updateError);
-                  // Don't throw error, just log it
-                } else {
-                  console.log('Event updated with image URL:', urlData.publicUrl);
-                }
+              if (updateError) {
+                console.error('Error updating event with image URL:', updateError);
+                toast.error("Failed to attach image to event", {
+                  description: "Your event was created, but the image couldn't be attached."
+                });
+              } else {
+                console.log('Event updated with image URL:', urlData.publicUrl);
               }
             }
           }
-        } catch (imageError) {
+        } catch (imageError: any) {
           console.error('Error processing image upload:', imageError);
-          // Don't throw error, just log it
+          toast.error(`Image processing error: ${imageError.message}`, {
+            description: "Event was created but without an image."
+          });
         }
       }
 
       // Show success toast and navigate
       toast.success('Event created successfully!');
-      
-      // Use the navigate function from react-router-dom
       navigate('/find-activities');
     } catch (error: any) {
       console.error('Error creating event:', error);
