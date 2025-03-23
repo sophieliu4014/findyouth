@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -38,6 +39,7 @@ interface OrganizationInfo {
   profileImage?: string;
   description?: string;
   location?: string;
+  bannerImageUrl?: string; // Added banner image URL field
 }
 
 const EventDetail = () => {
@@ -151,12 +153,13 @@ const EventDetail = () => {
             </div>
 
             <div className="mb-8 animate-fade-in">
-              {event.image_url && (
-                <div className="w-full mb-6 flex justify-center">
+              {/* Display organization banner at the top if available */}
+              {organization?.bannerImageUrl && (
+                <div className="w-full mb-6 rounded-lg overflow-hidden h-48 md:h-64">
                   <img 
-                    src={event.image_url} 
-                    alt={event.title} 
-                    className="max-w-full rounded-lg max-h-[500px] object-contain"
+                    src={organization.bannerImageUrl} 
+                    alt={`${organization.name} banner`} 
+                    className="w-full h-full object-cover"
                   />
                 </div>
               )}
@@ -232,6 +235,22 @@ const EventDetail = () => {
                           </li>
                         ))}
                       </ul>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Moved event image to below "Additional Resources" */}
+                {event.image_url && (
+                  <Card>
+                    <CardContent className="p-6">
+                      <h2 className="text-xl font-semibold mb-4">Event Gallery</h2>
+                      <div className="w-full flex justify-center">
+                        <img 
+                          src={event.image_url} 
+                          alt={event.title} 
+                          className="max-w-full rounded-lg max-h-[500px] object-contain"
+                        />
+                      </div>
                     </CardContent>
                   </Card>
                 )}
