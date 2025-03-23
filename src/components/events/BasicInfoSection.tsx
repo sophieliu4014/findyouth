@@ -24,8 +24,14 @@ const BasicInfoSection = ({ control, onImageSelect }: BasicInfoSectionProps) => 
           <FormItem>
             <FormLabel>Event Title*</FormLabel>
             <FormControl>
-              <Input placeholder="Beach Cleanup Day" {...field} />
+              <Input 
+                placeholder="Ocean Beach Cleanup: Protecting Marine Ecosystems" 
+                {...field} 
+              />
             </FormControl>
+            <FormDescription>
+              Summarize your event in one concise, engaging sentence that captures the essence of the volunteer activity.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -39,11 +45,23 @@ const BasicInfoSection = ({ control, onImageSelect }: BasicInfoSectionProps) => 
             <FormLabel>Event Description*</FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="Describe what volunteers will be doing and what impact they'll make..." 
-                className="min-h-[120px]"
+                placeholder="Provide a comprehensive overview of your volunteer event. Include:
+- Detailed event schedule and timeline
+- Specific volunteer roles and responsibilities
+- What volunteers will learn or accomplish
+- Required skills or equipment
+- Impact of the volunteer work on the community or environment
+- Any training or orientation provided
+- Specific location details and meeting points
+
+Example: Our beach cleanup event aims to remove plastic waste from Ocean Beach, protecting marine life and ecosystem health. Volunteers will work in teams from 9 AM to 1 PM, equipped with gloves and collection bags. No prior experience needed. We'll provide safety briefing, assign cleanup zones, and track total waste collected. This event directly contributes to environmental conservation efforts." 
+                className="min-h-[200px]"
                 {...field} 
               />
             </FormControl>
+            <FormDescription>
+              Describe your event in detail. Your description must be at least 25 words long to provide comprehensive information for potential volunteers.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
