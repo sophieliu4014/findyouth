@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import { causeAreas } from '../form/filters/FilterConstants';
 
 // Form validation schema
 export const eventFormSchema = z.object({
@@ -20,15 +21,5 @@ export const eventFormSchema = z.object({
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
 
-export const CAUSE_AREAS = [
-  'Environment',
-  'Education',
-  'Health',
-  'Community',
-  'Animal Welfare',
-  'Arts & Culture',
-  'Social Services',
-  'Disaster Relief',
-  'Human Rights',
-  'Youth Development',
-];
+// Use the cause areas from FilterConstants.ts but remove the "All Causes" option
+export const CAUSE_AREAS = causeAreas.filter(cause => cause !== "All Causes");
