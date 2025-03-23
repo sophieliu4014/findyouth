@@ -1,6 +1,7 @@
 
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/Footer';
@@ -12,9 +13,14 @@ const CreateEvent = () => {
   const navigate = useNavigate();
 
   // Redirect to login if not authenticated
-  if (!isLoading && !isAuthenticated) {
-    navigate('/login');
-    return null;
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isLoading, isAuthenticated, navigate]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (

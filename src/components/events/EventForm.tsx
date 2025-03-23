@@ -86,7 +86,7 @@ const EventForm = ({ userId }: EventFormProps) => {
         const filePath = `event-images/${createdEvent.id}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
-          .from('profile-images') // Using the existing bucket
+          .from('event-images') // Changed to use the event-images bucket
           .upload(filePath, eventImage, {
             upsert: true,
           });
@@ -95,7 +95,7 @@ const EventForm = ({ userId }: EventFormProps) => {
 
         // Get public URL
         const { data: urlData } = supabase.storage
-          .from('profile-images')
+          .from('event-images')
           .getPublicUrl(filePath);
 
         // Update event with image URL
