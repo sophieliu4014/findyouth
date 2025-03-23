@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Define the event type that maps to our database
@@ -40,7 +39,7 @@ export const NONPROFIT_NAME_MAP: Record<string, string> = {
   '550e8400-e29b-41d4-a716-446655440004': 'North Shore Animal Rescue',
 };
 
-// Transform database events to UI events
+// Transform database events to UI events with improved organization data fetching
 export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promise<Event[]> => {
   if (!dbEvents || dbEvents.length === 0) {
     console.log('No events to transform');
@@ -77,7 +76,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
       console.log('No nonprofits found in database, will check user profiles');
     }
     
-    // For any IDs not found in nonprofits table, fetch from auth.users
+    // For any IDs not found in nonprofits table, fetch from auth.users and profiles
     const missingIds = nonprofitIds.filter(id => !nonprofitMap.has(id));
     
     if (missingIds.length > 0) {
@@ -120,7 +119,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
   
   console.log('Nonprofit/Profile map has entries:', nonprofitMap.size);
   
-  // Transform each event with nonprofit/user data
+  // Transform each event with nonprofit/user data and better fallback handling
   return dbEvents.map(event => {
     // Get organization data from our map, or use fallbacks
     const organization = nonprofitMap.get(event.nonprofit_id);

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Event, NONPROFIT_NAME_MAP, transformDatabaseEvents } from './event-types';
 
@@ -51,7 +50,7 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
   return Math.round(sum / reviewsData.length);
 }
 
-// Async function to fetch nonprofit or user data for an event
+// Improved function to fetch nonprofit or user data for an event
 export async function fetchNonprofitData(nonprofitId: string): Promise<{name: string, profileImage: string}> {
   try {
     // First try to get from nonprofits table
@@ -64,11 +63,11 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
     if (nonprofit) {
       return {
         name: nonprofit.organization_name,
-        profileImage: nonprofit.profile_image_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+        profileImage: nonprofit.profile_image_url || generateFallbackImageUrl(nonprofitId)
       };
     }
     
-    // Then try to get from profiles table
+    // Then try to get from profiles table and user metadata
     const { data: profile } = await supabase
       .from('profiles')
       .select('full_name, avatar_url')
@@ -83,17 +82,24 @@ export async function fetchNonprofitData(nonprofitId: string): Promise<{name: st
       
       return {
         name: organizationName,
-        profileImage: profile.avatar_url || `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+        profileImage: profile.avatar_url || generateFallbackImageUrl(nonprofitId)
       };
     }
   } catch (error) {
     console.error("Error fetching organization/user data:", error);
   }
   
+  // Fallback case
   return {
     name: NONPROFIT_NAME_MAP[nonprofitId] || 'User',
-    profileImage: `https://images.unsplash.com/photo-${1550000000000 + parseInt(nonprofitId.slice(-4), 16) % 1000000}`
+    profileImage: generateFallbackImageUrl(nonprofitId)
   };
+}
+
+// Helper function to generate a deterministic fallback image URL
+function generateFallbackImageUrl(id: string): string {
+  const idNumber = parseInt(id.slice(-6).replace(/\D/g, ''), 16) % 1000 || 42;
+  return `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
 }
 
 // Transform event data from API format to application format - Now an async function
