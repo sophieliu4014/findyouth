@@ -27,6 +27,7 @@ interface Nonprofit {
   rating: number;
   email: string | null;
   phone: string | null;
+  banner_image_url?: string | null;
 }
 
 const NonprofitProfile = () => {
@@ -102,6 +103,7 @@ const NonprofitProfile = () => {
             let email = null;
             let phone = null;
             let profileImageUrl = profileData.avatar_url;
+            let bannerImageUrl = null;
             
             // If this is the current user, we can use their metadata
             if (isCurrentUserProfile && user?.user_metadata) {
@@ -119,6 +121,7 @@ const NonprofitProfile = () => {
                 email = user.email || email;
                 phone = metadata.nonprofit_data.phone || phone;
                 profileImageUrl = metadata.nonprofit_data.profileImageUrl || profileImageUrl;
+                bannerImageUrl = metadata.nonprofit_data.bannerImageUrl || bannerImageUrl;
               }
             }
             
@@ -130,6 +133,7 @@ const NonprofitProfile = () => {
               mission: mission,
               location: location,
               profile_image_url: profileImageUrl,
+              banner_image_url: bannerImageUrl,
               website: website,
               social_media: socialMedia,
               email: email,
@@ -199,7 +203,8 @@ const NonprofitProfile = () => {
           email: nonprofitData.email,
           phone: nonprofitData.phone,
           causes: causes,
-          rating: avgRating
+          rating: avgRating,
+          banner_image_url: (nonprofitData as any).banner_image_url || null
         };
         
         setNonprofit(finalNonprofit);
@@ -264,7 +269,10 @@ const NonprofitProfile = () => {
       <Navbar />
 
       <main className="page-container">
-        <NonprofitHeader title={nonprofit?.organization_name || 'Organization'} />
+        <NonprofitHeader 
+          title={nonprofit?.organization_name || 'Organization'} 
+          bannerImageUrl={nonprofit?.banner_image_url}
+        />
         
         {nonprofit && <NonprofitDetailsSection nonprofit={nonprofit} />}
         

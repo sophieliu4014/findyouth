@@ -2,20 +2,22 @@
 import React, { useRef, useState } from 'react';
 import { FormLabel } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Upload, AlertCircle } from 'lucide-react';
+import { Upload, AlertCircle, Camera } from 'lucide-react';
 
 interface BannerImageUploadProps {
   setBannerImage: (file: File | null) => void;
   setBannerImageError: (error: string | null) => void;
   bannerImageError: string | null;
+  existingBannerUrl?: string | null;
 }
 
 const BannerImageUpload = ({ 
   setBannerImage, 
   setBannerImageError,
-  bannerImageError 
+  bannerImageError,
+  existingBannerUrl
 }: BannerImageUploadProps) => {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(existingBannerUrl || null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +36,7 @@ const BannerImageUpload = ({
     
     if (!file) {
       setBannerImage(null);
-      setImagePreview(null);
+      setImagePreview(existingBannerUrl || null);
       console.log("No banner file selected");
       return;
     }
@@ -112,6 +114,30 @@ const BannerImageUpload = ({
     }
   };
 
+  // In the Profile component, we want to display just a button rather than the full upload area
+  if (imagePreview && existingBannerUrl) {
+    return (
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={triggerFileInput}
+        className="bg-white/80 hover:bg-white text-youth-charcoal border border-gray-200"
+      >
+        <Camera className="h-4 w-4 mr-2" />
+        Change Banner
+        <input
+          type="file"
+          accept="image/jpeg,image/png"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </Button>
+    );
+  }
+
+  // In registration/other contexts, display the full upload area
   return (
     <div className="space-y-2">
       <FormLabel>Banner Image (Optional)</FormLabel>

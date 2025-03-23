@@ -3,16 +3,17 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Save, Upload, Edit, User } from 'lucide-react';
+import { Loader2, Save, Upload, Edit, User, Camera } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useAuthStore } from '@/lib/auth';
-import { signOut, uploadProfileImage } from '@/integrations/supabase/auth';
+import { signOut, uploadProfileImage, uploadBannerImage } from '@/integrations/supabase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import ProfileEditForm from '@/components/profile/ProfileEditForm';
+import BannerImageUpload from '@/components/registration/BannerImageUpload';
 
 const Profile = () => {
   const { user, isAuthenticated, isLoading, refreshAuth } = useAuthStore();
@@ -20,6 +21,9 @@ const Profile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [bannerImage, setBannerImage] = useState<File | null>(null);
+  const [bannerImageError, setBannerImageError] = useState<string | null>(null);
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,6 +38,11 @@ const Profile = () => {
     // Set image preview from the existing profile image URL
     if (user?.user_metadata?.nonprofit_data?.profileImageUrl) {
       setImagePreview(user.user_metadata.nonprofit_data.profileImageUrl);
+    }
+    
+    // Set banner image preview from the existing banner image URL
+    if (user?.user_metadata?.nonprofit_data?.bannerImageUrl) {
+      setBannerImagePreview(user.user_metadata.nonprofit_data.bannerImageUrl);
     }
   }, [isAuthenticated, isLoading, navigate, user]);
 
@@ -73,6 +82,7 @@ const Profile = () => {
       setIsSaving(true);
       
       let profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl || '';
+      let bannerImageUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl || '';
       
       // Upload new profile image if selected
       if (profileImage) {
@@ -83,13 +93,23 @@ const Profile = () => {
         }
       }
       
+      // Upload new banner image if selected
+      if (bannerImage) {
+        const identifier = `banner-${user?.id || Date.now().toString()}`;
+        const newBannerUrl = await uploadBannerImage(bannerImage, identifier);
+        if (newBannerUrl) {
+          bannerImageUrl = newBannerUrl;
+        }
+      }
+      
       // Update user metadata
       const { error } = await supabase.auth.updateUser({
         data: {
           organization_name: organizationName,
           nonprofit_data: {
             ...user?.user_metadata?.nonprofit_data,
-            profileImageUrl
+            profileImageUrl,
+            bannerImageUrl
           }
         }
       });
@@ -102,7 +122,8 @@ const Profile = () => {
           .from('nonprofits')
           .update({
             organization_name: organizationName,
-            profile_image_url: profileImageUrl
+            profile_image_url: profileImageUrl,
+            banner_image_url: bannerImageUrl
           })
           .eq('id', user.id);
         
@@ -112,7 +133,11 @@ const Profile = () => {
       }
       
       await refreshAuth();
-      toast.success('Profile image updated successfully');
+      toast.success('Profile updated successfully');
+      
+      // Clear the file selections after successful upload
+      setProfileImage(null);
+      setBannerImage(null);
     } catch (error: any) {
       console.error('Error saving profile:', error);
       toast.error(`Failed to update profile: ${error.message}`);
@@ -163,6 +188,39 @@ const Profile = () => {
               </Button>
             </div>
             
+            {/* Banner Image Upload Section */}
+            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-8 relative">
+              <div className="h-32 sm:h-48 w-full rounded-lg overflow-hidden bg-youth-blue/10 mb-4">
+                {bannerImagePreview ? (
+                  <img 
+                    src={bannerImagePreview} 
+                    alt="Banner" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-youth-charcoal/50 text-sm">No banner image</p>
+                  </div>
+                )}
+                
+                <div className="absolute top-8 right-8">
+                  <BannerImageUpload 
+                    setBannerImage={setBannerImage}
+                    setBannerImageError={setBannerImageError}
+                    bannerImageError={bannerImageError}
+                  />
+                </div>
+              </div>
+              
+              <div className="text-center">
+                {bannerImage && (
+                  <div className="mt-2 animate-fade-in">
+                    <p className="text-sm text-youth-blue mb-2">New banner selected. Save to apply changes.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 mb-8">
               <div className="text-center">
                 <div className="relative w-32 h-32 mx-auto mb-4">
@@ -200,7 +258,7 @@ const Profile = () => {
                   Click the upload icon to change your profile picture
                 </p>
                 
-                {profileImage && (
+                {(profileImage || bannerImage) && (
                   <Button 
                     onClick={handleSaveProfile}
                     className="mt-4 bg-youth-blue hover:bg-youth-purple transition-colors"
@@ -215,7 +273,7 @@ const Profile = () => {
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Save Profile Image
+                        Save Image Changes
                       </>
                     )}
                   </Button>
