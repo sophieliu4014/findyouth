@@ -34,6 +34,8 @@ export const createNonprofitProfile = async ({
   causes: string[];
 }) => {
   try {
+    console.log("Creating nonprofit profile with image URL:", profileImageUrl);
+    
     // Insert the nonprofit profile
     const { data: nonprofit, error: profileError } = await supabase
       .from('nonprofits')
@@ -113,6 +115,8 @@ export const ensureNonprofitProfile = async (): Promise<boolean> => {
 
     // Extract stored data from user metadata
     const metadata = user.user_metadata;
+    console.log("Creating profile from metadata:", JSON.stringify(metadata, null, 2));
+    
     const organizationName = metadata?.organization_name;
     const nonprofitData = metadata?.nonprofit_data;
     
@@ -120,6 +124,8 @@ export const ensureNonprofitProfile = async (): Promise<boolean> => {
       console.log("Missing required data in user metadata");
       return false;
     }
+
+    console.log("Profile image URL from metadata:", nonprofitData.profileImageUrl);
 
     // Create the nonprofit profile
     const { nonprofit, error } = await createNonprofitProfile({

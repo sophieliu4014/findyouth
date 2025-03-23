@@ -73,22 +73,26 @@ export const useRegistrationForm = () => {
       }
       
       console.log("Step 2: Creating user account with Supabase Auth");
+      // Store the image URL in the nonprofit_data object
+      const nonprofitData = {
+        phone: data.phone,
+        website: data.website,
+        socialMedia: data.socialMedia,
+        location: data.location,
+        description: data.description,
+        mission: data.mission,
+        causes: data.causes,
+        profileImageUrl: imageUrl  // Make sure this is getting set correctly
+      };
+      
+      console.log("Nonprofit data with profile image:", nonprofitData);
+      
       const { data: authData, error: authError } = await signUpWithEmail(
         data.email,
         data.password,
         { 
           organization_name: data.organizationName,
-          // Store all the nonprofit data in the user metadata
-          nonprofit_data: {
-            phone: data.phone,
-            website: data.website,
-            socialMedia: data.socialMedia,
-            location: data.location,
-            description: data.description,
-            mission: data.mission,
-            causes: data.causes,
-            profileImageUrl: imageUrl  // Store the profile image URL in user metadata
-          }
+          nonprofit_data: nonprofitData  // Pass the nonprofit data object directly
         }
       );
       
@@ -103,10 +107,7 @@ export const useRegistrationForm = () => {
       }
       
       console.log("User created successfully with ID:", authData.user.id);
-      
-      // We've now completed all the necessary steps for registration
-      // We'll skip the immediate profile creation since the user isn't fully authenticated yet
-      // Instead, we'll store the image URL in user metadata for later use
+      console.log("User metadata saved:", authData.user.user_metadata);
       
       setIsSuccess(true);
       toast({

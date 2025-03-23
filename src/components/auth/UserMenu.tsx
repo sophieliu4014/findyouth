@@ -44,10 +44,9 @@ const UserMenu = () => {
   }
 
   // Get profile image URL from user metadata
-  // Fix: Correctly access the profileImageUrl from nonprofit_data in user metadata
   const profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl;
   
-  console.log("User metadata:", user?.user_metadata);
+  console.log("User metadata:", JSON.stringify(user?.user_metadata, null, 2));
   console.log("Profile image URL:", profileImageUrl);
   
   const initials = user?.user_metadata?.organization_name?.charAt(0).toUpperCase() || 
