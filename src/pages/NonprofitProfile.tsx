@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -74,8 +75,8 @@ const NonprofitProfile = () => {
               ? userMetadata.user.user_metadata.organization_name
               : (profileData.full_name || 'Organization');
             
-            // Create an object with only the fields we need for our Nonprofit interface
-            // Do NOT add causes or rating here - we'll add those later to the final object
+            // Create an object that matches the expected database structure
+            // Include all required fields, including created_at and updated_at
             nonprofitData = {
               id: profileData.id,
               organization_name: organizationName,
@@ -86,7 +87,9 @@ const NonprofitProfile = () => {
               website: userMetadata?.user?.user_metadata?.website || null,
               social_media: userMetadata?.user?.user_metadata?.social_media || '',
               email: userMetadata?.user?.email || null,
-              phone: userMetadata?.user?.user_metadata?.phone || null
+              phone: userMetadata?.user?.user_metadata?.phone || null,
+              created_at: profileData.updated_at || new Date().toISOString(),
+              updated_at: profileData.updated_at || new Date().toISOString()
             };
             
             console.log('Created nonprofit-like object from profile data:', nonprofitData);
