@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import AccountDeleteSection from './AccountDeleteSection';
 
 interface AccountInfoTabProps {
   user: any;
@@ -106,6 +107,9 @@ const AccountInfoTab = ({ user, refreshAuth }: AccountInfoTabProps) => {
           </Button>
         </div>
       </div>
+      
+      {/* Add the account deletion section */}
+      <AccountDeleteSection />
     </div>
   );
 };
