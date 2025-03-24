@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Validate image URL format
@@ -12,6 +13,12 @@ export function isValidImageUrl(url: string | null | undefined): boolean {
   } catch (e) {
     return false;
   }
+}
+
+// Generate a cache-busting URL to prevent stale images
+export function getCacheBustedUrl(url: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}t=${Date.now()}`;
 }
 
 // Check if a profile image exists in storage and get its URL
@@ -29,7 +36,12 @@ export async function getProfileImageFromStorage(nonprofitId: string): Promise<s
       if (data && data.publicUrl) {
         // Try to fetch the URL to verify it exists
         try {
-          const response = await fetch(data.publicUrl, { method: 'HEAD' });
+          const cacheBustedUrl = getCacheBustedUrl(data.publicUrl);
+          const response = await fetch(cacheBustedUrl, { 
+            method: 'HEAD',
+            cache: 'no-store'
+          });
+          
           if (response.ok) {
             console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
             return data.publicUrl;
@@ -72,12 +84,20 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
       if (data && data.publicUrl) {
         console.log(`Found potential banner URL: ${data.publicUrl}`);
         
-        // Add cache-busting parameter to prevent stale images
-        const cacheBustUrl = `${data.publicUrl}?t=${new Date().getTime()}`;
-        
-        // Try to fetch the URL to verify it exists
+        // Try to fetch the URL to verify it exists with aggressive cache-busting
         try {
-          const response = await fetch(cacheBustUrl, { method: 'HEAD', cache: 'no-cache' });
+          const cacheBustedUrl = getCacheBustedUrl(data.publicUrl);
+          console.log(`Attempting to verify with cache-busted URL: ${cacheBustedUrl}`);
+          
+          const response = await fetch(cacheBustedUrl, { 
+            method: 'HEAD', 
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          
           if (response.ok) {
             console.log(`✅ Verified banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
             return data.publicUrl;

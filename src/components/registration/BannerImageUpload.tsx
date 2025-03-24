@@ -1,7 +1,8 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, AlertCircle, Camera, Save } from 'lucide-react';
+import { Upload, AlertCircle, Camera, Save, ImageOff } from 'lucide-react';
+import { getCacheBustedUrl } from '@/hooks/utils/image-utils';
 
 interface BannerImageUploadProps {
   setBannerImage: (file: File | null) => void;
@@ -24,13 +25,17 @@ const BannerImageUpload = ({
 }: BannerImageUploadProps) => {
   const [imagePreview, setImagePreview] = useState<string | null>(existingBannerUrl || null);
   const [isDragging, setIsDragging] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [previewKey, setPreviewKey] = useState<number>(Date.now());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Update local preview when existingBannerUrl changes
   useEffect(() => {
     if (existingBannerUrl && existingBannerUrl !== imagePreview) {
       console.log("BannerImageUpload: Updating preview from existingBannerUrl:", existingBannerUrl);
-      setImagePreview(existingBannerUrl);
+      const cacheBustedUrl = getCacheBustedUrl(existingBannerUrl);
+      setImagePreview(cacheBustedUrl);
+      setImageError(false);
     }
   }, [existingBannerUrl, imagePreview]);
 
@@ -46,6 +51,7 @@ const BannerImageUpload = ({
 
   const handleFile = (file?: File) => {
     setBannerImageError(null);
+    setImageError(false);
     
     if (!file) {
       setBannerImage(null);
@@ -95,6 +101,9 @@ const BannerImageUpload = ({
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
         console.log("Banner image preview created");
+        // Reset any previous image errors
+        setImageError(false);
+        setPreviewKey(Date.now());
       };
       reader.readAsDataURL(file);
       setBannerImage(file);
@@ -102,6 +111,11 @@ const BannerImageUpload = ({
     };
     
     img.src = objectUrl;
+  };
+
+  const handleImageError = () => {
+    console.error("Failed to load banner preview image");
+    setImageError(true);
   };
 
   const triggerFileInput = () => {
@@ -187,13 +201,15 @@ const BannerImageUpload = ({
           className="hidden"
         />
         
-        {imagePreview ? (
+        {imagePreview && !imageError ? (
           <div className="flex flex-col items-center gap-4 w-full p-6">
             <div className="relative w-full h-40 sm:h-48 overflow-hidden rounded-lg">
               <img 
                 src={imagePreview} 
                 alt="Banner preview" 
                 className="w-full h-full object-cover"
+                key={`upload-preview-${previewKey}`}
+                onError={handleImageError}
               />
               <Button 
                 type="button" 
@@ -208,9 +224,16 @@ const BannerImageUpload = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-4 py-10 px-6 w-full h-full">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
-              <Upload className="h-8 w-8 text-gray-500" />
-            </div>
+            {imageError ? (
+              <div className="flex flex-col items-center text-destructive">
+                <ImageOff className="h-8 w-8 mb-2" />
+                <span className="text-sm">Failed to load image</span>
+              </div>
+            ) : (
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
+                <Upload className="h-8 w-8 text-gray-500" />
+              </div>
+            )}
             <div className="text-center">
               <Button 
                 type="button" 

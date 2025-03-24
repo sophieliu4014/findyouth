@@ -1,12 +1,13 @@
+
 import { useState, useEffect } from 'react';
-import { Loader2, Save } from 'lucide-react';
+import { Loader2, Save, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import BannerImageUpload from '@/components/registration/BannerImageUpload';
 import ProfileImageSection from './ProfileImageSection';
 import { supabase } from '@/integrations/supabase/client';
 import { uploadProfileImage, uploadBannerImage } from '@/integrations/supabase/auth';
-import { getBannerImageFromStorage } from '@/hooks/utils/image-utils';
+import { getBannerImageFromStorage, getCacheBustedUrl } from '@/hooks/utils/image-utils';
 
 interface ProfileHeaderProps {
   user: any;
@@ -23,47 +24,44 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   const [bannerImageError, setBannerImageError] = useState<string | null>(null);
   const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(null);
   const [isLoadingBanner, setIsLoadingBanner] = useState(true);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const organizationName = user?.user_metadata?.organization_name || '';
   const [previewKey, setPreviewKey] = useState<number>(Date.now());
 
   useEffect(() => {
     const fetchBannerImage = async () => {
       setIsLoadingBanner(true);
+      setImageLoadError(false);
       console.log("Fetching banner image for user:", user?.id);
       
       try {
+        // First try from metadata
         const metadataUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl;
         if (metadataUrl) {
           console.log('Using banner from metadata:', metadataUrl);
-          const cacheBustUrl = `${metadataUrl}?t=${Date.now()}`;
+          const cacheBustUrl = getCacheBustedUrl(metadataUrl);
+          console.log('Cache-busted URL:', cacheBustUrl);
           setBannerImagePreview(cacheBustUrl);
           setIsLoadingBanner(false);
           return;
         }
         
+        // Then try from storage
         if (user?.id) {
           console.log("Checking storage for banner with ID:", user.id);
-          const bannerId = `banner-${user.id}`;
-          const storageUrl = await getBannerImageFromStorage(bannerId);
+          const storageUrl = await getBannerImageFromStorage(user.id);
           
           if (storageUrl) {
-            console.log('Using banner from storage with prefix:', storageUrl);
-            const cacheBustUrl = `${storageUrl}?t=${Date.now()}`;
-            setBannerImagePreview(cacheBustUrl);
-            setIsLoadingBanner(false);
-            return;
-          }
-          
-          const regularStorageUrl = await getBannerImageFromStorage(user.id);
-          if (regularStorageUrl) {
-            console.log('Using banner from storage without prefix:', regularStorageUrl);
-            const cacheBustUrl = `${regularStorageUrl}?t=${Date.now()}`;
+            console.log('Using banner from storage:', storageUrl);
+            const cacheBustUrl = getCacheBustedUrl(storageUrl);
+            console.log('Cache-busted URL:', cacheBustUrl);
             setBannerImagePreview(cacheBustUrl);
             setIsLoadingBanner(false);
             return;
           }
         }
         
+        // Last, try from nonprofits table
         if (user?.id) {
           const { data: nonprofitData, error } = await supabase
             .from('nonprofits')
@@ -73,7 +71,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
             
           if (!error && nonprofitData?.banner_image_url) {
             console.log('Using banner from nonprofits table:', nonprofitData.banner_image_url);
-            const cacheBustUrl = `${nonprofitData.banner_image_url}?t=${Date.now()}`;
+            const cacheBustUrl = getCacheBustedUrl(nonprofitData.banner_image_url);
+            console.log('Cache-busted URL:', cacheBustUrl);
             setBannerImagePreview(cacheBustUrl);
           } else {
             console.log('No banner found in nonprofits table or error:', error?.message);
@@ -81,6 +80,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         }
       } catch (error) {
         console.error('Error fetching banner image:', error);
+        setImageLoadError(true);
       } finally {
         setIsLoadingBanner(false);
       }
@@ -88,6 +88,19 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
     
     fetchBannerImage();
   }, [user, previewKey]);
+
+  const handleImageError = () => {
+    console.error("Failed to load banner image:", bannerImagePreview);
+    setImageLoadError(true);
+    
+    // Try refreshing with a new cache-bust if this is the first error
+    if (!imageLoadError && bannerImagePreview) {
+      console.log("Retrying image load with new cache-bust parameter");
+      setTimeout(() => {
+        setPreviewKey(Date.now());
+      }, 500);
+    }
+  };
 
   const handleSaveProfile = async () => {
     try {
@@ -114,8 +127,12 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         if (newBannerUrl) {
           bannerImageUrl = newBannerUrl;
           console.log('Banner uploaded successfully to:', newBannerUrl);
-          const cacheBustUrl = `${newBannerUrl}?t=${Date.now()}`;
+          
+          // Immediately update the preview with cache busting
+          const cacheBustUrl = getCacheBustedUrl(newBannerUrl);
+          console.log('Setting new banner preview with cache-bust:', cacheBustUrl);
           setBannerImagePreview(cacheBustUrl);
+          setImageLoadError(false);
         } else {
           console.error("Failed to get banner URL after upload");
           toast.error("Failed to upload banner image");
@@ -162,6 +179,7 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
       await refreshAuth();
       toast.success('Profile images updated successfully');
       
+      // Force reload preview with new timestamp to break cache
       setPreviewKey(Date.now());
       
       setProfileImage(null);
@@ -184,16 +202,22 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
             <div className="w-full h-full flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-youth-blue" />
             </div>
-          ) : bannerImagePreview ? (
+          ) : bannerImagePreview && !imageLoadError ? (
             <img 
               src={bannerImagePreview} 
               alt="Banner" 
               className="w-full h-full object-cover"
               key={`banner-preview-${previewKey}`}
+              onError={handleImageError}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-youth-blue/5 via-youth-purple/5 to-youth-blue/5">
-              {/* No text here, just a subtle gradient background */}
+              {imageLoadError && (
+                <div className="flex flex-col items-center text-youth-blue/70">
+                  <ImageOff className="h-8 w-8 mb-2" />
+                  <span className="text-sm">Banner image not available</span>
+                </div>
+              )}
             </div>
           )}
         </div>

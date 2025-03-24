@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, ImageOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { getBannerImageFromStorage } from '@/hooks/utils/image-utils';
+import { getBannerImageFromStorage, getCacheBustedUrl } from '@/hooks/utils/image-utils';
+import { toast } from 'sonner';
 
 interface NonprofitHeaderProps {
   title: string;
@@ -13,11 +15,14 @@ interface NonprofitHeaderProps {
 const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeaderProps) => {
   const [finalBannerUrl, setFinalBannerUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [imageError, setImageError] = useState<boolean>(false);
+  const [loadKey, setLoadKey] = useState<number>(Date.now());
   
   // Try to get banner from storage if not provided
   useEffect(() => {
     const fetchBanner = async () => {
       setIsLoading(true);
+      setImageError(false);
       console.log(`Fetching banner for ${title} with ID: ${nonprofitId}`);
       console.log(`Initial banner URL: ${bannerImageUrl}`);
       
@@ -26,7 +31,8 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
         if (bannerImageUrl) {
           console.log(`Using provided banner URL: ${bannerImageUrl}`);
           // Force cache bust
-          const cacheBustedUrl = `${bannerImageUrl}?t=${Date.now()}`;
+          const cacheBustedUrl = getCacheBustedUrl(bannerImageUrl);
+          console.log(`Cache-busted URL: ${cacheBustedUrl}`);
           setFinalBannerUrl(cacheBustedUrl);
           setIsLoading(false);
           return;
@@ -34,28 +40,14 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
         
         // If no direct URL but we have an ID, check storage
         if (nonprofitId) {
-          // First try with banner- prefix
-          const prefixedId = `banner-${nonprofitId}`;
-          console.log(`Checking storage with prefixed ID: ${prefixedId}`);
-          const prefixedStorageUrl = await getBannerImageFromStorage(prefixedId);
+          console.log(`Checking storage with ID: ${nonprofitId}`);
+          const storageUrl = await getBannerImageFromStorage(nonprofitId);
           
-          if (prefixedStorageUrl) {
-            console.log(`Found banner with prefix in storage: ${prefixedStorageUrl}`);
+          if (storageUrl) {
+            console.log(`Found banner in storage: ${storageUrl}`);
             // Force cache bust
-            const cacheBustedUrl = `${prefixedStorageUrl}?t=${Date.now()}`;
-            setFinalBannerUrl(cacheBustedUrl);
-            setIsLoading(false);
-            return;
-          }
-          
-          // Try without prefix as fallback
-          console.log(`Checking storage with regular ID: ${nonprofitId}`);
-          const regularStorageUrl = await getBannerImageFromStorage(nonprofitId);
-          
-          if (regularStorageUrl) {
-            console.log(`Found banner in storage: ${regularStorageUrl}`);
-            // Force cache bust
-            const cacheBustedUrl = `${regularStorageUrl}?t=${Date.now()}`;
+            const cacheBustedUrl = getCacheBustedUrl(storageUrl);
+            console.log(`Cache-busted URL: ${cacheBustedUrl}`);
             setFinalBannerUrl(cacheBustedUrl);
             setIsLoading(false);
             return;
@@ -65,13 +57,27 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
         }
       } catch (error) {
         console.error("Error fetching banner:", error);
+        setImageError(true);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchBanner();
-  }, [bannerImageUrl, nonprofitId, title]);
+  }, [bannerImageUrl, nonprofitId, title, loadKey]);
+
+  const handleImageError = () => {
+    console.error("Failed to load banner image:", finalBannerUrl);
+    setImageError(true);
+    
+    // If the image fails to load, try refreshing with a new cache-bust
+    if (finalBannerUrl && !imageError) {
+      console.log("Retrying image load with new cache-bust parameter");
+      setTimeout(() => {
+        setLoadKey(Date.now());
+      }, 500);
+    }
+  };
 
   return (
     <div className="relative">
@@ -81,16 +87,23 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           <div className="w-full h-full flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-white" />
           </div>
-        ) : finalBannerUrl ? (
+        ) : finalBannerUrl && !imageError ? (
           <img 
             src={finalBannerUrl} 
             alt={`${title} banner`} 
             className="w-full h-full object-cover"
-            key={finalBannerUrl} // Force image refresh when URL changes
+            key={`banner-${loadKey}`} // Force image refresh when URL changes
+            onError={handleImageError}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="absolute inset-0 bg-gradient-to-r from-youth-blue to-youth-purple opacity-80"></div>
+            {imageError && (
+              <div className="relative z-10 flex flex-col items-center text-white">
+                <ImageOff className="h-8 w-8 mb-2" />
+                <span className="text-sm">Banner unavailable</span>
+              </div>
+            )}
           </div>
         )}
       </div>
