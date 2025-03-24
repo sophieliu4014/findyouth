@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Heart, Book, Dumbbell, Stethoscope, PaintBucket, 
   Leaf, Home, Dog, Baby, Users, Cross
@@ -21,6 +21,7 @@ const causeAreas = [
 ];
 
 const CauseAreas = () => {
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [animationComplete, setAnimationComplete] = useState(false);
 
@@ -28,6 +29,16 @@ const CauseAreas = () => {
   useEffect(() => {
     setAnimationComplete(true);
   }, []);
+
+  // Handle click on cause area button
+  const handleCauseClick = (causeName: string) => {
+    // Navigate to find-activities page with the cause filter
+    navigate('/find-activities', { 
+      state: { 
+        cause: causeName 
+      }
+    });
+  };
 
   return (
     <section className="py-20 bg-gradient-to-b from-white to-youth-softgray">
@@ -45,9 +56,9 @@ const CauseAreas = () => {
           {causeAreas.map((cause, index) => {
             const Icon = cause.icon;
             return (
-              <Link 
-                to={`/find-activities?cause=${encodeURIComponent(cause.name)}`}
+              <button 
                 key={index}
+                onClick={() => handleCauseClick(cause.name)}
                 className={`glass-panel p-6 text-center transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px] 
                   ${activeIndex === index ? 'ring-2 ring-youth-purple shadow-lg' : ''}
                   ${animationComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
@@ -65,15 +76,18 @@ const CauseAreas = () => {
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="font-medium text-youth-charcoal">{cause.name}</div>
-              </Link>
+              </button>
             );
           })}
         </div>
 
         <div className="mt-16 text-center">
-          <Link to="/find-activities" className="inline-flex items-center justify-center bg-youth-blue hover:bg-youth-blue/90 text-white font-medium px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <button 
+            onClick={() => navigate('/find-activities')}
+            className="inline-flex items-center justify-center bg-youth-blue hover:bg-youth-blue/90 text-white font-medium px-8 py-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+          >
             View All Opportunities
-          </Link>
+          </button>
         </div>
       </div>
     </section>

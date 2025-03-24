@@ -11,7 +11,8 @@ const FindActivities = () => {
   const initialState = {
     address: '',
     keyword: '',
-    location: ''
+    location: '',
+    cause: ''
   };
 
   // Extract search params from location state
@@ -24,6 +25,9 @@ const FindActivities = () => {
     }
     if (location.state.location) {
       initialState.location = location.state.location;
+    }
+    if (location.state.cause) {
+      initialState.cause = location.state.cause;
     }
   }
 
@@ -41,6 +45,7 @@ const FindActivities = () => {
           initialAddress={initialState.address}
           initialKeyword={initialState.keyword}
           initialLocation={initialState.location}
+          initialCause={initialState.cause}
         />
       </main>
       

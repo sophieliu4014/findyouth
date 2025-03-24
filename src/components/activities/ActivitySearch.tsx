@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import CitySelector from './CitySelector';
@@ -21,15 +20,17 @@ interface ActivitySearchProps {
   initialAddress?: string;
   initialKeyword?: string;
   initialLocation?: string;
+  initialCause?: string;
 }
 
 const ActivitySearch = ({ 
   initialAddress = '', 
   initialKeyword = '', 
-  initialLocation = '' 
+  initialLocation = '',
+  initialCause = ''
 }: ActivitySearchProps) => {
   const [city, setCity] = useState<string>(initialLocation || '');
-  const [cause, setCause] = useState<string>('');
+  const [cause, setCause] = useState<string>(initialCause || '');
   const [organization, setOrganization] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>(initialKeyword || '');
   const [filters, setFilters] = useState<EventFilters>({
@@ -41,15 +42,18 @@ const ActivitySearch = ({
 
   // Initialize with any provided initial values
   useEffect(() => {
-    if (initialLocation || initialKeyword) {
-      setFilters({
-        cause,
-        location: initialLocation || '',
-        organization,
-        searchKeyword: initialKeyword || ''
-      });
-    }
-  }, [initialLocation, initialKeyword, cause, organization]);
+    setFilters({
+      cause: initialCause || '',
+      location: initialLocation || '',
+      organization: '',
+      searchKeyword: initialKeyword || ''
+    });
+    
+    // Set our state variables to match
+    if (initialCause) setCause(initialCause);
+    if (initialLocation) setCity(initialLocation);
+    if (initialKeyword) setSearchTerm(initialKeyword);
+  }, [initialLocation, initialKeyword, initialCause]);
 
   // Fetch all events without location filter and include past events 
   // to determine popular cities based on all events
@@ -181,6 +185,11 @@ const ActivitySearch = ({
             onLocationChange={handleLocationChange}
             onOrganizationChange={handleOrganizationChange}
             organizations={uniqueOrganizations}
+            initialFilters={{
+              cause,
+              location: city,
+              organization
+            }}
           />
         </div>
       </Card>
