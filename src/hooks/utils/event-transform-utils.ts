@@ -4,6 +4,7 @@ import { DatabaseEvent, Event, NONPROFIT_NAME_MAP } from '../types/event-types';
 import { isValidImageUrl, getProfileImageFromStorage, generateFallbackImageUrl } from './image-utils';
 import { formatEventDate } from './date-utils';
 import { fetchNonprofitData } from './nonprofit-utils';
+import { calculateAverageRating } from './rating-utils';
 
 // Transform event data from API format to application format
 export async function transformEventData(
@@ -51,6 +52,36 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
   // Pre-fetch nonprofit data for all unique organizations
   const nonprofitDataMap = new Map<string, {name: string, profileImage: string}>();
   
+  // Pre-fetch ratings for all nonprofits
+  const nonprofitRatingsMap = new Map<string, number>();
+  
+  // Fetch all ratings at once to minimize database calls
+  const { data: allReviews, error: reviewsError } = await supabase
+    .from('reviews')
+    .select('nonprofit_id, rating');
+    
+  if (reviewsError) {
+    console.error('Error fetching reviews:', reviewsError);
+  } else if (allReviews) {
+    // Group reviews by nonprofit_id and calculate average rating for each
+    const reviewsByNonprofit: Record<string, number[]> = {};
+    
+    allReviews.forEach(review => {
+      if (review.nonprofit_id) {
+        if (!reviewsByNonprofit[review.nonprofit_id]) {
+          reviewsByNonprofit[review.nonprofit_id] = [];
+        }
+        reviewsByNonprofit[review.nonprofit_id].push(review.rating);
+      }
+    });
+    
+    // Calculate average rating for each nonprofit
+    Object.entries(reviewsByNonprofit).forEach(([nonprofitId, ratings]) => {
+      const avgRating = calculateAverageRating(ratings);
+      nonprofitRatingsMap.set(nonprofitId, avgRating);
+    });
+  }
+  
   await Promise.all(
     nonprofitIds.map(async (id) => {
       try {
@@ -78,6 +109,9 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           profileImage: generateFallbackImageUrl(event.nonprofit_id)
         };
         
+        // Get the nonprofit rating from pre-fetched data or use default
+        const nonprofitRating = nonprofitRatingsMap.get(event.nonprofit_id) || 4;
+        
         const eventObj = {
           id: event.id,
           title: event.title,
@@ -86,7 +120,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           date: event.date,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
-          rating: 4, // Default value
+          rating: nonprofitRating, // Use the nonprofit's actual rating
           imageUrl: event.image_url || undefined,
           description: event.description,
           createdAt: event.created_at || undefined,
@@ -108,7 +142,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           date: event.date,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
-          rating: 4,
+          rating: nonprofitRatingsMap.get(event.nonprofit_id) || 4, // Use pre-fetched rating or default
           imageUrl: event.image_url || undefined,
           description: event.description,
           profileImage: generateFallbackImageUrl(event.nonprofit_id),
