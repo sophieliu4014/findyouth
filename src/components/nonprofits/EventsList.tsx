@@ -50,7 +50,19 @@ const EventsList = ({ title, events, isLoading }: EventsListProps) => {
               className="animate-slide-up" 
               style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
-              <EventCard {...event} />
+              <EventCard 
+                id={event.id}
+                title={event.title}
+                organization={event.organization}
+                date={event.date}
+                location={event.location}
+                causeArea={event.causeArea}
+                rating={event.rating}
+                imageUrl={event.imageUrl}
+                profileImage={event.profileImage}
+                organizationId={event.organizationId}
+                registrationLink={event.registrationLink}
+              />
             </div>
           ))}
         </div>

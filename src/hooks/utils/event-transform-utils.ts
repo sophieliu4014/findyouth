@@ -26,7 +26,8 @@ export async function transformEventData(
     causeArea: causeArea,
     rating: rating,
     imageUrl: event.image_url,
-    profileImage: orgData.profileImage
+    profileImage: orgData.profileImage,
+    registrationLink: event.signup_form_url
   };
 }
 
@@ -88,7 +89,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           imageUrl: event.image_url || undefined,
           description: event.description,
           createdAt: event.created_at || undefined,
-          profileImage: orgData.profileImage
+          profileImage: orgData.profileImage,
+          registrationLink: event.signup_form_url || undefined
         };
       } catch (error) {
         console.error(`Error transforming event ${event.id}:`, error);
@@ -105,7 +107,8 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           rating: 4,
           imageUrl: event.image_url || undefined,
           description: event.description,
-          profileImage: generateFallbackImageUrl(event.nonprofit_id)
+          profileImage: generateFallbackImageUrl(event.nonprofit_id),
+          registrationLink: event.signup_form_url || undefined
         };
       }
     }));

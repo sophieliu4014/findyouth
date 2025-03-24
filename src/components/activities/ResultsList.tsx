@@ -50,6 +50,7 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
               imageUrl={event.imageUrl}
               profileImage={event.profileImage}
               organizationId={event.organizationId}
+              registrationLink={event.registrationLink}
             />
           </div>
         ))

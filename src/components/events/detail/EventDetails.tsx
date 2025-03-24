@@ -1,3 +1,4 @@
+
 import { Calendar, Clock, MapPin, User, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +17,7 @@ interface EventDetailsProps {
     zip?: string;
     application_deadline?: string;
     nonprofit_id: string;
-    registration_link?: string;
+    signup_form_url?: string;
   };
   organization: {
     name: string;
@@ -33,8 +34,8 @@ const EventDetails = ({ event, organization, onApply, isApplying }: EventDetails
   };
 
   const handleApplyClick = () => {
-    if (event.registration_link) {
-      window.open(event.registration_link, '_blank', 'noopener,noreferrer');
+    if (event.signup_form_url) {
+      window.open(event.signup_form_url, '_blank', 'noopener,noreferrer');
     } else {
       onApply();
     }

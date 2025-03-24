@@ -11,6 +11,7 @@ export interface DatabaseEvent {
   image_url?: string | null;
   created_at?: string | null;
   cause_area?: string | null;
+  signup_form_url?: string | null;
 }
 
 // Define the event type with additional fields for the UI
@@ -27,6 +28,7 @@ export interface Event {
   profileImage?: string;
   description?: string;
   createdAt?: string;
+  registrationLink?: string;
 }
 
 // Map for hardcoded nonprofit names (for development only)
