@@ -18,7 +18,6 @@ import {
   Profile,
   NonprofitProfile,
   CauseEvents,
-  NotFound,
   CreateEvent,
   ForgotPassword,
   ResetPassword
@@ -29,6 +28,7 @@ import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
 
+// Create the router outside of the render function
 const router = createBrowserRouter([
   {
     path: "/",
@@ -106,9 +106,10 @@ const router = createBrowserRouter([
 
 const queryClient = new QueryClient();
 
-function App() {
-  initializeAuthListener();
+// Initialize auth listener once outside of the component
+initializeAuthListener();
 
+function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
