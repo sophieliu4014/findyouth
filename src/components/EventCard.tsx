@@ -16,6 +16,7 @@ interface EventCardProps {
   imageUrl?: string;
   profileImage?: string;
   organizationId?: string;
+  registrationLink?: string;
 }
 
 const EventCard = ({
@@ -28,7 +29,8 @@ const EventCard = ({
   rating,
   imageUrl,
   profileImage,
-  organizationId
+  organizationId,
+  registrationLink
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -42,7 +44,8 @@ const EventCard = ({
     title, 
     organization, 
     organizationId, 
-    profileImage 
+    profileImage,
+    registrationLink 
   });
 
   const renderStars = (rating: number) => {
@@ -66,13 +69,18 @@ const EventCard = ({
 
     setIsApplying(true);
     
-    setTimeout(() => {
-      toast({
-        title: "Application submitted",
-        description: "The organization has been notified of your interest",
-      });
+    if (registrationLink) {
+      window.open(registrationLink, '_blank', 'noopener,noreferrer');
       setIsApplying(false);
-    }, 1000);
+    } else {
+      setTimeout(() => {
+        toast({
+          title: "Application submitted",
+          description: "The organization has been notified of your interest",
+        });
+        setIsApplying(false);
+      }, 1000);
+    }
   };
 
   const handleOrganizationClick = (e: React.MouseEvent) => {

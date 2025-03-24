@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, MapPin, User, Building } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +16,7 @@ interface EventDetailsProps {
     zip?: string;
     application_deadline?: string;
     nonprofit_id: string;
+    registration_link?: string;
   };
   organization: {
     name: string;
@@ -30,6 +30,14 @@ const EventDetails = ({ event, organization, onApply, isApplying }: EventDetails
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Date not specified';
     return dateString;
+  };
+
+  const handleApplyClick = () => {
+    if (event.registration_link) {
+      window.open(event.registration_link, '_blank', 'noopener,noreferrer');
+    } else {
+      onApply();
+    }
   };
 
   return (
@@ -112,7 +120,7 @@ const EventDetails = ({ event, organization, onApply, isApplying }: EventDetails
         
         <Button 
           className="w-full bg-youth-blue hover:bg-youth-purple"
-          onClick={onApply}
+          onClick={handleApplyClick}
           disabled={isApplying}
         >
           {isApplying ? 'Processing...' : 'Apply Now'}
