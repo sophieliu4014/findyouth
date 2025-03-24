@@ -21,21 +21,19 @@ interface ActivitySearchProps {
   initialAddress?: string;
   initialKeyword?: string;
   initialLocation?: string;
-  initialCause?: string;
 }
 
 const ActivitySearch = ({ 
   initialAddress = '', 
   initialKeyword = '', 
-  initialLocation = '',
-  initialCause = '' 
+  initialLocation = '' 
 }: ActivitySearchProps) => {
   const [city, setCity] = useState<string>(initialLocation || '');
-  const [cause, setCause] = useState<string>(initialCause || '');
+  const [cause, setCause] = useState<string>('');
   const [organization, setOrganization] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>(initialKeyword || '');
   const [filters, setFilters] = useState<EventFilters>({
-    cause: initialCause || '',
+    cause: '',
     location: city,
     organization: '',
     searchKeyword: searchTerm
@@ -43,15 +41,15 @@ const ActivitySearch = ({
 
   // Initialize with any provided initial values
   useEffect(() => {
-    if (initialLocation || initialKeyword || initialCause) {
+    if (initialLocation || initialKeyword) {
       setFilters({
-        cause: initialCause || '',
+        cause,
         location: initialLocation || '',
         organization,
         searchKeyword: initialKeyword || ''
       });
     }
-  }, [initialLocation, initialKeyword, initialCause, organization]);
+  }, [initialLocation, initialKeyword, cause, organization]);
 
   // Fetch all events without location filter and include past events 
   // to determine popular cities based on all events
@@ -183,7 +181,6 @@ const ActivitySearch = ({
             onLocationChange={handleLocationChange}
             onOrganizationChange={handleOrganizationChange}
             organizations={uniqueOrganizations}
-            initialCause={initialCause}
           />
         </div>
       </Card>
