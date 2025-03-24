@@ -169,6 +169,26 @@ const EventCard = ({
     if (!id) return;
 
     try {
+      // Add permission check before deleting the event
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to delete events.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if the user can manage this event (is creator or admin)
+      if (!canUserManageEvent) {
+        toast({
+          title: "Permission denied",
+          description: "You don't have permission to delete this event.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('events')
         .delete()
