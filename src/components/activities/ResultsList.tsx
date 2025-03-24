@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect } from 'react';
 import EventCard from '../EventCard';
 import { seedEvents } from '@/utils/seedEvents';
-import { Event } from '@/hooks/event-types';
+import { Event } from '@/hooks/types/event-types';
 
 interface ResultsListProps {
   events: Event[];

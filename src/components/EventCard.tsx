@@ -1,10 +1,26 @@
-
 import { useState } from 'react';
-import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from '@/integrations/supabase/client';
 
 interface EventCardProps {
   id: string;
@@ -36,9 +52,12 @@ const EventCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { user, isAuthenticated } = useAuthStore((state) => state);
   const navigate = useNavigate();
+
+  const isEventAuthor = user?.id === organizationId;
 
   console.log('EventCard rendering with:', { 
     id, 
@@ -46,7 +65,8 @@ const EventCard = ({
     organization, 
     organizationId, 
     profileImage,
-    registrationLink 
+    registrationLink,
+    isEventAuthor
   });
 
   const renderStars = (rating: number) => {
@@ -109,15 +129,46 @@ const EventCard = ({
     setProfileImageError(true);
   };
 
+  const handleEditEvent = () => {
+    if (id) {
+      navigate(`/edit-event/${id}`);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!id) return;
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Event deleted",
+        description: "The event has been successfully deleted.",
+      });
+      
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error deleting event",
+        description: "There was a problem deleting the event.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getOrgInitial = () => {
     return organization ? organization.charAt(0).toUpperCase() : '?';
   };
 
-  // Render the cause areas as individual clickable links
   const renderCauseAreas = () => {
     if (!causeArea) return null;
     
-    // Split by commas and handle whitespace
     const causes = causeArea.split(',').map(cause => cause.trim()).filter(Boolean);
     
     return causes.map((cause, index) => (
@@ -135,10 +186,35 @@ const EventCard = ({
 
   return (
     <div 
-      className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {isEventAuthor && (
+        <div className="absolute top-2 right-2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1.5 rounded-full hover:bg-gray-200 transition-colors">
+                <MoreVertical className="h-5 w-5 text-youth-charcoal/70" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={handleEditEvent} className="cursor-pointer">
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setIsDeleteDialogOpen(true)} 
+                className="text-red-600 cursor-pointer"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
       <div className="flex">
         <Avatar 
           className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer hover:opacity-80 transition-opacity"
@@ -222,6 +298,27 @@ const EventCard = ({
           {isApplying ? 'Applying...' : 'Apply Now'}
         </button>
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
