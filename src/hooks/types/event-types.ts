@@ -50,3 +50,16 @@ export interface DatabaseEvent {
   created_at?: string;
   updated_at?: string;
 }
+
+// Add the NONPROFIT_NAME_MAP that's referenced in other files
+export const NONPROFIT_NAME_MAP: Record<string, string> = {
+  // Default mapping of nonprofit IDs to names
+};
+
+// EventFilters interface for filtering events
+export interface EventFilters {
+  cause: string;
+  location: string;
+  organization: string;
+  searchKeyword: string;
+}

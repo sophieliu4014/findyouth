@@ -4,7 +4,7 @@ import SearchSection from './SearchSection';
 import FilterBar from '../form/FilterBar';
 import ResultsList from './ResultsList';
 import useEventData from '@/hooks/useEventData';
-import { EventFilters } from '@/utils/eventFilters';
+import { EventFilters } from '@/hooks/types/event-types';
 
 interface ActivitySearchProps {
   initialAddress?: string;
@@ -85,3 +85,5 @@ export const ActivitySearch = ({
     </div>
   );
 };
+
+export default ActivitySearch;

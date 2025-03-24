@@ -1,9 +1,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Event, DatabaseEvent } from './types/event-types';
+import { Event, DatabaseEvent, EventFilters } from './types/event-types';
 import { transformDatabaseEvents } from './utils/event-transform-utils';
-import { filterEvents, EventFilters } from '@/utils/eventFilters';
+import { filterEvents } from '@/utils/eventFilters';
 
 // Main hook for fetching event data
 const useEventData = (filters: EventFilters = {
@@ -25,8 +25,15 @@ const useEventData = (filters: EventFilters = {
         throw new Error(error.message);
       }
 
+      // Add the missing properties for DatabaseEvent
+      const databaseEvents = data.map(item => ({
+        ...item,
+        nonprofit_name: item.nonprofit_id || 'Unknown Organization',
+        is_virtual: item.is_virtual || false
+      })) as DatabaseEvent[];
+      
       // Transform database events to UI events
-      const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
+      const transformedEvents = await transformDatabaseEvents(databaseEvents);
       console.log('Events loaded before filtering:', transformedEvents.length);
       
       // Apply filters to the returned data

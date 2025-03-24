@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import EventCard from '../EventCard';
 import { seedEvents } from '@/utils/seedEvents';
-import { Event } from '@/hooks/event-types';
+import { Event } from '@/hooks/types/event-types'; // Import from correct location
 import { useAuthStore } from '@/lib/auth';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -78,11 +78,11 @@ const ResultsList = ({ events, isLoading, onEventDeleted }: ResultsListProps) =>
       if (onEventDeleted) {
         onEventDeleted();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting event:', error);
       toast({
         title: "Delete failed",
-        description: "There was an error deleting the event",
+        description: `There was an error deleting the event: ${error.message}`,
         variant: "destructive",
       });
     } finally {
@@ -100,13 +100,6 @@ const ResultsList = ({ events, isLoading, onEventDeleted }: ResultsListProps) =>
       </div>
     );
   }
-
-  console.log('Rendering events with registration links:', events.map(e => ({ 
-    id: e.id, 
-    title: e.title, 
-    registrationLink: e.registrationLink,
-    authorId: e.authorId
-  })));
   
   return (
     <>
