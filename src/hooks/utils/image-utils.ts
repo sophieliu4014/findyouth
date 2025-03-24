@@ -176,23 +176,28 @@ export function generateDynamicGradient(profileImage: string | null, userId: str
   
   const hash = generateHashFromId(userId);
   
-  // Create a set of predefined gradients that look good
-  const gradients = [
-    'bg-gradient-to-r from-youth-blue/20 to-youth-purple/20',
-    'bg-gradient-to-r from-youth-purple/20 to-youth-blue/20',
-    'bg-gradient-to-r from-[#fdfcfb] to-[#e2d1c3]',
-    'bg-gradient-to-r from-[#accbee] to-[#e7f0fd]',
-    'bg-gradient-to-r from-[#d299c2] to-[#fef9d7]',
-    'bg-gradient-to-r from-[#e6b980] to-[#eacda3]',
-    'bg-gradient-to-r from-[#c1c161] to-[#d4d4b1]',
-    'bg-gradient-to-r from-[#f5987a] to-[#f6edb2]',
-    'bg-gradient-to-r from-[#ee9ca7] to-[#ffdde1]',
-    'bg-gradient-to-r from-[#8fd3f4] to-[#84fab0]'
+  // Pastel color palette for gradients (soft, light colors)
+  const pastelGradients = [
+    'bg-gradient-to-r from-[#F2FCE2] to-[#D3E4FD]', // Soft Green to Soft Blue
+    'bg-gradient-to-r from-[#FEF7CD] to-[#FDE1D3]', // Soft Yellow to Soft Peach
+    'bg-gradient-to-r from-[#E5DEFF] to-[#FFDEE2]', // Soft Purple to Soft Pink
+    'bg-gradient-to-r from-[#F1F0FB] to-[#D3E4FD]', // Soft Gray to Soft Blue
+    'bg-gradient-to-r from-[#accbee] to-[#e7f0fd]', // Soft Blue Gradient
+    'bg-gradient-to-r from-[#d299c2] to-[#fef9d7]', // Soft Purple to Soft Yellow
+    'bg-gradient-to-r from-[#e6b980]/30 to-[#eacda3]/30', // Soft Orange Gradient (lighter)
+    'bg-gradient-to-r from-[#c1c161]/20 to-[#d4d4b1]/20', // Soft Green Gradient (lighter)
+    'bg-gradient-to-r from-[#FEC6A1] to-[#FFDEE2]', // Soft Orange to Soft Pink
+    'bg-gradient-to-r from-[#f8e8c8] to-[#f2c5c5]', // Soft Cream to Soft Coral
+    'bg-gradient-to-r from-[#c9e4f0] to-[#d2e8ef]', // Soft Sky Blue
+    'bg-gradient-to-r from-[#ffe8e8] to-[#f5d7d7]', // Soft Pink Gradient
+    'bg-gradient-to-r from-[#e3f2ed] to-[#d8e9e1]', // Soft Mint
+    'bg-gradient-to-r from-[#e4e2ed] to-[#d6d4e4]', // Soft Lavender
+    'bg-gradient-to-r from-[#fdf6e3] to-[#f9f0d9]'  // Soft Vanilla
   ];
   
   // Select a gradient deterministically based on the hash
-  const gradientIndex = hash % gradients.length;
-  return gradients[gradientIndex];
+  const gradientIndex = hash % pastelGradients.length;
+  return pastelGradients[gradientIndex];
 }
 
 // Helper to categorize image upload errors

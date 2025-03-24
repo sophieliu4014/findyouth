@@ -106,6 +106,21 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
 
   return (
     <div className="relative">
+      {/* Back to Activities button positioned at the top left */}
+      <div className="absolute top-4 left-4 z-20">
+        <Link to="/find-activities">
+          <Button 
+            variant="outline" 
+            className="bg-white/70 hover:bg-white/90 backdrop-blur-sm shadow-sm border-transparent font-medium"
+            rounded="full"
+            size="default"
+          >
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Back to Activities
+          </Button>
+        </Link>
+      </div>
+
       {/* Banner image with fallback */}
       <div className="w-full h-48 md:h-64 overflow-hidden">
         {isLoading ? (
@@ -152,23 +167,6 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           />
         </div>
       )}
-      
-      {/* Back button only - title has been removed */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="relative z-10 -mt-8 ml-2 md:ml-4">
-          <Link to="/find-activities">
-            <Button 
-              variant="outline" 
-              className="bg-white/70 hover:bg-white/90 backdrop-blur-sm shadow-sm border-transparent"
-              rounded="full"
-              size="sm"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Activities
-            </Button>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 };
