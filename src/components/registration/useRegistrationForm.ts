@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminUserAttributes } from '@supabase/supabase-js';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,7 +75,9 @@ export const useRegistrationForm = () => {
         
         // Only consider active users, not deleted ones
         if (data?.users) {
-          const activeUsers = data.users.filter(user => !user.banned && user.deleted_at === null);
+          const activeUsers = data.users.filter((user: AdminUserAttributes) => 
+            user && !user.banned && user.deleted_at === null
+          );
           
           for (const user of activeUsers) {
             if (user.email?.toLowerCase() === email.toLowerCase()) {
