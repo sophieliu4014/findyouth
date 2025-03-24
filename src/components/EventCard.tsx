@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -59,7 +60,8 @@ const EventCard = ({
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  const canManageEvent = user?.id === organizationId || isAdmin;
+  // Rename this variable to avoid confusion with the imported function
+  const canUserManageEvent = user && canManageEvent(user.id, organizationId, isAdmin);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -218,7 +220,7 @@ const EventCard = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {canManageEvent && (
+      {canUserManageEvent && (
         <div className="absolute top-2 right-2 z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
