@@ -37,6 +37,11 @@ const EventHeader = ({ event, organization, goBack }: EventHeaderProps) => {
             src={organization.bannerImageUrl} 
             alt={`${organization.name} banner`} 
             className="w-full h-full object-cover"
+            onError={(e) => {
+              // Handle image load error by falling back to gradient
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.parentElement?.classList.add(gradientClasses);
+            }}
           />
         ) : (
           <div className={`w-full h-full ${gradientClasses}`}></div>

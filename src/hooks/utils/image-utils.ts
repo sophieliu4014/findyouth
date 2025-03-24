@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Error categories for image operations
@@ -163,48 +164,19 @@ export function generateFallbackImageUrl(id: string): string {
 
 // Generate a deterministic gradient based on a user identifier or profile image
 export function generateDynamicGradient(profileImage: string | null, userId: string): string {
-  // Default fallback colors (soft purples)
-  const defaultColors = {
-    from: '#9b87f5', // Primary Purple
-    via: '#7E69AB', // Secondary Purple
-    to: '#6E59A5'   // Tertiary Purple
-  };
-
-  // If no profile image and no userId, return default gradient
-  if (!profileImage && !userId) {
-    return `bg-gradient-to-r from-youth-blue/10 to-youth-purple/10`;
+  // If no userId is provided, use a default gradient
+  if (!userId) {
+    return `bg-gradient-to-r from-youth-blue/20 to-youth-purple/20`;
   }
 
-  // If there's a userId but no profile image, use the userId to create a deterministic gradient
-  if (!profileImage && userId) {
-    // Extract numbers from userId for deterministic color generation
-    const idNum = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    
-    // Generate hue values from the hash (0-360 for hue)
-    const hue1 = idNum % 360;
-    const hue2 = (hue1 + 30) % 360; // Complementary but close color
-    const hue3 = (hue1 + 60) % 360; // Another complementary color
-    
-    // Build HSL colors with moderate saturation and lightness
-    const from = `hsl(${hue1}, 70%, 75%)`;
-    const via = `hsl(${hue2}, 65%, 70%)`;
-    const to = `hsl(${hue3}, 60%, 65%)`;
-    
-    return `bg-gradient-to-r from-[${from}] via-[${via}] to-[${to}]`;
-  }
-
-  // Extract organization initial for fallback
-  const getInitial = (id: string): string => {
-    return id.charAt(0).toUpperCase();
+  // Generate a consistent number from userId for deterministic gradients
+  const generateHashFromId = (id: string): number => {
+    return id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   };
-
-  // With profile image, use a deterministic gradient based on user ID
-  // In a real color extraction scenario, we'd analyze the image
-  // But for this implementation, we'll create a deterministic gradient
-  const charCode = getInitial(userId).charCodeAt(0);
-  const gradientIndex = charCode % 10; // 10 different gradient options
-
-  // Predefined aesthetic gradients
+  
+  const hash = generateHashFromId(userId);
+  
+  // Create a set of predefined gradients that look good
   const gradients = [
     'bg-gradient-to-r from-youth-blue/20 to-youth-purple/20',
     'bg-gradient-to-r from-youth-purple/20 to-youth-blue/20',
@@ -217,7 +189,9 @@ export function generateDynamicGradient(profileImage: string | null, userId: str
     'bg-gradient-to-r from-[#ee9ca7] to-[#ffdde1]',
     'bg-gradient-to-r from-[#8fd3f4] to-[#84fab0]'
   ];
-
+  
+  // Select a gradient deterministically based on the hash
+  const gradientIndex = hash % gradients.length;
   return gradients[gradientIndex];
 }
 

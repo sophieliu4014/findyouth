@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ImageOff, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { getBannerImageFromStorage, getCacheBustedUrl } from '@/hooks/utils/image-utils';
+import { getBannerImageFromStorage, getCacheBustedUrl, generateDynamicGradient } from '@/hooks/utils/image-utils';
 import { toast } from 'sonner';
 import { UploadError } from '@/components/ui/upload-error';
 
@@ -19,6 +19,9 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   const [imageError, setImageError] = useState<boolean>(false);
   const [loadKey, setLoadKey] = useState<number>(Date.now());
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
+  
+  // Generate a gradient class based on the nonprofitId
+  const gradientClasses = generateDynamicGradient(null, nonprofitId || '');
   
   // Try to get banner from storage if not provided
   useEffect(() => {
@@ -104,10 +107,10 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   return (
     <div className="relative">
       {/* Banner image with fallback */}
-      <div className="w-full h-48 md:h-64 bg-gradient-to-r from-youth-blue to-youth-purple overflow-hidden">
+      <div className="w-full h-48 md:h-64 overflow-hidden">
         {isLoading ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
+          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <Loader2 className="h-8 w-8 animate-spin text-youth-blue" />
           </div>
         ) : finalBannerUrl && !imageError ? (
           <img 
@@ -118,8 +121,7 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
             onError={handleImageError}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-r from-youth-blue to-youth-purple opacity-80"></div>
+          <div className={`w-full h-full flex items-center justify-center ${gradientClasses}`}>
             {imageError && (
               <div className="relative z-10 flex flex-col items-center text-white">
                 <ImageOff className="h-8 w-8 mb-2" />
