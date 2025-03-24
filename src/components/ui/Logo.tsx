@@ -18,7 +18,7 @@ const Logo = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
         />
       </div>
       <span className="ml-2 text-xl font-semibold text-youth-charcoal">
-        Find<span className="text-youth-purple">YOUth</span>
+        Find<span className="text-yellow-400">YOUth</span>
       </span>
     </Link>
   );

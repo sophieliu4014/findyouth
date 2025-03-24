@@ -37,8 +37,8 @@ const Navbar = () => {
     <header 
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-[#E6D9FF]/95 backdrop-blur-md shadow-md py-2' 
-          : 'bg-[#E6D9FF]/80 backdrop-blur-sm py-4'
+          ? 'bg-youth-blue/95 backdrop-blur-md shadow-md py-2' 
+          : 'bg-youth-blue/80 backdrop-blur-sm py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
