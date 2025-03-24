@@ -17,7 +17,7 @@ const Logo = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => {
           className="w-full h-full object-contain"
         />
       </div>
-      <span className="ml-2 text-xl font-semibold text-youth-charcoal">
+      <span className="ml-2 text-xl font-semibold text-white">
         Find<span className="text-yellow-400">YOUth</span>
       </span>
     </Link>

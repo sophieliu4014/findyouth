@@ -52,9 +52,9 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link 
               to="/find-activities" 
-              className={`text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide relative py-2 ${
+              className={`text-white hover:text-white/80 transition-colors font-medium tracking-wide relative py-2 ${
                 isActive('/find-activities') 
-                  ? 'font-semibold text-youth-purple after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-youth-purple/70' 
+                  ? 'font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white/70' 
                   : ''
               }`}
               onClick={closeDropdowns}
@@ -65,9 +65,9 @@ const Navbar = () => {
             {isAuthenticated && (
               <Link 
                 to="/create-event" 
-                className={`text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide flex items-center relative py-2 ${
+                className={`text-white hover:text-white/80 transition-colors font-medium tracking-wide flex items-center relative py-2 ${
                   isActive('/create-event') 
-                    ? 'font-semibold text-youth-purple after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-youth-purple/70' 
+                    ? 'font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white/70' 
                     : ''
                 }`}
                 onClick={closeDropdowns}
@@ -79,9 +79,9 @@ const Navbar = () => {
             
             <div className="relative group">
               <button 
-                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide py-2 ${
+                className={`flex items-center text-white hover:text-white/80 transition-colors font-medium tracking-wide py-2 ${
                   isActive('/register-ngo') 
-                    ? 'font-semibold text-youth-purple' 
+                    ? 'font-semibold' 
                     : ''
                 }`}
                 onClick={() => {
@@ -103,9 +103,9 @@ const Navbar = () => {
             
             <div className="relative group">
               <button 
-                className={`flex items-center text-youth-charcoal hover:text-youth-purple transition-colors font-medium tracking-wide py-2 ${
+                className={`flex items-center text-white hover:text-white/80 transition-colors font-medium tracking-wide py-2 ${
                   isActive('/about') || isActive('/instagram') || isActive('/contact') 
-                    ? 'font-semibold text-youth-purple' 
+                    ? 'font-semibold' 
                     : ''
                 }`}
                 onClick={() => {
@@ -132,7 +132,7 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button 
-              className="text-youth-charcoal p-2 rounded-full hover:bg-youth-purple/10 transition-colors"
+              className="text-white p-2 rounded-full hover:bg-white/10 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? (
