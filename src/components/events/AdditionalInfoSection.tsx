@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Control } from "react-hook-form";
 import { EventFormValues } from "./EventFormSchema";
+import { AlertCircle } from "lucide-react";
 
 interface AdditionalInfoSectionProps {
   control: Control<EventFormValues>;
@@ -19,12 +20,15 @@ const AdditionalInfoSection = ({ control }: AdditionalInfoSectionProps) => {
         name="signupFormUrl"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>External Signup Form URL</FormLabel>
+            <FormLabel className="flex items-center">
+              External Signup Form URL
+              <span className="text-destructive ml-1">*</span>
+            </FormLabel>
             <FormControl>
               <Input placeholder="https://forms.example.com/signup" {...field} />
             </FormControl>
             <FormDescription>
-              Optional: link to an external form if you have a custom application process
+              Provide a URL where volunteers can sign up for your event
             </FormDescription>
             <FormMessage />
           </FormItem>
