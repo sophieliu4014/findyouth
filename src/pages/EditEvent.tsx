@@ -43,6 +43,7 @@ const EditEvent = () => {
       if (user?.id) {
         const adminStatus = await checkAdminStatus(user.id);
         setIsAdmin(adminStatus);
+        console.log('Edit page admin check:', { userId: user.id, isAdmin: adminStatus });
       }
 
       setIsLoading(true);
@@ -56,8 +57,16 @@ const EditEvent = () => {
         if (error) throw error;
 
         if (eventData) {
+          console.log('Fetched event for editing:', eventData);
+          
           // nonprofit_id is actually the creator's user ID - check if current user is the creator or an admin
-          const hasPermission = canManageEvent(user?.id, eventData.nonprofit_id, isAdmin);
+          const hasPermission = user?.id && canManageEvent(user.id, eventData.nonprofit_id, isAdmin);
+          console.log('Edit permission check:', { 
+            userId: user?.id, 
+            creatorId: eventData.nonprofit_id, 
+            isAdmin, 
+            hasPermission 
+          });
           
           if (hasPermission) {
             setEventData(eventData);

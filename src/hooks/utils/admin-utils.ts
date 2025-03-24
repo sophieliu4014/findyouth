@@ -11,6 +11,7 @@ export const checkAdminStatus = async (userId: string | undefined): Promise<bool
   
   // Hardcoded admin ID for findyouthbc@gmail.com
   if (userId === 'e76a0e1b-6a87-4dac-8714-1c9e9052f52c') {
+    console.log('Admin user detected via hardcoded ID');
     return true;
   }
   
@@ -22,6 +23,7 @@ export const checkAdminStatus = async (userId: string | undefined): Promise<bool
       return false;
     }
     
+    console.log('Admin check via RPC returned:', data);
     return data === true;
   } catch (error) {
     console.error('Error in checkAdminStatus:', error);
@@ -37,8 +39,14 @@ export const checkAdminStatus = async (userId: string | undefined): Promise<bool
  * @returns Boolean indicating if the user can manage this event
  */
 export const canManageEvent = (userId: string | undefined, creatorId: string | undefined, isAdmin: boolean): boolean => {
-  if (!userId || !creatorId) return false;
+  if (!userId || !creatorId) {
+    console.log('Missing userId or creatorId for permission check', { userId, creatorId });
+    return false;
+  }
+  
+  const isCreator = userId === creatorId;
+  console.log('Permission check:', { userId, creatorId, isAdmin, isCreator, canManage: isCreator || isAdmin });
   
   // User can manage the event if they created it OR they're an admin
-  return userId === creatorId || isAdmin;
+  return isCreator || isAdmin;
 };

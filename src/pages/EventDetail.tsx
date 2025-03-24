@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -66,22 +67,41 @@ const EventDetail = () => {
   const [isApplying, setIsApplying] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canEditEvent, setCanEditEvent] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const canEditEvent = user && event && canManageEvent(user.id, event.nonprofit_id, isAdmin);
-
+  // Check admin status and permissions
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkPermissions = async () => {
       if (user?.id) {
+        // Check if the user is an admin
         const adminStatus = await checkAdminStatus(user.id);
         setIsAdmin(adminStatus);
+        
+        // Calculate if the user can manage this event
+        if (event?.nonprofit_id) {
+          const canManage = canManageEvent(user.id, event.nonprofit_id, adminStatus);
+          setCanEditEvent(canManage);
+          
+          console.log('Event detail permission check:', { 
+            eventId: event.id, 
+            userId: user.id, 
+            creatorId: event.nonprofit_id, 
+            isAdmin: adminStatus,
+            canManage
+          });
+        }
+      } else {
+        // Reset permissions when there's no logged in user
+        setIsAdmin(false);
+        setCanEditEvent(false);
       }
     };
     
-    checkAdmin();
-  }, [user]);
+    checkPermissions();
+  }, [user, event]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -98,6 +118,7 @@ const EventDetail = () => {
         if (error) throw error;
         
         if (eventData) {
+          console.log('Fetched event data:', eventData);
           setEvent(eventData);
           
           if (eventData.nonprofit_id) {
@@ -225,7 +246,7 @@ const EventDetail = () => {
                   <Button 
                     variant="outline" 
                     className="flex items-center"
-                    onClick={() => navigate(`/edit-event/${event.id}`)}
+                    onClick={handleEditEvent}
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -58,23 +57,35 @@ const EventCard = ({
   const [profileImageError, setProfileImageError] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canUserManageEvent, setCanUserManageEvent] = useState(false);
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  // Check if the current user can manage this event (created it or is admin)
-  const canUserManageEvent = user && creatorId && canManageEvent(user.id, creatorId, isAdmin);
-
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkPermissions = async () => {
       if (user?.id) {
         const adminStatus = await checkAdminStatus(user.id);
         setIsAdmin(adminStatus);
+        
+        const canManage = canManageEvent(user.id, creatorId, adminStatus);
+        setCanUserManageEvent(canManage);
+        
+        console.log('Event permission check:', { 
+          eventId: id, 
+          userId: user.id, 
+          creatorId, 
+          isAdmin: adminStatus,
+          canManage
+        });
+      } else {
+        setIsAdmin(false);
+        setCanUserManageEvent(false);
       }
     };
     
-    checkAdmin();
-  }, [user]);
+    checkPermissions();
+  }, [user, creatorId, id]);
 
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
@@ -171,7 +182,6 @@ const EventCard = ({
     if (!id) return;
 
     try {
-      // Add permission check before deleting the event
       if (!user) {
         toast({
           title: "Authentication required",
@@ -181,7 +191,6 @@ const EventCard = ({
         return;
       }
 
-      // Check if the user can manage this event (is creator or admin)
       if (!canUserManageEvent) {
         toast({
           title: "Permission denied",
