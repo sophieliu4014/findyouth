@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import BannerImageUpload from '@/components/registration/BannerImageUpload';
 import ImageError from './ImageError';
-import { getCacheBustedUrl } from '@/hooks/utils/image-utils';
+import { getCacheBustedUrl, generateDynamicGradient } from '@/hooks/utils/image-utils';
 
 interface BannerImageSectionProps {
   isLoading: boolean;
@@ -16,6 +16,8 @@ interface BannerImageSectionProps {
   setBannerImageError: (error: string | null) => void;
   bannerImageError: string | null;
   handleSaveProfile: () => Promise<void>;
+  userId: string;
+  profileImageUrl: string | null;
 }
 
 const BannerImageSection = ({
@@ -28,11 +30,16 @@ const BannerImageSection = ({
   setBannerImage,
   setBannerImageError,
   bannerImageError,
-  handleSaveProfile
+  handleSaveProfile,
+  userId,
+  profileImageUrl
 }: BannerImageSectionProps) => {
+  // Get the dynamic gradient based on profile image or user ID
+  const gradientClasses = generateDynamicGradient(profileImageUrl, userId);
+
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-200 mb-8">
-      <div className="h-40 sm:h-64 w-full overflow-hidden bg-gradient-to-r from-youth-blue/10 to-youth-purple/10">
+      <div className="h-40 sm:h-64 w-full overflow-hidden">
         {isLoading ? (
           <div className="w-full h-full flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-youth-blue" />
@@ -46,7 +53,7 @@ const BannerImageSection = ({
             onError={handleImageError}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-youth-blue/5 via-youth-purple/5 to-youth-blue/5">
+          <div className={`w-full h-full flex items-center justify-center ${gradientClasses}`}>
             {imageLoadError && <ImageError />}
           </div>
         )}

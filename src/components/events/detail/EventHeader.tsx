@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { generateDynamicGradient } from '@/hooks/utils/image-utils';
 
 interface EventHeaderProps {
   event: {
@@ -21,18 +22,26 @@ const EventHeader = ({ event, organization, goBack }: EventHeaderProps) => {
     return organization?.name ? organization.name.charAt(0).toUpperCase() : '?';
   };
 
+  // Get the dynamic gradient based on profile image or nonprofit ID
+  const gradientClasses = generateDynamicGradient(
+    organization?.profileImage || null, 
+    event.nonprofit_id
+  );
+
   return (
     <div className="mb-8 animate-fade-in">
-      {/* Display organization banner at the top if available */}
-      {organization?.bannerImageUrl && (
-        <div className="w-full mb-6 rounded-lg overflow-hidden h-48 md:h-64">
+      {/* Display organization banner at the top if available, otherwise use gradient */}
+      <div className="w-full mb-6 rounded-lg overflow-hidden h-48 md:h-64">
+        {organization?.bannerImageUrl ? (
           <img 
             src={organization.bannerImageUrl} 
             alt={`${organization.name} banner`} 
             className="w-full h-full object-cover"
           />
-        </div>
-      )}
+        ) : (
+          <div className={`w-full h-full ${gradientClasses}`}></div>
+        )}
+      </div>
       
       <div className="flex items-start">
         {organization && (

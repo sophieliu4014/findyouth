@@ -31,6 +31,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   } = useProfileHeader(user, refreshAuth);
 
   const organizationName = user?.user_metadata?.organization_name || '';
+  const userId = user?.id || '';
+  const profileImageUrl = user?.user_metadata?.nonprofit_data?.profileImageUrl || null;
 
   return (
     <>
@@ -54,6 +56,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
           setBannerImageError={setBannerImageError}
           bannerImageError={bannerImageError}
           handleSaveProfile={handleSaveProfile}
+          userId={userId}
+          profileImageUrl={profileImageUrl}
         />
       </div>
       
