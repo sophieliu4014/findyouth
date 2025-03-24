@@ -130,7 +130,7 @@ const RatingSystem = ({
         setUserReviewId(result.data.id);
       }
       
-      // Notify parent component
+      // Notify parent component - pass the new rating to trigger immediate update
       if (onRatingChange) {
         onRatingChange(selectedRating);
       }

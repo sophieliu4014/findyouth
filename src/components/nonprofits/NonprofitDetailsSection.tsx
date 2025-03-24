@@ -51,7 +51,10 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
   }, [nonprofit.id]);
 
   // Update average rating when a user submits a new rating
-  const handleRatingChange = async () => {
+  const handleRatingChange = async (newRating: number) => {
+    console.log('Rating changed to:', newRating);
+    
+    // Fetch the updated reviews to calculate the new average
     const { data: reviewsData, error } = await supabase
       .from('reviews')
       .select('rating')
@@ -63,7 +66,11 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
     }
     
     if (reviewsData && reviewsData.length > 0) {
+      // Calculate new average from fresh data
       const newAvgRating = calculateAverageRating(reviewsData);
+      console.log('New average rating calculated:', newAvgRating, 'from', reviewsData.length, 'ratings');
+      
+      // Update state
       setAverageRating(newAvgRating);
       setRatingCount(reviewsData.length);
     }
