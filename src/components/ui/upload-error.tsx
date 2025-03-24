@@ -84,6 +84,17 @@ export function UploadError({
                 Retry
               </Button>
             )}
+            
+            {onDismiss && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onDismiss}
+                className="h-8 px-2 text-xs"
+              >
+                Dismiss
+              </Button>
+            )}
           </div>
         )}
       </div>

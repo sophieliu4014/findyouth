@@ -36,13 +36,27 @@ export function isValidImageUrl(url: string | null | undefined): boolean {
 
 // Generate a cache-busting URL to prevent stale images
 export function getCacheBustedUrl(url: string): string {
-  const separator = url.includes('?') ? '&' : '?';
-  return `${url}${separator}t=${Date.now()}`;
+  if (!url) return '';
+  
+  try {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}t=${Date.now()}`;
+  } catch (error) {
+    console.error("Error generating cache-busted URL:", error);
+    return url; // Return original URL if error occurs
+  }
 }
 
 // Check if a profile image exists in storage and get its URL
 export async function getProfileImageFromStorage(nonprofitId: string): Promise<string | null> {
+  if (!nonprofitId) {
+    console.log("No nonprofit ID provided for profile image lookup");
+    return null;
+  }
+  
   try {
+    console.log(`Checking profile image for nonprofit ID: ${nonprofitId}`);
+    
     // Common image extensions to check
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
@@ -56,12 +70,11 @@ export async function getProfileImageFromStorage(nonprofitId: string): Promise<s
         // Use a GET request with range to verify existence
         try {
           const response = await fetch(data.publicUrl, { 
-            method: 'GET',
-            headers: { 'Range': 'bytes=0-1' }, // Only request the first bytes
+            method: 'HEAD',
             cache: 'no-store'
           });
           
-          if (response.ok || response.status === 206) {
+          if (response.ok) {
             console.log(`Found profile image in storage for ${nonprofitId}: ${data.publicUrl}`);
             return data.publicUrl;
           }
@@ -104,13 +117,27 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
       if (data && data.publicUrl) {
         console.log(`Found potential banner URL: ${data.publicUrl}`);
         
-        // Skip verification - trust that the image exists if we have a URL
-        console.log(`✅ Using banner image for ${nonprofitId} without verification: ${data.publicUrl}`);
-        return data.publicUrl;
+        // Verify the image is accessible with a HEAD request
+        try {
+          const response = await fetch(data.publicUrl, { 
+            method: 'HEAD',
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' }
+          });
+          
+          if (response.ok) {
+            console.log(`✅ Banner image verified for ${nonprofitId}: ${data.publicUrl}`);
+            return data.publicUrl;
+          } else {
+            console.log(`❌ Banner image URL exists but returned status ${response.status}: ${data.publicUrl}`);
+          }
+        } catch (e) {
+          console.log(`❌ Banner image URL exists but is not accessible: ${data.publicUrl}`, e);
+        }
       }
     }
     
-    console.log(`No banner image found for ID: ${nonprofitId}`);
+    console.log(`No accessible banner image found for ID: ${nonprofitId}`);
     return null;
   } catch (error) {
     console.error("Error getting banner image from storage:", error);
@@ -120,7 +147,7 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
 
 // Generate a deterministic fallback image URL
 export function generateFallbackImageUrl(id: string): string {
-  const idValue = id.slice(-6).replace(/\D/g, '');
+  const idValue = id?.slice(-6).replace(/\D/g, '') || '';
   const idNumber = idValue ? (parseInt(idValue, 10) % 100) : 42;
   return `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
 }

@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ImageOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getBannerImageFromStorage, getCacheBustedUrl } from '@/hooks/utils/image-utils';
 import { toast } from 'sonner';
+import { UploadError } from '@/components/ui/upload-error';
 
 interface NonprofitHeaderProps {
   title: string;
@@ -16,12 +18,14 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [imageError, setImageError] = useState<boolean>(false);
   const [loadKey, setLoadKey] = useState<number>(Date.now());
+  const [errorDetails, setErrorDetails] = useState<string | null>(null);
   
   // Try to get banner from storage if not provided
   useEffect(() => {
     const fetchBanner = async () => {
       setIsLoading(true);
       setImageError(false);
+      setErrorDetails(null);
       console.log(`Fetching banner for ${title} with ID: ${nonprofitId}`);
       console.log(`Initial banner URL: ${bannerImageUrl}`);
       
@@ -53,10 +57,12 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           }
           
           console.log(`No banner found in storage for ${nonprofitId}`);
+          setErrorDetails("Banner image not found in storage");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching banner:", error);
         setImageError(true);
+        setErrorDetails(error.message || "Failed to load banner image");
       } finally {
         setIsLoading(false);
       }
@@ -68,6 +74,11 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   const handleImageError = () => {
     console.error("Failed to load banner image:", finalBannerUrl);
     setImageError(true);
+    setErrorDetails("The image could not be displayed. It may be inaccessible or in an unsupported format.");
+  };
+
+  const handleRetryLoad = () => {
+    setLoadKey(Date.now()); // Force the useEffect to run again
   };
 
   return (
@@ -98,6 +109,18 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           </div>
         )}
       </div>
+      
+      {/* Error message if needed */}
+      {imageError && errorDetails && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-2 mb-4 relative z-10">
+          <UploadError 
+            message="Failed to load banner image" 
+            details={errorDetails}
+            severity="warning"
+            onRetry={handleRetryLoad}
+          />
+        </div>
+      )}
       
       {/* Back button and title */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
