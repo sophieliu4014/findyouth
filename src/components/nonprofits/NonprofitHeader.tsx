@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Loader2, ImageOff } from 'lucide-react';
+import { ArrowLeft, Loader2, ImageOff, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getBannerImageFromStorage, getCacheBustedUrl } from '@/hooks/utils/image-utils';
@@ -36,9 +36,27 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
           // Force cache bust
           const cacheBustedUrl = getCacheBustedUrl(bannerImageUrl);
           console.log(`Cache-busted URL: ${cacheBustedUrl}`);
-          setFinalBannerUrl(cacheBustedUrl);
-          setIsLoading(false);
-          return;
+          
+          // Verify the image is accessible with a quick HEAD request
+          try {
+            const response = await fetch(cacheBustedUrl, { 
+              method: 'HEAD',
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
+            
+            if (!response.ok) {
+              console.warn(`Banner URL exists but returned status ${response.status}: ${cacheBustedUrl}`);
+              throw new Error(`Image returned status ${response.status}`);
+            }
+            
+            setFinalBannerUrl(cacheBustedUrl);
+            setIsLoading(false);
+            return;
+          } catch (verifyError) {
+            console.error("Error verifying banner URL:", verifyError);
+            throw new Error(`Failed to verify banner URL: ${verifyError.message}`);
+          }
         }
         
         // If no direct URL but we have an ID, check storage
@@ -78,7 +96,9 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   };
 
   const handleRetryLoad = () => {
+    console.log("Retrying banner image load");
     setLoadKey(Date.now()); // Force the useEffect to run again
+    toast.info("Retrying to load banner image...");
   };
 
   return (
@@ -104,6 +124,15 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
               <div className="relative z-10 flex flex-col items-center text-white">
                 <ImageOff className="h-8 w-8 mb-2" />
                 <span className="text-sm">Banner unavailable</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRetryLoad}
+                  className="mt-2 bg-white/20 hover:bg-white/30 border-white/30 text-white"
+                >
+                  <RefreshCw className="h-3 w-3 mr-2" />
+                  Retry
+                </Button>
               </div>
             )}
           </div>

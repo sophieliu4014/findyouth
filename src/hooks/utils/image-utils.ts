@@ -39,8 +39,18 @@ export function getCacheBustedUrl(url: string): string {
   if (!url) return '';
   
   try {
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}t=${Date.now()}`;
+    // Remove any existing timestamp parameters first
+    let cleanUrl = url;
+    if (url.includes('?t=')) {
+      cleanUrl = url.split('?t=')[0];
+    } else if (url.includes('&t=')) {
+      const parts = url.split('&t=');
+      cleanUrl = parts[0] + (parts[1].includes('&') ? '&' + parts[1].split('&').slice(1).join('&') : '');
+    }
+    
+    // Add new timestamp
+    const separator = cleanUrl.includes('?') ? '&' : '?';
+    return `${cleanUrl}${separator}t=${Date.now()}`;
   } catch (error) {
     console.error("Error generating cache-busted URL:", error);
     return url; // Return original URL if error occurs
@@ -122,7 +132,7 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
           const response = await fetch(data.publicUrl, { 
             method: 'HEAD',
             cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache' }
+            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
           });
           
           if (response.ok) {

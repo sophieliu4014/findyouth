@@ -285,7 +285,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     const { data, error: uploadError } = await supabase.storage
       .from('profile-images')
       .upload(filePath, file, {
-        cacheControl: '3600',
+        cacheControl: '0', // Disable cache completely - force fresh each time
         upsert: true
       });
 
@@ -304,7 +304,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
 
     console.log('Banner upload successful, data:', data);
 
-    // Get the public URL
+    // Get the public URL with a cache bust parameter
     const { data: { publicUrl } } = supabase.storage
       .from('profile-images')
       .getPublicUrl(filePath);
@@ -316,20 +316,22 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
       return null;
     }
 
-    console.log('Banner file uploaded successfully, public URL:', publicUrl);
+    const cacheBustedUrl = `${publicUrl}?t=${Date.now()}`;
+    console.log('Banner file uploaded successfully, public URL with cache bust:', cacheBustedUrl);
     
     // Verify the image is accessible
     try {
-      const response = await fetch(publicUrl, { 
+      const response = await fetch(cacheBustedUrl, { 
         method: 'HEAD',
-        cache: 'no-store'
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
       });
       
       if (!response.ok) {
-        console.warn(`Uploaded image URL returned status ${response.status}: ${publicUrl}`);
+        console.warn(`Uploaded image URL returned status ${response.status}: ${cacheBustedUrl}`);
         toast.warning('Image uploaded but may not be immediately available. Please refresh in a moment.');
       } else {
-        console.log('Image URL verified accessible:', publicUrl);
+        console.log('Image URL verified accessible:', cacheBustedUrl);
       }
     } catch (verifyError) {
       console.warn('Could not verify image URL accessibility:', verifyError);
@@ -337,32 +339,24 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
     }
     
     toast.success('Banner image uploaded successfully!');
-    return publicUrl;
+    return cacheBustedUrl;
   } catch (error: any) {
     console.error('Error uploading banner image with full stack:', error);
     
     // Use our error categorization helper
-    const { type, message } = categorizeImageError(error);
+    const errorMessage = error.message || "Unknown error";
     
     // Display appropriate error message based on type
-    switch (type) {
-      case 'storage_access':
-        toast.error('Storage access error. Please try again or contact support.');
-        break;
-      case 'file_too_large':
-        toast.error('File is too large. Please select a smaller image (max 3MB).');
-        break;
-      case 'invalid_format':
-        toast.error('Invalid file format. Please use JPEG or PNG images.');
-        break;
-      case 'network':
-        toast.error('Network error. Please check your connection and try again.');
-        break;
-      case 'upload_failed':
-        toast.error('Upload failed. Please try again with a smaller image.');
-        break;
-      default:
-        toast.error(`Failed to upload banner image: ${message}`);
+    if (errorMessage.includes('storage') || errorMessage.includes('permission')) {
+      toast.error('Storage access error. Please try again or contact support.');
+    } else if (errorMessage.includes('too large') || errorMessage.includes('413')) {
+      toast.error('File is too large. Please select a smaller image (max 3MB).');
+    } else if (errorMessage.includes('format') || errorMessage.includes('type')) {
+      toast.error('Invalid file format. Please use JPEG or PNG images.');
+    } else if (errorMessage.includes('network')) {
+      toast.error('Network error. Please check your connection and try again.');
+    } else {
+      toast.error(`Failed to upload banner image: ${errorMessage}`);
     }
     
     return null;
