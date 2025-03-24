@@ -4,22 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { Event, DatabaseEvent } from './types/event-types';
 import { transformDatabaseEvents } from './utils/event-transform-utils';
 
-// Hook for fetching events by cause
-const useCauseEvents = (causeSlug: string) => {
-  const decodedCause = decodeURIComponent(causeSlug);
-
-  const query = useQuery({
-    queryKey: ['cause-events', decodedCause],
-    queryFn: async (): Promise<Event[]> => {
-      if (!decodedCause) {
+// Hook for fetching events by cause area
+const useCauseEvents = (causeArea: string) => {
+  const result = useQuery({
+    queryKey: ['causeEvents', causeArea],
+    queryFn: async () => {
+      if (!causeArea) {
         return [];
       }
-
-      // Fetch events with the specified cause
+      
+      // Query events, sorted by creation date (newest first)
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .ilike('cause_area', `%${decodedCause}%`)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -27,23 +24,30 @@ const useCauseEvents = (causeSlug: string) => {
         throw new Error(error.message);
       }
 
-      // Add the missing properties for DatabaseEvent
-      const databaseEvents = data.map(item => ({
-        ...item,
-        nonprofit_name: item.nonprofit_name || item.nonprofit_id || 'Unknown Organization',
-        is_virtual: item.is_virtual !== undefined ? item.is_virtual : false
-      })) as DatabaseEvent[];
-
-      // Transform the database events to UI events
-      return transformDatabaseEvents(databaseEvents);
+      // Transform database events to UI events
+      const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
+      console.log('All events fetched for filtering by cause:', transformedEvents.length);
+      
+      // Filter by cause area - include events where the cause area contains the selected cause
+      // This handles both single cause areas and comma-separated lists
+      const filteredEvents = transformedEvents.filter(event => {
+        if (!event.causeArea) return false;
+        
+        // Split the event's cause areas and check if any match the selected cause
+        const eventCauses = event.causeArea.split(',').map(c => c.trim());
+        return eventCauses.includes(causeArea);
+      });
+      
+      console.log('Events after filtering by cause area:', filteredEvents.length);
+      return filteredEvents;
     },
-    enabled: !!decodedCause,
+    enabled: !!causeArea,
   });
 
   return {
-    events: query.data || [],
-    isLoading: query.isLoading,
-    error: query.error
+    events: result.data || [],
+    isLoading: result.isLoading,
+    error: result.error
   };
 };
 

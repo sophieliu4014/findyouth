@@ -7,20 +7,25 @@ import OrganizationFilter from './filters/OrganizationFilter';
 import ActiveFilters from './filters/ActiveFilters';
 import FilterActions from './filters/FilterActions';
 import { causeAreas, locations } from './filters/FilterConstants';
-import { EventFilters } from '@/hooks/types/event-types';
 
 interface FilterBarProps {
-  activeFilters: EventFilters;
-  onFilterChange: (filters: EventFilters) => void;
+  onFilterChange?: (filters: {
+    cause: string;
+    location: string;
+    organization: string;
+  }) => void;
   onCauseChange?: (cause: string) => void;
   onOrganizationChange?: (organization: string) => void;
   onLocationChange?: (location: string) => void;
   organizations?: string[];
-  initialFilters?: EventFilters;
+  initialFilters?: {
+    cause: string;
+    location: string;
+    organization: string;
+  };
 }
 
 const FilterBar = ({ 
-  activeFilters,
   onFilterChange, 
   onCauseChange,
   onOrganizationChange,
@@ -28,23 +33,19 @@ const FilterBar = ({
   organizations = [],
   initialFilters 
 }: FilterBarProps) => {
-  const [cause, setCause] = useState(activeFilters?.cause || initialFilters?.cause || "All Causes");
-  const [location, setLocation] = useState(activeFilters?.location || initialFilters?.location || "All Locations");
-  const [organization, setOrganization] = useState(activeFilters?.organization || initialFilters?.organization || "All Organizations");
+  const [cause, setCause] = useState(initialFilters?.cause ? initialFilters.cause : "All Causes");
+  const [location, setLocation] = useState(initialFilters?.location ? initialFilters.location : "All Locations");
+  const [organization, setOrganization] = useState(initialFilters?.organization ? initialFilters.organization : "All Organizations");
   const [isOpen, setIsOpen] = useState(false);
 
-  // Apply filters whenever initialFilters or activeFilters change
+  // Apply filters whenever initialFilters change
   useEffect(() => {
     if (initialFilters) {
       setCause(initialFilters.cause || "All Causes");
       setLocation(initialFilters.location || "All Locations");
       setOrganization(initialFilters.organization || "All Organizations");
-    } else if (activeFilters) {
-      setCause(activeFilters.cause || "All Causes");
-      setLocation(activeFilters.location || "All Locations");
-      setOrganization(activeFilters.organization || "All Organizations");
     }
-  }, [initialFilters, activeFilters]);
+  }, [initialFilters]);
 
   // Handle cause change
   const handleCauseChange = (newCause: string) => {
@@ -76,8 +77,7 @@ const FilterBar = ({
       onFilterChange({
         cause: cause === "All Causes" ? "" : cause,
         location: location === "All Locations" ? "" : location,
-        organization: organization === "All Organizations" ? "" : organization,
-        searchKeyword: activeFilters.searchKeyword || ""
+        organization: organization === "All Organizations" ? "" : organization
       });
     }
     setIsOpen(false);
@@ -90,12 +90,7 @@ const FilterBar = ({
     setOrganization("All Organizations");
     
     if (onFilterChange) {
-      onFilterChange({ 
-        cause: "", 
-        location: "", 
-        organization: "", 
-        searchKeyword: activeFilters.searchKeyword || "" 
-      });
+      onFilterChange({ cause: "", location: "", organization: "" });
     }
     
     if (onCauseChange) {

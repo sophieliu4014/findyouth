@@ -1,88 +1,50 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
+import LocationSearch from '../form/LocationSearch';
 
-export interface SearchSectionProps {
-  initialKeyword?: string;
-  initialAddress?: string;
-  onSearch: (keyword: string, location: string, address: string) => void;
+interface SearchSectionProps {
+  keyword: string;
+  address: string;
+  onKeywordSearch: (query: string) => void;
+  onLocationSearch: (query: string) => void;
 }
 
 const SearchSection = ({ 
-  initialKeyword = '', 
-  initialAddress = '',
-  onSearch
+  keyword, 
+  address, 
+  onKeywordSearch, 
+  onLocationSearch 
 }: SearchSectionProps) => {
-  const [keyword, setKeyword] = useState(initialKeyword);
-  const [location, setLocation] = useState('');
-  const [address, setAddress] = useState(initialAddress);
-
-  // Update form values when props change
-  useEffect(() => {
-    setKeyword(initialKeyword || '');
-    setAddress(initialAddress || '');
-  }, [initialKeyword, initialAddress]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(keyword, location, address);
-  };
-
   return (
-    <div className="glass-panel p-6 rounded-xl">
-      <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-4">
-        <div className="flex-grow">
-          <label htmlFor="keyword" className="block text-sm font-medium text-youth-charcoal mb-1">
-            Keyword
-          </label>
-          <input
-            id="keyword"
-            type="text"
-            placeholder="Search by title, description, or organization"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-youth-blue/50"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-        </div>
+    <div className="mb-12 text-center">
+      <div className="bg-gradient-youth py-16 px-4 rounded-3xl mb-10 shadow-elevated">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 animate-fade-in tracking-tight">
+          Find Volunteer Activities
+        </h1>
+        <p className="text-white/90 max-w-3xl mx-auto mb-10 animate-fade-in leading-relaxed">
+          Discover meaningful volunteer opportunities with youth-led nonprofits across Greater Vancouver
+        </p>
         
-        <div className="flex-grow">
-          <label htmlFor="location" className="block text-sm font-medium text-youth-charcoal mb-1">
-            City
-          </label>
-          <input
-            id="location"
-            type="text"
-            placeholder="Enter city (e.g. Vancouver)"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-youth-blue/50"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
+        {/* Search section */}
+        <div className="max-w-2xl mx-auto animate-slide-up">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search for activities, causes, organizations, or locations"
+              className="w-full px-6 py-4 rounded-full text-youth-charcoal bg-white/95 shadow-lg focus:ring-2 focus:ring-youth-blue/50 focus:outline-none transition-all"
+              value={keyword}
+              onChange={(e) => onKeywordSearch(e.target.value)}
+            />
+            <button
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-youth-blue text-white p-3 rounded-full hover:bg-youth-purple transition-all duration-300 shadow-sm hover:shadow"
+              onClick={() => onKeywordSearch(keyword)}
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-        
-        <div className="flex-grow">
-          <label htmlFor="address" className="block text-sm font-medium text-youth-charcoal mb-1">
-            Address
-          </label>
-          <input
-            id="address"
-            type="text"
-            placeholder="Enter specific address"
-            className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-youth-blue/50"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </div>
-        
-        <div className="self-end">
-          <button
-            type="submit"
-            className="h-[42px] px-6 py-2 bg-youth-blue text-white rounded-md hover:bg-youth-blue/90 transition-colors flex items-center"
-          >
-            <Search className="mr-2 h-4 w-4" />
-            Search
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };
