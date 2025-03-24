@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,45 +26,37 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   const organizationName = user?.user_metadata?.organization_name || '';
   const [previewKey, setPreviewKey] = useState<number>(Date.now());
 
-  // Load banner image from multiple sources
   useEffect(() => {
     const fetchBannerImage = async () => {
       setIsLoadingBanner(true);
       console.log("Fetching banner image for user:", user?.id);
       
       try {
-        // First check metadata (fastest source)
         const metadataUrl = user?.user_metadata?.nonprofit_data?.bannerImageUrl;
         if (metadataUrl) {
           console.log('Using banner from metadata:', metadataUrl);
-          // Force cache bust with timestamp
           const cacheBustUrl = `${metadataUrl}?t=${Date.now()}`;
           setBannerImagePreview(cacheBustUrl);
           setIsLoadingBanner(false);
           return;
         }
         
-        // Then check storage with proper naming
         if (user?.id) {
           console.log("Checking storage for banner with ID:", user.id);
-          // Always try with banner- prefix first
           const bannerId = `banner-${user.id}`;
           const storageUrl = await getBannerImageFromStorage(bannerId);
           
           if (storageUrl) {
             console.log('Using banner from storage with prefix:', storageUrl);
-            // Force cache bust with timestamp
             const cacheBustUrl = `${storageUrl}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
             setIsLoadingBanner(false);
             return;
           }
           
-          // Try without prefix as fallback (for legacy images)
           const regularStorageUrl = await getBannerImageFromStorage(user.id);
           if (regularStorageUrl) {
             console.log('Using banner from storage without prefix:', regularStorageUrl);
-            // Force cache bust with timestamp
             const cacheBustUrl = `${regularStorageUrl}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
             setIsLoadingBanner(false);
@@ -73,7 +64,6 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
           }
         }
         
-        // Finally check nonprofits table
         if (user?.id) {
           const { data: nonprofitData, error } = await supabase
             .from('nonprofits')
@@ -83,7 +73,6 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
             
           if (!error && nonprofitData?.banner_image_url) {
             console.log('Using banner from nonprofits table:', nonprofitData.banner_image_url);
-            // Force cache bust with timestamp
             const cacheBustUrl = `${nonprofitData.banner_image_url}?t=${Date.now()}`;
             setBannerImagePreview(cacheBustUrl);
           } else {
@@ -121,12 +110,10 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
       if (bannerImage) {
         console.log("Uploading banner image, file:", bannerImage.name, "Size:", bannerImage.size, "Type:", bannerImage.type);
         const identifier = user?.id || Date.now().toString();
-        // Always use banner- prefix for consistency
-        const newBannerUrl = await uploadBannerImage(bannerImage, `banner-${identifier}`);
+        const newBannerUrl = await uploadBannerImage(bannerImage, identifier);
         if (newBannerUrl) {
           bannerImageUrl = newBannerUrl;
           console.log('Banner uploaded successfully to:', newBannerUrl);
-          // Force refresh by updating the preview with cache busting
           const cacheBustUrl = `${newBannerUrl}?t=${Date.now()}`;
           setBannerImagePreview(cacheBustUrl);
         } else {
@@ -175,7 +162,6 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
       await refreshAuth();
       toast.success('Profile images updated successfully');
       
-      // Force refreshing the banner preview after save
       setPreviewKey(Date.now());
       
       setProfileImage(null);
@@ -188,7 +174,6 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
     }
   };
 
-  // Determine if a save button should be shown
   const showSaveButton = profileImage !== null || bannerImage !== null;
 
   return (

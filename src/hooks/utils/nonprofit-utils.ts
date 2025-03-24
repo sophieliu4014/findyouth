@@ -36,6 +36,7 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
       // Get banner image from storage if not in database
       let bannerImageUrl = nonprofitData.banner_image_url;
       if (!bannerImageUrl) {
+        // Use the same identifier pattern as the upload function
         bannerImageUrl = await getBannerImageFromStorage(nonprofitId);
       }
       

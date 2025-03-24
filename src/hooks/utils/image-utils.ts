@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Validate image URL format
@@ -58,15 +57,11 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
     
     console.log(`Checking banner image for nonprofit ID: ${nonprofitId}`);
     
-    // Don't manipulate the ID - use it as provided
-    // This allows calling code to explicitly use "banner-{id}" format if needed
-    const bannerId = nonprofitId;
-    
     // Common image extensions to check
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
     for (const ext of extensions) {
-      const filename = `${bannerId}.${ext}`;
+      const filename = `${nonprofitId}.${ext}`;
       console.log(`Checking for banner image: ${filename}`);
       
       const { data } = supabase

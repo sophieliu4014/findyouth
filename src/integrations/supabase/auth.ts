@@ -244,22 +244,19 @@ export const uploadProfileImage = async (file: File, identifier: string): Promis
 // Upload banner image to Supabase storage
 export const uploadBannerImage = async (file: File, identifier: string): Promise<string | null> => {
   try {
-    console.log(`Starting banner upload for identifier: ${identifier}`);
+    console.log(`Starting banner upload with file: ${file.name}, size: ${file.size}, type: ${file.type}`);
     
-    // Ensure identifier starts with "banner-"
-    const idPrefix = identifier.startsWith('banner-') ? '' : 'banner-';
-    const actualIdentifier = `${idPrefix}${identifier}`;
+    // Don't use any prefix, just use the identifier directly
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${identifier}.${fileExt}`;
     
-    // Get file extension from the original filename
-    const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const filePath = `${actualIdentifier}.${fileExt}`;
+    console.log(`Uploading banner to bucket 'banner-images', path: ${filePath}`);
     
-    console.log(`Uploading banner file to bucket 'banner-images', path: ${filePath}, file type: ${file.type}, size: ${file.size} bytes`);
-    
-    // Simplified upload approach - match the profile image upload pattern
+    // Use the exact same upload pattern as profile image
     const { data, error: uploadError } = await supabase.storage
       .from('banner-images')
       .upload(filePath, file, {
+        cacheControl: '3600',
         upsert: true
       });
 
@@ -281,7 +278,6 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
 
     console.log('Banner file uploaded successfully, public URL:', publicUrl);
     return publicUrl;
-    
   } catch (error: any) {
     console.error('Error uploading banner image:', error);
     toast.error(`Failed to upload banner image: ${error.message}`);
