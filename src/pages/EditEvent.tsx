@@ -10,7 +10,7 @@ import { useAuthStore } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
-import { checkAdminStatus } from '@/hooks/utils/admin-utils';
+import { checkAdminStatus, canManageEvent } from '@/hooks/utils/admin-utils';
 
 const EditEvent = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +57,9 @@ const EditEvent = () => {
 
         if (eventData) {
           // Check if current user is the event author or an admin
-          if (user?.id === eventData.nonprofit_id || isAdmin) {
+          const hasPermission = canManageEvent(user?.id, eventData.nonprofit_id, isAdmin);
+          
+          if (hasPermission) {
             setEventData(eventData);
             setIsAuthorized(true);
           } else {

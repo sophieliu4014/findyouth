@@ -3,7 +3,7 @@ import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from '
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
-import { checkAdminStatus } from '@/hooks/utils/admin-utils';
+import { checkAdminStatus, canManageEvent } from '@/hooks/utils/admin-utils';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import {
   DropdownMenu,

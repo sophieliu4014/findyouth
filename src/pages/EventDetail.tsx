@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -8,7 +7,7 @@ import Footer from '../components/Footer';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchNonprofitData } from '@/hooks/utils/nonprofit-utils';
-import { checkAdminStatus } from '@/hooks/utils/admin-utils';
+import { checkAdminStatus, canManageEvent } from '@/hooks/utils/admin-utils';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -71,8 +70,10 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Check if the current user is the event author or an admin
-  const canEditEvent = user && (event?.nonprofit_id === user.id || isAdmin);
+  const canEditEvent = user && (
+    (event?.nonprofit_id === user.id) || // User is the event creator
+    isAdmin // User is an admin
+  );
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -237,7 +238,6 @@ const EventDetail = () => {
                 
                 <EventResources attachedLinks={event.attached_links} />
                 
-                {/* Event image component at the bottom */}
                 <EventImage imageUrl={event.image_url} title={event.title} />
               </div>
               
@@ -258,7 +258,6 @@ const EventDetail = () => {
 
       <Footer />
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
