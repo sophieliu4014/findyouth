@@ -19,7 +19,9 @@ import {
   NonprofitProfile,
   CauseEvents,
   NotFound,
-  CreateEvent
+  CreateEvent,
+  ForgotPassword,
+  ResetPassword
 } from './pages';
 import EventDetail from './pages/EventDetail';
 import EditEvent from './pages/EditEvent';
@@ -59,6 +61,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/signup",

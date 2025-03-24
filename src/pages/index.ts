@@ -15,3 +15,5 @@ export { default as CauseEvents } from './CauseEvents';
 export { default as NotFound } from './NotFound';
 export { default as CreateEvent } from './CreateEvent';
 export { default as EditEvent } from './EditEvent';
+export { default as ForgotPassword } from './ForgotPassword';
+export { default as ResetPassword } from './ResetPassword';
