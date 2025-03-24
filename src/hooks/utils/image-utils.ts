@@ -1,6 +1,25 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+// Error categories for image operations
+export enum ImageErrorType {
+  INVALID_URL = 'invalid_url',
+  UPLOAD_FAILED = 'upload_failed',
+  STORAGE_ACCESS = 'storage_access',
+  FILE_TOO_LARGE = 'file_too_large',
+  INVALID_FORMAT = 'invalid_format',
+  NOT_FOUND = 'not_found',
+  NETWORK = 'network',
+  UNKNOWN = 'unknown'
+}
+
+// Error response type for image operations
+export interface ImageErrorResponse {
+  type: ImageErrorType;
+  message: string;
+  details?: any;
+}
+
 // Validate image URL format
 export function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
@@ -104,4 +123,101 @@ export function generateFallbackImageUrl(id: string): string {
   const idValue = id.slice(-6).replace(/\D/g, '');
   const idNumber = idValue ? (parseInt(idValue, 10) % 100) : 42;
   return `https://source.unsplash.com/random/300x300?profile=${idNumber}`;
+}
+
+// Helper to categorize image upload errors
+export function categorizeImageError(error: any): ImageErrorResponse {
+  console.error("Categorizing image error:", error);
+  
+  // Storage-specific errors
+  if (error?.message?.includes('storage') || error?.error?.includes('storage')) {
+    return {
+      type: ImageErrorType.STORAGE_ACCESS,
+      message: 'Unable to access storage. Permission denied or storage not available.',
+      details: error
+    };
+  }
+  
+  // Network errors
+  if (error instanceof TypeError && error.message.includes('network')) {
+    return {
+      type: ImageErrorType.NETWORK,
+      message: 'Network error. Please check your connection and try again.',
+      details: error
+    };
+  }
+  
+  // File-specific errors
+  if (error?.message?.includes('file size')) {
+    return {
+      type: ImageErrorType.FILE_TOO_LARGE,
+      message: 'File is too large. Please select a smaller image (max 3MB).',
+      details: error
+    };
+  }
+  
+  if (error?.message?.includes('file type') || error?.message?.includes('not supported')) {
+    return {
+      type: ImageErrorType.INVALID_FORMAT,
+      message: 'File format not supported. Please use JPEG or PNG images.',
+      details: error
+    };
+  }
+  
+  // URL-specific errors
+  if (error?.message?.includes('URL') || error?.message?.includes('url')) {
+    return {
+      type: ImageErrorType.INVALID_URL,
+      message: 'Invalid image URL format.',
+      details: error
+    };
+  }
+  
+  // Generic upload errors
+  if (error?.message?.includes('upload') || error?.statusCode === 413 || error?.code === 'ECONNABORTED') {
+    return {
+      type: ImageErrorType.UPLOAD_FAILED,
+      message: 'Upload failed. Please try again with a smaller image or check your connection.',
+      details: error
+    };
+  }
+  
+  // Not found errors
+  if (error?.statusCode === 404 || error?.message?.includes('not found')) {
+    return {
+      type: ImageErrorType.NOT_FOUND,
+      message: 'Image not found in storage.',
+      details: error
+    };
+  }
+  
+  // Default case for unknown errors
+  return {
+    type: ImageErrorType.UNKNOWN,
+    message: error?.message || 'An unknown error occurred with the image.',
+    details: error
+  };
+}
+
+// Verify storage access for testing/debugging
+export async function verifyStorageAccess(): Promise<boolean> {
+  try {
+    // Try to list the first few items in the profile-images bucket
+    const { data, error } = await supabase.storage
+      .from('profile-images')
+      .list('', {
+        limit: 1,
+      });
+    
+    if (error) {
+      console.error("Storage access verification failed:", error);
+      return false;
+    }
+    
+    console.log("Storage access verification successful:", data);
+    return true;
+  } catch (error) {
+    console.error("Error verifying storage access:", error);
+    return false;
+  }
 }
