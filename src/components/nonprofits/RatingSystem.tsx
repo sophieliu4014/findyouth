@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { ensureAnonymousId } from '@/hooks/utils/rating-utils';
 
 interface RatingSystemProps {
   nonprofitId: string;
@@ -22,6 +23,7 @@ const RatingSystem = ({
   const [rating, setRating] = useState<number>(initialRating);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [userRating, setUserRating] = useState<number | null>(null);
+  const [userReviewId, setUserReviewId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   
@@ -35,14 +37,14 @@ const RatingSystem = ({
   // Get user's previous rating if any
   useEffect(() => {
     const getUserRating = async () => {
-      // Use IP as identifier for non-logged in users
-      const userIdentifier = await getAnonymousIdentifier();
+      // Get stored anonymous ID
+      const anonymousId = ensureAnonymousId();
       
       const { data, error } = await supabase
         .from('reviews')
-        .select('rating')
+        .select('id, rating')
         .eq('nonprofit_id', nonprofitId)
-        .eq('anonymous_id', userIdentifier)
+        .eq('anonymous_id', anonymousId)
         .maybeSingle();
       
       if (error) {
@@ -51,7 +53,11 @@ const RatingSystem = ({
       }
       
       if (data) {
+        console.log('Found existing rating:', data);
         setUserRating(data.rating);
+        setUserReviewId(data.id);
+      } else {
+        console.log('No existing rating found for this nonprofit');
       }
     };
     
@@ -60,49 +66,29 @@ const RatingSystem = ({
     }
   }, [nonprofitId, displayOnly]);
   
-  // Get a unique identifier for anonymous users (using browser fingerprint/local storage)
-  const getAnonymousIdentifier = async (): Promise<string> => {
-    // First check if we already have an ID stored
-    let anonymousId = localStorage.getItem('anonymous_user_id');
-    
-    if (!anonymousId) {
-      // Create a new random ID and store it
-      anonymousId = crypto.randomUUID();
-      localStorage.setItem('anonymous_user_id', anonymousId);
-    }
-    
-    return anonymousId;
-  };
-  
   const handleRatingClick = async (selectedRating: number) => {
     if (displayOnly || isSubmitting) return;
     
     setIsSubmitting(true);
     
     try {
-      const anonymousId = await getAnonymousIdentifier();
-      
-      // Check if user has already rated
-      const { data: existingRating } = await supabase
-        .from('reviews')
-        .select('id, rating')
-        .eq('nonprofit_id', nonprofitId)
-        .eq('anonymous_id', anonymousId)
-        .maybeSingle();
+      const anonymousId = ensureAnonymousId();
+      console.log('Using anonymous ID:', anonymousId);
+      console.log('Current user review ID:', userReviewId);
       
       let result;
       
-      if (existingRating) {
+      if (userReviewId) {
         // Update existing rating
+        console.log(`Updating existing rating to ${selectedRating} stars for review ID ${userReviewId}`);
         result = await supabase
           .from('reviews')
           .update({ 
-            rating: selectedRating,
-            anonymous_id: anonymousId // Ensure anonymous_id is included in update
+            rating: selectedRating
           })
-          .eq('id', existingRating.id)
+          .eq('id', userReviewId)
           .select()
-          .single();
+          .maybeSingle();
           
         toast({
           title: "Rating updated",
@@ -110,6 +96,7 @@ const RatingSystem = ({
         });
       } else {
         // Insert new rating
+        console.log(`Creating new rating of ${selectedRating} stars`);
         result = await supabase
           .from('reviews')
           .insert([{ 
@@ -118,7 +105,7 @@ const RatingSystem = ({
             anonymous_id: anonymousId
           }])
           .select()
-          .single();
+          .maybeSingle();
           
         toast({
           title: "Rating submitted",
@@ -127,6 +114,7 @@ const RatingSystem = ({
       }
       
       if (result.error) {
+        console.error('Error with rating operation:', result.error);
         throw result.error;
       }
       
@@ -136,6 +124,11 @@ const RatingSystem = ({
       // Update UI state
       setRating(selectedRating);
       setUserRating(selectedRating);
+      
+      // Store the review ID if this was a new review
+      if (!userReviewId && result.data) {
+        setUserReviewId(result.data.id);
+      }
       
       // Notify parent component
       if (onRatingChange) {
@@ -191,7 +184,7 @@ const RatingSystem = ({
       </div>
       {!displayOnly && (
         <span className="ml-2 text-sm text-gray-500">
-          {userRating ? 'Your rating' : 'Rate this nonprofit'}
+          {userRating ? `Your rating: ${userRating} stars` : 'Rate this nonprofit'}
         </span>
       )}
     </div>
