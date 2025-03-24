@@ -7,8 +7,12 @@ import { toast } from "sonner";
  */
 export const sendPasswordResetEmail = async (email: string) => {
   try {
+    // For production deployments, it's better to use a fixed URL or environment variable
+    // instead of window.location.origin which will be localhost in development
+    const redirectUrl = 'https://findyouth.org/reset-password';
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: redirectUrl,
     });
 
     if (error) {
