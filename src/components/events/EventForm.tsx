@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Save } from 'lucide-react';
@@ -17,13 +17,16 @@ import AdditionalInfoSection from './AdditionalInfoSection';
 
 interface EventFormProps {
   userId: string;
+  initialData?: any; // For editing an existing event
+  isEditing?: boolean;
 }
 
-const EventForm = ({ userId }: EventFormProps) => {
+const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) => {
   const navigate = useNavigate();
   const [eventImage, setEventImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -44,11 +47,57 @@ const EventForm = ({ userId }: EventFormProps) => {
     },
   });
 
+  // Populate form with existing data when editing
+  useEffect(() => {
+    if (isEditing && initialData) {
+      // Set existing image URL if available
+      if (initialData.image_url) {
+        setExistingImageUrl(initialData.image_url);
+      }
+
+      // Parse location to get street, city, state, zip
+      let street = '';
+      let city = initialData.city || '';
+      let state = initialData.state || '';
+      let zip = initialData.zip || '';
+
+      if (initialData.location) {
+        // Try to extract street from location if it contains commas
+        const locationParts = initialData.location.split(',');
+        if (locationParts.length > 0) {
+          street = locationParts[0].trim();
+        }
+      }
+
+      // Parse cause areas from comma-separated string to array
+      const causeAreas = initialData.cause_area 
+        ? initialData.cause_area.split(',').map((area: string) => area.trim()) 
+        : [];
+
+      // Set form values
+      form.reset({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        date: initialData.date || '',
+        startTime: initialData.start_time || '',
+        endTime: initialData.end_time || '',
+        applicationDeadline: initialData.application_deadline || '',
+        street: street,
+        city: city,
+        state: state,
+        zip: zip,
+        signupFormUrl: initialData.signup_form_url || '',
+        attachedLinks: initialData.attached_links || '',
+        causeAreas: causeAreas,
+      });
+    }
+  }, [isEditing, initialData, form]);
+
   const onSubmit = async (values: EventFormValues) => {
     if (!userId) return;
     
-    // Validate image is uploaded
-    if (!eventImage) {
+    // For create mode, validate image is uploaded
+    if (!isEditing && !eventImage) {
       setImageError("Please upload an event image");
       toast.error("Event image is required");
       return;
@@ -76,27 +125,47 @@ const EventForm = ({ userId }: EventFormProps) => {
         attached_links: values.attachedLinks || null,
         cause_area: values.causeAreas.join(', '), // Join cause areas as comma-separated string
         nonprofit_id: userId,
-        created_at: new Date().toISOString(),
       };
 
-      console.log('Creating event with payload:', eventPayload);
+      let eventId: string;
 
-      // Insert event into database first without the image
-      const { data: createdEvent, error } = await supabase
-        .from('events')
-        .insert(eventPayload)
-        .select('id')
-        .single();
+      if (isEditing && initialData) {
+        // Update existing event
+        console.log('Updating event with payload:', eventPayload);
+        const { data: updatedEvent, error } = await supabase
+          .from('events')
+          .update(eventPayload)
+          .eq('id', initialData.id)
+          .select('id')
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
+        eventId = updatedEvent.id;
+        console.log('Event updated successfully:', updatedEvent);
+      } else {
+        // Create new event
+        console.log('Creating event with payload:', eventPayload);
+        const fullPayload = {
+          ...eventPayload,
+          created_at: new Date().toISOString(),
+        };
 
-      console.log('Event created successfully:', createdEvent);
+        const { data: createdEvent, error } = await supabase
+          .from('events')
+          .insert(fullPayload)
+          .select('id')
+          .single();
 
-      // Upload image if selected
-      if (eventImage && createdEvent) {
+        if (error) throw error;
+        eventId = createdEvent.id;
+        console.log('Event created successfully:', createdEvent);
+      }
+
+      // Upload image if selected (for both create and edit)
+      if (eventImage && eventId) {
         try {
           const fileExt = eventImage.name.split('.').pop();
-          const filePath = `event-images/${createdEvent.id}.${fileExt}`;
+          const filePath = `event-images/${eventId}.${fileExt}`;
           
           console.log('Uploading image to path:', filePath);
           
@@ -109,7 +178,9 @@ const EventForm = ({ userId }: EventFormProps) => {
           if (uploadError) {
             console.error('Error uploading image:', uploadError);
             toast.error(`Image upload failed: ${uploadError.message}`, {
-              description: "Event was created but without an image."
+              description: isEditing 
+                ? "Event was updated but without a new image."
+                : "Event was created but without an image."
             });
           } else {
             console.log('Image uploaded successfully:', uploadData);
@@ -126,12 +197,14 @@ const EventForm = ({ userId }: EventFormProps) => {
               const { error: updateError } = await supabase
                 .from('events')
                 .update({ image_url: urlData.publicUrl })
-                .eq('id', createdEvent.id);
+                .eq('id', eventId);
 
               if (updateError) {
                 console.error('Error updating event with image URL:', updateError);
                 toast.error("Failed to attach image to event", {
-                  description: "Your event was created, but the image couldn't be attached."
+                  description: isEditing
+                    ? "Your event was updated, but the image couldn't be attached."
+                    : "Your event was created, but the image couldn't be attached."
                 });
               } else {
                 console.log('Event updated with image URL:', urlData.publicUrl);
@@ -141,17 +214,22 @@ const EventForm = ({ userId }: EventFormProps) => {
         } catch (imageError: any) {
           console.error('Error processing image upload:', imageError);
           toast.error(`Image processing error: ${imageError.message}`, {
-            description: "Event was created but without an image."
+            description: isEditing
+              ? "Event was updated but without a new image."
+              : "Event was created but without an image."
           });
         }
       }
 
       // Show success toast and navigate
-      toast.success('Event created successfully!');
-      navigate('/find-activities');
+      toast.success(isEditing ? 'Event updated successfully!' : 'Event created successfully!');
+      navigate(isEditing ? `/event/${eventId}` : '/find-activities');
     } catch (error: any) {
-      console.error('Error creating event:', error);
-      toast.error(`Failed to create event: ${error.message}`);
+      console.error(isEditing ? 'Error updating event:' : 'Error creating event:', error);
+      toast.error(isEditing 
+        ? `Failed to update event: ${error.message}` 
+        : `Failed to create event: ${error.message}`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -166,6 +244,7 @@ const EventForm = ({ userId }: EventFormProps) => {
             setEventImage(file);
             setImageError(null);
           }}
+          existingImageUrl={existingImageUrl}
         />
         
         {imageError && (
@@ -189,12 +268,12 @@ const EventForm = ({ userId }: EventFormProps) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating Event...
+                {isEditing ? 'Updating Event...' : 'Creating Event...'}
               </>
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Create Event
+                {isEditing ? 'Update Event' : 'Create Event'}
               </>
             )}
           </Button>

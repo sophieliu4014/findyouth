@@ -1,13 +1,25 @@
 
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchNonprofitData } from '@/hooks/utils/nonprofit-utils';
+import { useAuthStore } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   EventHeader,
   EventDescription,
@@ -52,7 +64,13 @@ const EventDetail = () => {
   const [organization, setOrganization] = useState<OrganizationInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  // Check if the current user is the event author
+  const isEventAuthor = user && event?.nonprofit_id === user.id;
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -112,6 +130,38 @@ const EventDetail = () => {
     }
   };
 
+  const handleEditEvent = () => {
+    if (event?.id) {
+      navigate(`/edit-event/${event.id}`);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!event?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', event.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Event deleted",
+        description: "The event has been successfully deleted.",
+      });
+      navigate('/find-activities');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error deleting event",
+        description: "There was a problem deleting the event.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <Helmet>
@@ -132,7 +182,7 @@ const EventDetail = () => {
           </div>
         ) : event ? (
           <>
-            <div className="mb-8">
+            <div className="mb-8 flex justify-between items-center">
               <Link 
                 to="/find-activities" 
                 className="inline-flex items-center text-youth-blue hover:text-youth-purple"
@@ -140,6 +190,27 @@ const EventDetail = () => {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Activities
               </Link>
+              
+              {isEventAuthor && (
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center"
+                    onClick={handleEditEvent}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    className="flex items-center"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </Button>
+                </div>
+              )}
             </div>
 
             <EventHeader event={event} organization={organization} />
@@ -173,6 +244,28 @@ const EventDetail = () => {
       </main>
 
       <Footer />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the event
+              and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

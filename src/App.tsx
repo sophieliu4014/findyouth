@@ -22,6 +22,7 @@ import {
   CreateEvent
 } from './pages';
 import EventDetail from './pages/EventDetail';
+import EditEvent from './pages/EditEvent';
 import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
@@ -70,6 +71,10 @@ const router = createBrowserRouter([
   {
     path: "/create-event",
     element: <CreateEvent />,
+  },
+  {
+    path: "/edit-event/:id",
+    element: <EditEvent />,
   },
   {
     path: "/cause/:cause",
