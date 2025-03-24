@@ -39,6 +39,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
   }
   
   console.log(`Transforming ${dbEvents.length} events`);
+  console.log('Sample event data:', dbEvents[0]);
   
   // Process events in batches to optimize performance
   const batchSize = 5;
@@ -77,7 +78,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           profileImage: generateFallbackImageUrl(event.nonprofit_id)
         };
         
-        return {
+        const eventObj = {
           id: event.id,
           title: event.title,
           organization: orgData.name,
@@ -92,6 +93,9 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           profileImage: orgData.profileImage,
           registrationLink: event.signup_form_url || undefined
         };
+        
+        console.log(`Event ${event.id} registration link:`, event.signup_form_url);
+        return eventObj;
       } catch (error) {
         console.error(`Error transforming event ${event.id}:`, error);
         

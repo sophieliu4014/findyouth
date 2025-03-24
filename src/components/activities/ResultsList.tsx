@@ -28,7 +28,11 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
     );
   }
 
-  console.log('Rendering events:', events);
+  console.log('Rendering events with registration links:', events.map(e => ({ 
+    id: e.id, 
+    title: e.title, 
+    registrationLink: e.registrationLink 
+  })));
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
