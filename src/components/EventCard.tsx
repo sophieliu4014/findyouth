@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -60,23 +59,38 @@ const EventCard = ({
 
   const isEventAuthor = user?.id === organizationId;
 
-  console.log('EventCard rendering with:', { 
-    id, 
-    title, 
-    organization, 
-    organizationId, 
-    profileImage,
-    registrationLink,
-    isEventAuthor
-  });
-
   const renderStars = (rating: number) => {
-    return [...Array(5)].map((_, i) => (
-      <Star
-        key={i}
-        className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-      />
-    ));
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    return [...Array(5)].map((_, i) => {
+      if (i < fullStars) {
+        return (
+          <Star
+            key={i}
+            className="h-4 w-4 text-yellow-400 fill-yellow-400"
+          />
+        );
+      } 
+      else if (i === fullStars && hasHalfStar) {
+        return (
+          <div key={i} className="relative h-4 w-4">
+            <Star className="absolute h-4 w-4 text-gray-300" />
+            <div className="absolute h-4 w-2 overflow-hidden">
+              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+            </div>
+          </div>
+        );
+      } 
+      else {
+        return (
+          <Star
+            key={i}
+            className="h-4 w-4 text-gray-300"
+          />
+        );
+      }
+    });
   };
 
   const handleApplyNow = () => {

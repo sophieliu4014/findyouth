@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { MapPin, ExternalLink, Mail, Phone, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -30,6 +29,7 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
   // Fetch the latest ratings when the component mounts
   useEffect(() => {
     const fetchRatings = async () => {
+      console.log(`Fetching ratings for nonprofit: ${nonprofit.id}`);
       const { data: reviewsData, error } = await supabase
         .from('reviews')
         .select('rating')
@@ -41,9 +41,14 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
       }
       
       if (reviewsData && reviewsData.length > 0) {
-        const newAvgRating = calculateAverageRating(reviewsData);
+        console.log(`Found ${reviewsData.length} ratings for nonprofit ${nonprofit.id}`, reviewsData);
+        // Use the same calculation method as in event-transform-utils
+        const newAvgRating = calculateAverageRating(reviewsData, false);
+        console.log(`Calculated average rating: ${newAvgRating} (decimal format)`);
         setAverageRating(newAvgRating);
         setRatingCount(reviewsData.length);
+      } else {
+        console.log(`No ratings found for nonprofit ${nonprofit.id}`);
       }
     };
     
@@ -67,7 +72,7 @@ const NonprofitDetailsSection = ({ nonprofit }: NonprofitDetailsSectionProps) =>
     
     if (reviewsData && reviewsData.length > 0) {
       // Calculate new average from fresh data
-      const newAvgRating = calculateAverageRating(reviewsData);
+      const newAvgRating = calculateAverageRating(reviewsData, false);
       console.log('New average rating calculated:', newAvgRating, 'from', reviewsData.length, 'ratings');
       
       // Update state

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { ensureAnonymousId } from '@/hooks/utils/rating-utils';
+import { ensureAnonymousId, calculateAverageRating } from '@/hooks/utils/rating-utils';
 
 interface RatingSystemProps {
   nonprofitId: string;
@@ -136,6 +136,17 @@ const RatingSystem = ({
         onRatingChange(selectedRating);
       }
       
+      // Fetch new average rating and update UI
+      const { data: updatedReviews } = await supabase
+        .from('reviews')
+        .select('rating')
+        .eq('nonprofit_id', nonprofitId);
+        
+      if (updatedReviews && updatedReviews.length > 0) {
+        const newAvg = calculateAverageRating(updatedReviews, false);
+        console.log(`New calculated average rating: ${newAvg}`);
+      }
+      
     } catch (error) {
       console.error('Error submitting rating:', error);
       toast({
@@ -148,32 +159,78 @@ const RatingSystem = ({
     }
   };
   
-  // Fixed rendering function that won't cause infinite type instantiation
+  // Improved rendering function with half-star support
   const renderStars = () => {
+    const starsToRender = displayOnly ? rating : (userRating || 0);
+    const fullStars = Math.floor(starsToRender);
+    const hasHalfStar = starsToRender % 1 >= 0.5;
+    
     const stars = [];
     for (let i = 0; i < 5; i++) {
       const starValue = i + 1;
-      const isFilled = displayOnly 
-        ? starValue <= rating 
-        : userRating 
-          ? starValue <= userRating 
-          : false;
       
-      const isHovered = !displayOnly && hoveredRating !== null && starValue <= hoveredRating;
+      // Define if this star is filled
+      let isFilled = false;
       
-      stars.push(
-        <Star
-          key={i}
-          className={`${sizeClasses[size]} ${displayOnly ? 'cursor-default' : 'cursor-pointer'} transition-colors ${
-            isFilled || isHovered
-              ? 'text-yellow-400 fill-yellow-400'
-              : 'text-gray-300'
-          }`}
-          onMouseEnter={() => !displayOnly && setHoveredRating(starValue)}
-          onMouseLeave={() => !displayOnly && setHoveredRating(null)}
-          onClick={() => handleRatingClick(starValue)}
-        />
-      );
+      if (displayOnly) {
+        // For display-only mode, use the actual rating
+        isFilled = i < fullStars || (i === fullStars && hasHalfStar);
+      } else {
+        // For interactive mode, show filled based on user's rating or hover
+        isFilled = hoveredRating !== null 
+          ? i < hoveredRating 
+          : userRating 
+            ? i < userRating 
+            : false;
+      }
+      
+      const isHalfStar = displayOnly && (i === fullStars - 1) && hasHalfStar;
+      const isHovered = !displayOnly && hoveredRating !== null && i < hoveredRating;
+      
+      // For full star
+      if (isFilled && !isHalfStar) {
+        stars.push(
+          <Star
+            key={i}
+            className={`${sizeClasses[size]} ${displayOnly ? 'cursor-default' : 'cursor-pointer'} 
+              text-yellow-400 fill-yellow-400 transition-colors`}
+            onMouseEnter={() => !displayOnly && setHoveredRating(starValue)}
+            onMouseLeave={() => !displayOnly && setHoveredRating(null)}
+            onClick={() => handleRatingClick(starValue)}
+          />
+        );
+      } 
+      // For half star
+      else if (isHalfStar) {
+        stars.push(
+          <div key={i} className={`relative ${sizeClasses[size]} ${displayOnly ? 'cursor-default' : 'cursor-pointer'}`}>
+            <Star 
+              className={`absolute ${sizeClasses[size]} text-gray-300`}
+              onMouseEnter={() => !displayOnly && setHoveredRating(starValue)}
+              onMouseLeave={() => !displayOnly && setHoveredRating(null)}
+              onClick={() => handleRatingClick(starValue)}
+            />
+            <div className={`absolute h-full w-1/2 overflow-hidden`}>
+              <Star 
+                className={`${sizeClasses[size]} text-yellow-400 fill-yellow-400`}
+              />
+            </div>
+          </div>
+        );
+      }
+      // For empty star
+      else {
+        stars.push(
+          <Star
+            key={i}
+            className={`${sizeClasses[size]} ${displayOnly ? 'cursor-default' : 'cursor-pointer'} 
+              transition-colors ${isHovered ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+            onMouseEnter={() => !displayOnly && setHoveredRating(starValue)}
+            onMouseLeave={() => !displayOnly && setHoveredRating(null)}
+            onClick={() => handleRatingClick(starValue)}
+          />
+        );
+      }
     }
     return stars;
   };

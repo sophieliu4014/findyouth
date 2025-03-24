@@ -64,20 +64,23 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
     console.error('Error fetching reviews:', reviewsError);
   } else if (allReviews) {
     // Group reviews by nonprofit_id and calculate average rating for each
-    const reviewsByNonprofit: Record<string, number[]> = {};
+    const reviewsByNonprofit: Record<string, any[]> = {};
     
     allReviews.forEach(review => {
       if (review.nonprofit_id) {
         if (!reviewsByNonprofit[review.nonprofit_id]) {
           reviewsByNonprofit[review.nonprofit_id] = [];
         }
-        reviewsByNonprofit[review.nonprofit_id].push(review.rating);
+        reviewsByNonprofit[review.nonprofit_id].push(review);
       }
     });
     
-    // Calculate average rating for each nonprofit
+    // Calculate average rating for each nonprofit using our standardized function
+    // Use decimal precision (false param) to show the same ratings as on profiles
     Object.entries(reviewsByNonprofit).forEach(([nonprofitId, ratings]) => {
-      const avgRating = calculateAverageRating(ratings);
+      console.log(`Calculating rating for ${nonprofitId} from ${ratings.length} reviews`);
+      const avgRating = calculateAverageRating(ratings, false);
+      console.log(`Average rating for ${nonprofitId}: ${avgRating}`);
       nonprofitRatingsMap.set(nonprofitId, avgRating);
     });
   }
@@ -110,7 +113,9 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
         };
         
         // Get the nonprofit rating from pre-fetched data or use default
+        // Important: Use the same calculation method as in profile
         const nonprofitRating = nonprofitRatingsMap.get(event.nonprofit_id) || 4;
+        console.log(`Using rating ${nonprofitRating} for event ${event.id} by nonprofit ${event.nonprofit_id}`);
         
         const eventObj = {
           id: event.id,
@@ -120,7 +125,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           date: event.date,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
-          rating: nonprofitRating, // Use the nonprofit's actual rating
+          rating: nonprofitRating, // Use the nonprofit's actual rating with consistent calculation
           imageUrl: event.image_url || undefined,
           description: event.description,
           createdAt: event.created_at || undefined,
