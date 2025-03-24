@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ImageOff, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -68,7 +67,7 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
             console.log(`Found banner in storage: ${storageUrl}`);
             // Force cache bust
             const cacheBustedUrl = getCacheBustedUrl(storageUrl);
-            console.log(`Cache-busted URL: ${cacheBustedUrl}`);
+            console.log(`Cache-busted URL: ${cacheBustUrl}`);
             setFinalBannerUrl(cacheBustedUrl);
             setIsLoading(false);
             return;

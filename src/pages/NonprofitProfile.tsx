@@ -324,6 +324,7 @@ const NonprofitProfile = () => {
         <NonprofitHeader 
           title={nonprofit?.organization_name || 'Organization'} 
           bannerImageUrl={nonprofit?.banner_image_url}
+          nonprofitId={nonprofit?.id}
         />
         
         {nonprofit && <NonprofitDetailsSection nonprofit={nonprofit} />}
