@@ -6,29 +6,45 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { CAUSE_AREAS } from "@/components/events/EventFormSchema";
 
 interface CauseSelectorProps {
   selectedCauses: string[];
-  onCauseToggle: (cause: string) => void;
+  onCauseToggle?: (cause: string) => void;
+  onChange?: (causes: string[]) => void;
   maxCauses?: number;
-  causeOptions: string[];
+  causeOptions?: string[];
 }
 
 const CauseSelector = ({
   selectedCauses,
   onCauseToggle,
+  onChange,
   maxCauses = 3,
-  causeOptions,
+  causeOptions = CAUSE_AREAS,
 }: CauseSelectorProps) => {
   const [open, setOpen] = React.useState(false);
 
   // Ensure selectedCauses is always an array
   const normalizedSelectedCauses = Array.isArray(selectedCauses) ? selectedCauses : [];
 
-  // Toggle cause selection - simplified to just call the parent handler
+  // Toggle cause selection
   const handleCauseToggle = (cause: string) => {
     console.log("CauseSelector - toggling cause:", cause);
-    onCauseToggle(cause);
+    
+    // Create a new array with the updated selection
+    const updatedCauses = normalizedSelectedCauses.includes(cause)
+      ? normalizedSelectedCauses.filter(c => c !== cause)
+      : [...normalizedSelectedCauses, cause].slice(0, maxCauses);
+    
+    // Call the appropriate callback
+    if (onCauseToggle) {
+      onCauseToggle(cause);
+    }
+    
+    if (onChange) {
+      onChange(updatedCauses);
+    }
   };
 
   return (
