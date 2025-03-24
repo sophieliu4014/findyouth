@@ -14,6 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import EventImageUpload from './EventImageUpload';
 import CauseSelector from '../form/CauseSelector';
 import { EventFormValues } from './EventFormSchema';
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { AlertCircle } from "lucide-react";
 
 interface BasicInfoSectionProps {
   control: Control<EventFormValues>;
@@ -42,7 +44,7 @@ const BasicInfoSection = ({ control, onImageSelect, existingImageUrl }: BasicInf
           <FormItem>
             <FormLabel>Event Title</FormLabel>
             <FormControl>
-              <Input placeholder="Enter the title of your event" {...field} />
+              <Input placeholder="Ocean Beach Cleanup: Protecting Marine Ecosystems" {...field} />
             </FormControl>
             <FormDescription>
               Choose a clear, descriptive title that explains what volunteers will be doing.
@@ -57,10 +59,30 @@ const BasicInfoSection = ({ control, onImageSelect, existingImageUrl }: BasicInf
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Event Description</FormLabel>
+            <FormLabel className="flex items-center">
+              Event Description
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <AlertCircle className="h-4 w-4 ml-2 text-muted-foreground cursor-help" />
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80 p-4">
+                  <p className="text-sm">
+                    Example: Our beach cleanup event aims to remove plastic waste from Ocean Beach, protecting marine life and ecosystem health. Volunteers will work in teams from 9 AM to 1 PM, equipped with gloves and collection bags. No prior experience needed. We'll provide safety briefing, assign cleanup zones, and track total waste collected. This event directly contributes to environmental conservation efforts.
+                  </p>
+                </HoverCardContent>
+              </HoverCard>
+            </FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="Describe what volunteers will be doing, who they'll be helping, and what impact they'll make" 
+                placeholder="Provide details about your volunteer event including:
+
+• Detailed event schedule and timeline
+• Specific volunteer roles and responsibilities
+• What volunteers will learn or accomplish
+• Required skills or equipment
+• Impact of the volunteer work
+• Any training or orientation provided
+• Specific location details and meeting points" 
                 className="min-h-[150px]"
                 {...field} 
               />
