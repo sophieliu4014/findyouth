@@ -153,19 +153,20 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
         </div>
       )}
       
-      {/* Back button and title */}
+      {/* Back button only - title has been removed */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between -mt-8 relative z-10">
+        <div className="relative z-10 -mt-8 ml-2 md:ml-4">
           <Link to="/find-activities">
-            <Button variant="outline" className="bg-white shadow-sm mb-4 md:mb-0">
+            <Button 
+              variant="outline" 
+              className="bg-white/70 hover:bg-white/90 backdrop-blur-sm shadow-sm border-transparent"
+              rounded="full"
+              size="sm"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Activities
             </Button>
           </Link>
-          
-          <h1 className="text-2xl md:text-3xl font-bold bg-white px-6 py-3 rounded-lg shadow-sm">
-            {title}
-          </h1>
         </div>
       </div>
     </div>
