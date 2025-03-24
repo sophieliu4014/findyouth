@@ -28,6 +28,9 @@ export function ensureAnonymousId(): string {
   if (!anonymousId) {
     anonymousId = crypto.randomUUID();
     localStorage.setItem('anonymous_user_id', anonymousId);
+    console.log('Created new anonymous ID:', anonymousId);
+  } else {
+    console.log('Using existing anonymous ID:', anonymousId);
   }
   
   return anonymousId;

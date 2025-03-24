@@ -84,7 +84,8 @@ const RatingSystem = ({
         result = await supabase
           .from('reviews')
           .update({ 
-            rating: selectedRating
+            rating: selectedRating,
+            anonymous_id: anonymousId // Ensure anonymous_id is included in update
           })
           .eq('id', userReviewId)
           .select()
