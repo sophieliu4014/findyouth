@@ -1,2 +1,7 @@
 
 /*    /index.html   200
+
+# Cache control headers
+/* 
+  Cache-Control: public, max-age=0, must-revalidate
+  Pragma: no-cache
