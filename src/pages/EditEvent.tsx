@@ -39,15 +39,9 @@ const EditEvent = () => {
 
       if (!id) return;
 
-      // Check if the user is an admin
-      if (user?.id) {
-        const adminStatus = await checkAdminStatus(user.id);
-        setIsAdmin(adminStatus);
-        console.log('Edit page admin check:', { userId: user.id, isAdmin: adminStatus });
-      }
-
       setIsLoading(true);
       try {
+        // First fetch the event data
         const { data: eventData, error } = await supabase
           .from('events')
           .select('*')
@@ -59,12 +53,20 @@ const EditEvent = () => {
         if (eventData) {
           console.log('Fetched event for editing:', eventData);
           
-          // nonprofit_id is actually the creator's user ID - check if current user is the creator or an admin
-          const hasPermission = user?.id && canManageEvent(user.id, eventData.nonprofit_id, isAdmin);
+          // Then check admin status if user is logged in
+          let adminStatus = false;
+          if (user?.id) {
+            adminStatus = await checkAdminStatus(user.id);
+            setIsAdmin(adminStatus); // Update the state for later use
+            console.log('Edit page admin check:', { userId: user.id, isAdmin: adminStatus });
+          }
+          
+          // Use the fresh adminStatus value directly, not the state variable
+          const hasPermission = user?.id && canManageEvent(user.id, eventData.nonprofit_id, adminStatus);
           console.log('Edit permission check:', { 
             userId: user?.id, 
             creatorId: eventData.nonprofit_id, 
-            isAdmin, 
+            isAdmin: adminStatus, 
             hasPermission 
           });
           
@@ -95,7 +97,7 @@ const EditEvent = () => {
     };
 
     checkAuthAndFetchEvent();
-  }, [id, isAuthenticated, authLoading, user, navigate, toast, isAdmin]);
+  }, [id, isAuthenticated, authLoading, user, navigate, toast]);
 
   if (authLoading || isLoading) {
     return (
