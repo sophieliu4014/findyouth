@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { signOut } from '@/integrations/supabase/auth';
 import ProfileHeader from './ProfileHeader';
 import AccountInfoTab from './AccountInfoTab';
-import ProfileEditForm from './ProfileEditForm';
+import { ProfileEditForm } from './edit';
 
 interface ProfilePageLayoutProps {
   user: any;

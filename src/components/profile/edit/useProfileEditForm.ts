@@ -1,20 +1,10 @@
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import CauseSelector from "@/components/form/CauseSelector";
-import { causeAreas } from "@/components/form/filters/FilterConstants";
-
-// Remove "All Causes" from the list of selectable causes
-const profileCauseAreas = causeAreas.filter(cause => cause !== "All Causes");
 
 // Profile edit form schema
 const profileSchema = z.object({
@@ -28,14 +18,9 @@ const profileSchema = z.object({
   causes: z.array(z.string()).min(1, { message: "Please select at least one cause." }).max(3, { message: "You can select up to 3 causes." })
 });
 
-type ProfileFormValues = z.infer<typeof profileSchema>;
+export type ProfileFormValues = z.infer<typeof profileSchema>;
 
-interface ProfileEditFormProps {
-  userId: string;
-  onProfileUpdated: () => void;
-}
-
-const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => {
+export const useProfileEditForm = (userId: string, onProfileUpdated: () => void) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
@@ -206,170 +191,11 @@ const ProfileEditForm = ({ userId, onProfileUpdated }: ProfileEditFormProps) => 
       setIsSaving(false);
     }
   };
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-youth-blue" />
-      </div>
-    );
-  }
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="organization_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Name*</FormLabel>
-              <FormControl>
-                <Input placeholder="Your organization name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Description*</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Tell us about your organization..." 
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="mission"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mission Statement*</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="What is your organization's mission?" 
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location*</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. Vancouver, BC" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="website"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Website</FormLabel>
-              <FormControl>
-                <Input placeholder="https://yourwebsite.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. 604-123-4567" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="social_media"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Social Media URL</FormLabel>
-              <FormControl>
-                <Input placeholder="https://instagram.com/yourorg" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="causes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cause Areas*</FormLabel>
-              <FormControl>
-                <CauseSelector
-                  selectedCauses={field.value}
-                  onCauseToggle={(cause) => {
-                    const currentValue = field.value || [];
-                    if (currentValue.includes(cause)) {
-                      field.onChange(currentValue.filter(c => c !== cause));
-                    } else if (currentValue.length < 3) {
-                      field.onChange([...currentValue, cause]);
-                    }
-                  }}
-                  maxCauses={3}
-                  causeOptions={profileCauseAreas}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button 
-          type="submit" 
-          className="w-full md:w-auto bg-youth-blue hover:bg-youth-purple transition-colors"
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving Changes...
-            </>
-          ) : (
-            <>
-              <Save className="mr-2 h-4 w-4" />
-              Save Profile Changes
-            </>
-          )}
-        </Button>
-      </form>
-    </Form>
-  );
+  return {
+    form,
+    isLoading,
+    isSaving,
+    onSubmit
+  };
 };
-
-export default ProfileEditForm;
