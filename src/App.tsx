@@ -18,6 +18,7 @@ import {
   Profile,
   NonprofitProfile,
   CauseEvents,
+  NotFound,
   CreateEvent,
   ForgotPassword,
   ResetPassword
