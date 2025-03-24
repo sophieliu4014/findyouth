@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
+import { checkAdminStatus } from '@/hooks/utils/admin-utils';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
 import {
   DropdownMenu,
@@ -53,11 +54,23 @@ const EventCard = ({
   const [isApplying, setIsApplying] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
-  const { user, isAuthenticated } = useAuthStore((state) => state);
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  const isEventAuthor = user?.id === organizationId;
+  const canManageEvent = user?.id === organizationId || isAdmin;
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.id) {
+        const adminStatus = await checkAdminStatus(user.id);
+        setIsAdmin(adminStatus);
+      }
+    };
+    
+    checkAdmin();
+  }, [user]);
 
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
@@ -205,7 +218,7 @@ const EventCard = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {isEventAuthor && (
+      {canManageEvent && (
         <div className="absolute top-2 right-2 z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

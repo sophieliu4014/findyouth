@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchNonprofitData } from '@/hooks/utils/nonprofit-utils';
+import { checkAdminStatus } from '@/hooks/utils/admin-utils';
 import { useAuthStore } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,12 +66,24 @@ const EventDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Check if the current user is the event author
-  const isEventAuthor = user && event?.nonprofit_id === user.id;
+  // Check if the current user is the event author or an admin
+  const canEditEvent = user && (event?.nonprofit_id === user.id || isAdmin);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (user?.id) {
+        const adminStatus = await checkAdminStatus(user.id);
+        setIsAdmin(adminStatus);
+      }
+    };
+    
+    checkAdmin();
+  }, [user]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -191,7 +204,7 @@ const EventDetail = () => {
                 Back to Activities
               </Link>
               
-              {isEventAuthor && (
+              {canEditEvent && (
                 <div className="flex gap-2">
                   <Button 
                     variant="outline" 

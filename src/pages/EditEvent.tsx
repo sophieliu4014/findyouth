@@ -10,6 +10,7 @@ import { useAuthStore } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
+import { checkAdminStatus } from '@/hooks/utils/admin-utils';
 
 const EditEvent = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,8 +20,9 @@ const EditEvent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [eventData, setEventData] = useState<any>(null);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check if user is authenticated and is the event author
+  // Check if user is authenticated and is the event author or an admin
   useEffect(() => {
     const checkAuthAndFetchEvent = async () => {
       if (authLoading) return;
@@ -37,6 +39,12 @@ const EditEvent = () => {
 
       if (!id) return;
 
+      // Check if the user is an admin
+      if (user?.id) {
+        const adminStatus = await checkAdminStatus(user.id);
+        setIsAdmin(adminStatus);
+      }
+
       setIsLoading(true);
       try {
         const { data: eventData, error } = await supabase
@@ -48,19 +56,19 @@ const EditEvent = () => {
         if (error) throw error;
 
         if (eventData) {
-          // Check if current user is the event author
-          if (user?.id !== eventData.nonprofit_id) {
+          // Check if current user is the event author or an admin
+          if (user?.id === eventData.nonprofit_id || isAdmin) {
+            setEventData(eventData);
+            setIsAuthorized(true);
+          } else {
             toast({
               title: "Unauthorized",
-              description: "You can only edit events that you created",
+              description: "You can only edit events that you created or as an admin",
               variant: "destructive",
             });
             navigate('/find-activities');
             return;
           }
-
-          setEventData(eventData);
-          setIsAuthorized(true);
         }
       } catch (error) {
         console.error('Error fetching event:', error);
@@ -76,7 +84,7 @@ const EditEvent = () => {
     };
 
     checkAuthAndFetchEvent();
-  }, [id, isAuthenticated, authLoading, user, navigate, toast]);
+  }, [id, isAuthenticated, authLoading, user, navigate, toast, isAdmin]);
 
   if (authLoading || isLoading) {
     return (
