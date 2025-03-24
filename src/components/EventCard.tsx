@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -98,9 +99,9 @@ const EventCard = ({
     }
   };
 
-  const handleCauseClick = (e: React.MouseEvent) => {
+  const handleCauseClick = (cause: string) => (e: React.MouseEvent) => {
     e.preventDefault();
-    navigate(`/cause/${encodeURIComponent(causeArea)}`);
+    navigate(`/cause/${encodeURIComponent(cause.trim())}`);
   };
 
   const handleProfileImageError = () => {
@@ -110,6 +111,26 @@ const EventCard = ({
 
   const getOrgInitial = () => {
     return organization ? organization.charAt(0).toUpperCase() : '?';
+  };
+
+  // Render the cause areas as individual clickable links
+  const renderCauseAreas = () => {
+    if (!causeArea) return null;
+    
+    // Split by commas and handle whitespace
+    const causes = causeArea.split(',').map(cause => cause.trim()).filter(Boolean);
+    
+    return causes.map((cause, index) => (
+      <span key={`${id}-cause-${index}`}>
+        <span 
+          className="text-youth-blue cursor-pointer hover:underline"
+          onClick={handleCauseClick(cause)}
+        >
+          {cause}
+        </span>
+        {index < causes.length - 1 && <span className="text-youth-charcoal/60">, </span>}
+      </span>
+    ));
   };
 
   return (
@@ -149,11 +170,8 @@ const EventCard = ({
               {organization}
             </span>
             <span className="mx-2">•</span>
-            <span 
-              className="text-youth-blue cursor-pointer hover:underline"
-              onClick={handleCauseClick}
-            >
-              {causeArea}
+            <span className="text-youth-charcoal/80">
+              {renderCauseAreas()}
             </span>
           </div>
           
