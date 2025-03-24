@@ -188,6 +188,7 @@ export type Database = {
       }
       reviews: {
         Row: {
+          anonymous_id: string | null
           comment: string | null
           created_at: string | null
           id: string
@@ -196,6 +197,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          anonymous_id?: string | null
           comment?: string | null
           created_at?: string | null
           id?: string
@@ -204,6 +206,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          anonymous_id?: string | null
           comment?: string | null
           created_at?: string | null
           id?: string

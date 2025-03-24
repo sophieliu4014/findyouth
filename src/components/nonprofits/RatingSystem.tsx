@@ -148,9 +148,10 @@ const RatingSystem = ({
     }
   };
   
-  // Render stars for rating
+  // Fixed rendering function that won't cause infinite type instantiation
   const renderStars = () => {
-    return [...Array(5)].map((_, i) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
       const starValue = i + 1;
       const isFilled = displayOnly 
         ? starValue <= rating 
@@ -158,13 +159,12 @@ const RatingSystem = ({
           ? starValue <= userRating 
           : false;
       
-      // Handle hover state only for interactive mode
       const isHovered = !displayOnly && hoveredRating !== null && starValue <= hoveredRating;
       
-      return (
+      stars.push(
         <Star
           key={i}
-          className={`${sizeClasses[size]} cursor-${displayOnly ? 'default' : 'pointer'} transition-colors ${
+          className={`${sizeClasses[size]} ${displayOnly ? 'cursor-default' : 'cursor-pointer'} transition-colors ${
             isFilled || isHovered
               ? 'text-yellow-400 fill-yellow-400'
               : 'text-gray-300'
@@ -174,7 +174,8 @@ const RatingSystem = ({
           onClick={() => handleRatingClick(starValue)}
         />
       );
-    });
+    }
+    return stars;
   };
 
   return (
