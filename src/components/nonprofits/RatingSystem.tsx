@@ -96,7 +96,10 @@ const RatingSystem = ({
         // Update existing rating
         result = await supabase
           .from('reviews')
-          .update({ rating: selectedRating })
+          .update({ 
+            rating: selectedRating,
+            anonymous_id: anonymousId // Ensure anonymous_id is included in update
+          })
           .eq('id', existingRating.id)
           .select()
           .single();
@@ -126,6 +129,9 @@ const RatingSystem = ({
       if (result.error) {
         throw result.error;
       }
+      
+      // Log success for debugging
+      console.log('Rating saved successfully:', result.data);
       
       // Update UI state
       setRating(selectedRating);

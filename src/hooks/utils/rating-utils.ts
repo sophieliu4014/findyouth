@@ -15,3 +15,20 @@ export function calculateAverageRating(reviewsData: any[] | null): number {
 export function formatRating(rating: number): string {
   return rating % 1 === 0 ? rating.toString() : rating.toFixed(1);
 }
+
+// Get anonymous user identifier for ratings
+export function getStoredAnonymousId(): string | null {
+  return localStorage.getItem('anonymous_user_id');
+}
+
+// Create and store anonymous user identifier if not exists
+export function ensureAnonymousId(): string {
+  let anonymousId = localStorage.getItem('anonymous_user_id');
+  
+  if (!anonymousId) {
+    anonymousId = crypto.randomUUID();
+    localStorage.setItem('anonymous_user_id', anonymousId);
+  }
+  
+  return anonymousId;
+}
