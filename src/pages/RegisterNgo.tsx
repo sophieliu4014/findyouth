@@ -31,10 +31,6 @@ const RegisterNgo = () => {
     setProfileImage,
     imageError,
     setImageError,
-    bannerImage,
-    setBannerImage,
-    bannerImageError,
-    setBannerImageError,
     resetForm,
     handleSubmit
   } = useRegistrationForm();
@@ -63,10 +59,10 @@ const RegisterNgo = () => {
               setProfileImage={setProfileImage}
               imageError={imageError}
               setImageError={setImageError}
-              bannerImage={bannerImage}
-              setBannerImage={setBannerImage}
-              bannerImageError={bannerImageError}
-              setBannerImageError={setBannerImageError}
+              bannerImage={null}
+              setBannerImage={() => {}}
+              bannerImageError={null}
+              setBannerImageError={() => {}}
               onSubmit={handleSubmit}
               causeAreas={causeAreas}
             />

@@ -9,7 +9,6 @@ import OrganizationInfoFields from './OrganizationInfoFields';
 import MissionFields from './MissionFields';
 import CauseSelectionField from './CauseSelectionField';
 import ProfileImageUpload from './ProfileImageUpload';
-import BannerImageUpload from './BannerImageUpload';
 
 // Import types
 import { FormValues } from './RegistrationTypes';
@@ -37,10 +36,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   setProfileImage,
   imageError,
   setImageError,
-  bannerImage,
-  setBannerImage,
-  bannerImageError,
-  setBannerImageError,
   onSubmit,
   causeAreas
 }) => {
@@ -58,12 +53,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             setProfileImage={setProfileImage} 
             setImageError={setImageError}
             imageError={imageError}
-          />
-          <BannerImageUpload
-            setBannerImage={setBannerImage}
-            setBannerImageError={setBannerImageError}
-            bannerImageError={bannerImageError}
-            insideForm={true}
           />
           
           <div className="pt-4">

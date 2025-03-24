@@ -1,6 +1,6 @@
 
 import { useProfileHeader } from './header/useProfileHeader';
-import { BannerImageSection, ProfileSection, StorageErrorAlert } from './header';
+import { ProfileSection, StorageErrorAlert } from './header';
 
 interface ProfileHeaderProps {
   user: any;
@@ -14,17 +14,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
     setProfileImage,
     imagePreview,
     setImagePreview,
-    bannerImage,
-    setBannerImage,
-    bannerImageError,
-    setBannerImageError,
-    bannerUploadError,
-    bannerImagePreview,
-    isLoadingBanner,
     imageLoadError,
     isVerifyingStorage,
-    previewKey,
-    handleImageError,
     handleStorageRetry,
     handleSaveProfile,
     showSaveButton
@@ -40,24 +31,8 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
         {/* Storage verification and error messages */}
         <StorageErrorAlert
           isVerifyingStorage={isVerifyingStorage}
-          bannerUploadError={bannerUploadError}
+          bannerUploadError={null}
           handleStorageRetry={handleStorageRetry}
-        />
-        
-        {/* Banner image section */}
-        <BannerImageSection
-          isLoading={isLoadingBanner}
-          bannerImagePreview={bannerImagePreview}
-          handleImageError={handleImageError}
-          imageLoadError={imageLoadError}
-          previewKey={previewKey}
-          bannerImage={bannerImage}
-          setBannerImage={setBannerImage}
-          setBannerImageError={setBannerImageError}
-          bannerImageError={bannerImageError}
-          handleSaveProfile={handleSaveProfile}
-          userId={userId}
-          profileImageUrl={profileImageUrl}
         />
       </div>
       

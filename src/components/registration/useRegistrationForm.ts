@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/components/ui/use-toast';
-import { signUpWithEmail, createNonprofitProfile, uploadProfileImage, uploadBannerImage } from '@/integrations/supabase/auth';
+import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -12,8 +11,6 @@ export const useRegistrationForm = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [bannerImage, setBannerImage] = useState<File | null>(null);
-  const [bannerImageError, setBannerImageError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<FormValues>({
@@ -35,14 +32,11 @@ export const useRegistrationForm = () => {
   const resetForm = () => {
     form.reset();
     setProfileImage(null);
-    setBannerImage(null);
     setIsSuccess(false);
   };
 
-  // Function to check if an organization with the same name or email already exists
   const checkForExistingOrganization = async (organizationName: string, email: string) => {
     try {
-      // First check the nonprofits table
       const { data: existingNonprofit, error: nonprofitError } = await supabase
         .from('nonprofits')
         .select('id, organization_name, email')
@@ -63,16 +57,12 @@ export const useRegistrationForm = () => {
         }
       }
       
-      // Also check the auth users metadata for organization name
-      // This catches cases where a user has registered but hasn't created a nonprofit profile yet
       const { data: { users }, error: authError } = await supabase.auth.admin.listUsers({
         page: 1,
-        perPage: 1000 // Adjust as needed based on expected number of users
+        perPage: 1000
       });
       
       if (authError) {
-        // This might fail due to permissions, which is expected in client-side code
-        // Just log it and continue
         console.log("Unable to check auth users (expected):", authError);
         return { exists: false };
       }
@@ -95,7 +85,6 @@ export const useRegistrationForm = () => {
       return { exists: false };
     } catch (error) {
       console.error("Error checking for existing organization:", error);
-      // If there's an error, we'll proceed with registration but log the error
       return { exists: false };
     }
   };
@@ -103,7 +92,6 @@ export const useRegistrationForm = () => {
   const handleSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     setImageError(null);
-    setBannerImageError(null);
     console.log("Starting registration submission process");
     
     if (!profileImage) {
@@ -116,7 +104,6 @@ export const useRegistrationForm = () => {
     try {
       console.log("Form data ready for submission:", data.organizationName, data.email);
       
-      // Check if organization with same name or email already exists
       const existingCheck = await checkForExistingOrganization(data.organizationName, data.email);
       if (existingCheck.exists) {
         toast({
@@ -128,7 +115,6 @@ export const useRegistrationForm = () => {
         return;
       }
       
-      // Upload the profile image first
       console.log("Step 1: Uploading profile image");
       let imageUrl;
       try {
@@ -150,33 +136,7 @@ export const useRegistrationForm = () => {
         throw imageUploadError;
       }
       
-      // Upload banner image if provided
-      let bannerImageUrl = null;
-      if (bannerImage) {
-        console.log("Step 1b: Uploading banner image");
-        try {
-          const identifier = `banner-${data.organizationName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}`;
-          bannerImageUrl = await uploadBannerImage(bannerImage, identifier);
-          
-          if (!bannerImageUrl) {
-            console.error("No banner image URL returned after upload");
-            throw new Error("Failed to get a valid banner image URL after upload");
-          }
-          console.log("Banner image uploaded successfully:", bannerImageUrl);
-        } catch (bannerUploadError: any) {
-          console.error("Banner image upload error:", bannerUploadError);
-          toast({
-            title: "Banner image upload failed",
-            description: bannerUploadError.message || "Failed to upload banner image",
-            variant: "destructive",
-          });
-          // Continue with registration even if banner upload fails
-          bannerImageUrl = null;
-        }
-      }
-      
       console.log("Step 2: Creating user account with Supabase Auth");
-      // Store the image URLs in the nonprofit_data object
       const nonprofitData = {
         phone: data.phone,
         website: data.website,
@@ -185,8 +145,7 @@ export const useRegistrationForm = () => {
         description: data.description,
         mission: data.mission,
         causes: data.causes,
-        profileImageUrl: imageUrl,
-        bannerImageUrl: bannerImageUrl
+        profileImageUrl: imageUrl
       };
       
       console.log("Nonprofit data with images:", nonprofitData);
@@ -239,10 +198,6 @@ export const useRegistrationForm = () => {
     setProfileImage,
     imageError,
     setImageError,
-    bannerImage,
-    setBannerImage,
-    bannerImageError,
-    setBannerImageError,
     resetForm,
     handleSubmit: form.handleSubmit(handleSubmit)
   };
