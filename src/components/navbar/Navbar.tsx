@@ -50,18 +50,6 @@ const Navbar = () => {
           </div>
           
           <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/find-activities" 
-              className={`text-white hover:text-white/80 transition-colors font-medium tracking-wide relative py-2 ${
-                isActive('/find-activities') 
-                  ? 'font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white/70' 
-                  : ''
-              }`}
-              onClick={closeDropdowns}
-            >
-              Find Activities
-            </Link>
-            
             {isAuthenticated && (
               <Link 
                 to="/create-event" 
@@ -76,6 +64,18 @@ const Navbar = () => {
                 Create Post
               </Link>
             )}
+            
+            <Link 
+              to="/find-activities" 
+              className={`text-white hover:text-white/80 transition-colors font-medium tracking-wide relative py-2 ${
+                isActive('/find-activities') 
+                  ? 'font-semibold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white/70' 
+                  : ''
+              }`}
+              onClick={closeDropdowns}
+            >
+              Find Activities
+            </Link>
             
             <div className="relative group">
               <button 
@@ -149,14 +149,6 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-md shadow-md animate-slide-down">
           <div className="px-4 pt-2 pb-4 space-y-1">
-            <Link 
-              to="/find-activities" 
-              className={`block py-3 px-3 rounded-lg ${isActive('/find-activities') ? 'bg-youth-purple/10 text-youth-purple font-medium' : 'text-youth-charcoal'}`}
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Find Activities
-            </Link>
-            
             {isAuthenticated && (
               <Link 
                 to="/create-event" 
@@ -167,6 +159,14 @@ const Navbar = () => {
                 Create Post
               </Link>
             )}
+
+            <Link 
+              to="/find-activities" 
+              className={`block py-3 px-3 rounded-lg ${isActive('/find-activities') ? 'bg-youth-purple/10 text-youth-purple font-medium' : 'text-youth-charcoal'}`}
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Find Activities
+            </Link>
             
             <div className="py-1">
               <div className="py-2 px-3 text-youth-charcoal font-medium">Find Volunteers</div>
