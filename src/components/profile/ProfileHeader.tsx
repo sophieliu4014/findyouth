@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Loader2, Save, ImageOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -92,14 +91,6 @@ const ProfileHeader = ({ user, refreshAuth }: ProfileHeaderProps) => {
   const handleImageError = () => {
     console.error("Failed to load banner image:", bannerImagePreview);
     setImageLoadError(true);
-    
-    // Try refreshing with a new cache-bust if this is the first error
-    if (!imageLoadError && bannerImagePreview) {
-      console.log("Retrying image load with new cache-bust parameter");
-      setTimeout(() => {
-        setPreviewKey(Date.now());
-      }, 500);
-    }
   };
 
   const handleSaveProfile = async () => {

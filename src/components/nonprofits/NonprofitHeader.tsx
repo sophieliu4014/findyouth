@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Loader2, ImageOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -69,14 +68,6 @@ const NonprofitHeader = ({ title, bannerImageUrl, nonprofitId }: NonprofitHeader
   const handleImageError = () => {
     console.error("Failed to load banner image:", finalBannerUrl);
     setImageError(true);
-    
-    // If the image fails to load, try refreshing with a new cache-bust
-    if (finalBannerUrl && !imageError) {
-      console.log("Retrying image load with new cache-bust parameter");
-      setTimeout(() => {
-        setLoadKey(Date.now());
-      }, 500);
-    }
   };
 
   return (

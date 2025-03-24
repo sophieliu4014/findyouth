@@ -34,10 +34,9 @@ export async function getProfileImageFromStorage(nonprofitId: string): Promise<s
         .getPublicUrl(`${nonprofitId}.${ext}`);
         
       if (data && data.publicUrl) {
-        // Instead of HEAD request, use a GET with range to verify
+        // Use a GET request with range to verify existence
         try {
-          const cacheBustedUrl = getCacheBustedUrl(data.publicUrl);
-          const response = await fetch(cacheBustedUrl, { 
+          const response = await fetch(data.publicUrl, { 
             method: 'GET',
             headers: { 'Range': 'bytes=0-1' }, // Only request the first bytes
             cache: 'no-store'
@@ -85,26 +84,10 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
       if (data && data.publicUrl) {
         console.log(`Found potential banner URL: ${data.publicUrl}`);
         
-        // Instead of HEAD request, use a GET with range to verify the image exists
-        try {
-          const cacheBustedUrl = getCacheBustedUrl(data.publicUrl);
-          console.log(`Attempting to verify with GET range request: ${cacheBustedUrl}`);
-          
-          const response = await fetch(cacheBustedUrl, { 
-            method: 'GET',
-            headers: { 'Range': 'bytes=0-1' }, // Only request the first bytes
-            cache: 'no-store'
-          });
-          
-          if (response.ok || response.status === 206) {
-            console.log(`✅ Verified banner image in storage for ${nonprofitId}: ${data.publicUrl}`);
-            return data.publicUrl;
-          } else {
-            console.log(`❌ Banner image not accessible (status ${response.status}): ${data.publicUrl}`);
-          }
-        } catch (e) {
-          console.log(`❌ Error accessing banner image: ${data.publicUrl}`, e);
-        }
+        // Skip verification - trust that the image exists if we have a URL
+        // This avoids CORS and other verification issues
+        console.log(`✅ Using banner image for ${nonprofitId} without verification: ${data.publicUrl}`);
+        return data.publicUrl;
       }
     }
     
