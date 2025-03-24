@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Star, ArrowRight, MoreVertical, Edit, Trash2, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
@@ -251,18 +252,18 @@ const EventCard = ({
             </span>
           </div>
           
-          <div className="flex flex-wrap gap-y-1 mt-3">
-            <div className="flex items-center mr-4 text-sm text-youth-charcoal/70">
-              <Calendar className="h-4 w-4 mr-1" />
+          <div className="flex flex-col gap-y-1 mt-3">
+            <div className="flex items-center text-sm text-youth-charcoal/70">
+              <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
               <span>{date}</span>
             </div>
             
-            <div className="flex items-center mr-4 text-sm text-youth-charcoal/70">
-              <MapPin className="h-4 w-4 mr-1" />
+            <div className="flex items-center text-sm text-youth-charcoal/70">
+              <MapPin className="h-4 w-4 mr-1 flex-shrink-0" />
               <span>{location}</span>
             </div>
             
-            <div className="flex items-center text-sm">
+            <div className="flex items-center text-sm mt-1">
               {renderStars(rating)}
             </div>
           </div>
