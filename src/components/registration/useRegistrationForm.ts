@@ -6,7 +6,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { signUpWithEmail, createNonprofitProfile, uploadProfileImage } from '@/integrations/supabase/auth';
 import { formSchema, FormValues } from './RegistrationTypes';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminUserAttributes } from '@supabase/supabase-js';
 
 export const useRegistrationForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,42 +59,8 @@ export const useRegistrationForm = () => {
         }
       }
       
-      // Check for active users in the auth system (not deleted ones)
-      try {
-        // Get the current active users from auth
-        const { data, error } = await supabase.auth.admin.listUsers({
-          page: 1,
-          perPage: 1000
-        });
-        
-        if (error) {
-          console.log("Unable to check auth users (expected):", error);
-          return { exists: false };
-        }
-        
-        // Only consider active users, not deleted ones
-        if (data?.users) {
-          const activeUsers = data.users.filter((user: AdminUserAttributes) => 
-            user && !user.banned && user.deleted_at === null
-          );
-          
-          for (const user of activeUsers) {
-            if (user.email?.toLowerCase() === email.toLowerCase()) {
-              return { exists: true, message: "An account with this email already exists" };
-            }
-            
-            const metadata = user.user_metadata;
-            if (metadata && 
-                metadata.organization_name && 
-                metadata.organization_name.toLowerCase() === organizationName.toLowerCase()) {
-              return { exists: true, message: "An organization with this name already exists" };
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error checking auth users:", error);
-        // Continue with registration if we can't check auth users
-      }
+      // Instead of using admin API, check for existing users with the auth sign-up process
+      // The signUpWithEmail function will fail if the email is already in use and not deleted
       
       return { exists: false };
     } catch (error) {
