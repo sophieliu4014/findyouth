@@ -34,7 +34,8 @@ interface EventCardProps {
   rating: number;
   imageUrl?: string;
   profileImage?: string;
-  organizationId?: string;
+  organizationId?: string; // This is actually the nonprofit org ID
+  creatorId?: string;      // This is the user ID who created the event
   registrationLink?: string;
 }
 
@@ -49,6 +50,7 @@ const EventCard = ({
   imageUrl,
   profileImage,
   organizationId,
+  creatorId,
   registrationLink
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -60,8 +62,8 @@ const EventCard = ({
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
-  // Rename this variable to avoid confusion with the imported function
-  const canUserManageEvent = user && canManageEvent(user.id, organizationId, isAdmin);
+  // Check if the current user can manage this event (created it or is admin)
+  const canUserManageEvent = user && canManageEvent(user.id, creatorId, isAdmin);
 
   useEffect(() => {
     const checkAdmin = async () => {

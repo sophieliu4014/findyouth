@@ -22,6 +22,7 @@ export async function transformEventData(
     title: event.title,
     organization: orgData.name,
     organizationId: organizationId,
+    creatorId: event.nonprofit_id, // Include the creator ID (nonprofit_id is actually the creator's user ID)
     date: formattedDate,
     location: event.location,
     causeArea: causeArea,
@@ -122,6 +123,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           title: event.title,
           organization: orgData.name,
           organizationId: event.nonprofit_id,
+          creatorId: event.nonprofit_id, // Add creatorId (same as nonprofit_id in current schema)
           date: event.date,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
@@ -144,6 +146,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           title: event.title,
           organization: NONPROFIT_NAME_MAP[event.nonprofit_id] || 'Organization',
           organizationId: event.nonprofit_id,
+          creatorId: event.nonprofit_id, // Add creatorId (same as nonprofit_id in current schema)
           date: event.date,
           location: event.location,
           causeArea: event.cause_area || 'Environment',

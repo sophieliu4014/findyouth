@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -46,7 +47,7 @@ interface EventDetails {
   state?: string;
   zip?: string;
   application_deadline?: string;
-  nonprofit_id: string;
+  nonprofit_id: string; // This is actually the creator's user ID
   created_at?: string;
 }
 
@@ -70,8 +71,9 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  const canEditEvent = user && (
-    (event?.nonprofit_id === user.id) || // User is the event creator
+  // Update permission check - nonprofit_id is actually the creator's user ID
+  const canEditEvent = user && event && (
+    (user.id === event.nonprofit_id) || // User is the event creator
     isAdmin // User is an admin
   );
 
@@ -154,6 +156,26 @@ const EventDetail = () => {
     if (!event?.id) return;
 
     try {
+      // Check permissions before deleting
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to delete events.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if user can manage this event (is creator or admin)
+      if (!canEditEvent) {
+        toast({
+          title: "Permission denied",
+          description: "You don't have permission to delete this event.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('events')
         .delete()

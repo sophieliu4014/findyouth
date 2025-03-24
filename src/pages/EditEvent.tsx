@@ -56,7 +56,7 @@ const EditEvent = () => {
         if (error) throw error;
 
         if (eventData) {
-          // Check if current user is the event author or an admin
+          // nonprofit_id is actually the creator's user ID - check if current user is the creator or an admin
           const hasPermission = canManageEvent(user?.id, eventData.nonprofit_id, isAdmin);
           
           if (hasPermission) {
