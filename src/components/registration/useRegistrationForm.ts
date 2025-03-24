@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,6 +38,7 @@ export const useRegistrationForm = () => {
 
   const checkForExistingOrganization = async (organizationName: string, email: string) => {
     try {
+      // Only check for existing organizations in the nonprofits table
       const { data: existingNonprofit, error: nonprofitError } = await supabase
         .from('nonprofits')
         .select('id, organization_name, email')
@@ -57,29 +59,39 @@ export const useRegistrationForm = () => {
         }
       }
       
-      const { data: { users }, error: authError } = await supabase.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000
-      });
-      
-      if (authError) {
-        console.log("Unable to check auth users (expected):", authError);
-        return { exists: false };
-      }
-      
-      if (users) {
-        for (const user of users) {
-          if (user.email?.toLowerCase() === email.toLowerCase()) {
-            return { exists: true, message: "An account with this email already exists" };
-          }
+      // Check for active users in the auth system (not deleted ones)
+      try {
+        // Get the current active users from auth
+        const { data, error } = await supabase.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000
+        });
+        
+        if (error) {
+          console.log("Unable to check auth users (expected):", error);
+          return { exists: false };
+        }
+        
+        // Only consider active users, not deleted ones
+        if (data?.users) {
+          const activeUsers = data.users.filter(user => !user.banned && user.deleted_at === null);
           
-          const metadata = user.user_metadata;
-          if (metadata && 
-              metadata.organization_name && 
-              metadata.organization_name.toLowerCase() === organizationName.toLowerCase()) {
-            return { exists: true, message: "An organization with this name already exists" };
+          for (const user of activeUsers) {
+            if (user.email?.toLowerCase() === email.toLowerCase()) {
+              return { exists: true, message: "An account with this email already exists" };
+            }
+            
+            const metadata = user.user_metadata;
+            if (metadata && 
+                metadata.organization_name && 
+                metadata.organization_name.toLowerCase() === organizationName.toLowerCase()) {
+              return { exists: true, message: "An organization with this name already exists" };
+            }
           }
         }
+      } catch (error) {
+        console.error("Error checking auth users:", error);
+        // Continue with registration if we can't check auth users
       }
       
       return { exists: false };
