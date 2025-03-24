@@ -12,7 +12,7 @@ const useEventData = (filters: EventFilters = {
   organization: '',
   searchKeyword: ''
 }) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['events', filters],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,6 +42,12 @@ const useEventData = (filters: EventFilters = {
       return filteredEvents;
     },
   });
+
+  return {
+    events: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error
+  };
 };
 
 export default useEventData;

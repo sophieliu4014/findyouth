@@ -1,117 +1,71 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { generateFallbackImageUrl } from './image-utils';
-import { getProfileImageFromStorage, getBannerImageFromStorage } from './image-utils';
 import { NONPROFIT_NAME_MAP } from '../types/event-types';
 
-// Export the getProfileImageForNonprofit function referenced in transform-utils
-export const getProfileImageForNonprofit = async (nonprofitId: string): Promise<string | null> => {
-  try {
-    // Try to get the profile image from storage
-    return await getProfileImageFromStorage(nonprofitId);
-  } catch (error) {
-    console.error('Error fetching nonprofit profile image:', error);
-    return null;
-  }
-};
-
+// Fetch nonprofit data by ID
 export const fetchNonprofitData = async (nonprofitId: string) => {
   try {
-    console.log(`Attempting to fetch nonprofit data for ID: ${nonprofitId}`);
-    
-    if (!nonprofitId) {
-      console.error('No nonprofit ID provided');
-      return {
-        name: 'Organization',
-        profileImage: generateFallbackImageUrl('default'),
-        description: 'No description available',
-        location: '',
-        bannerImageUrl: null
-      };
-    }
-    
-    // First, try to get from the nonprofits table which has the most complete data
+    // First try to fetch from nonprofits table
     const { data: nonprofitData, error: nonprofitError } = await supabase
       .from('nonprofits')
       .select('*')
       .eq('id', nonprofitId)
       .single();
-    
-    if (nonprofitError) {
-      console.log(`Error fetching from nonprofits table: ${nonprofitError.message}`);
-    }
-    
-    if (nonprofitData) {
-      console.log('Successfully fetched nonprofit data from nonprofits table');
-      
-      // Get banner image from storage if not in database
-      let bannerImageUrl = nonprofitData.banner_image_url;
-      if (!bannerImageUrl) {
-        // Use the same identifier pattern as the upload function
-        bannerImageUrl = await getBannerImageFromStorage(nonprofitId);
-      }
-      
+
+    if (!nonprofitError && nonprofitData) {
       return {
         name: nonprofitData.organization_name,
-        profileImage: nonprofitData.profile_image_url || await getProfileImageFromStorage(nonprofitId),
-        description: nonprofitData.description || 'No description available',
-        location: nonprofitData.location || '',
-        bannerImageUrl: bannerImageUrl
+        profileImage: nonprofitData.profile_image_url,
+        description: nonprofitData.description,
+        location: nonprofitData.location,
+        bannerImageUrl: nonprofitData.banner_image_url
       };
     }
-    
-    // If no data in nonprofits table, try to get from user metadata
-    console.log('No data in nonprofits table, attempting to fetch from user metadata');
-    try {
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(nonprofitId);
-      
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-        throw userError;
-      }
-      
-      if (userData?.user) {
-        console.log('Successfully fetched user data from auth');
-        const metadata = userData.user.user_metadata || {};
-        const nonprofitData = metadata.nonprofit_data || {};
-        
-        // Get banner image from storage if not in metadata
-        let bannerImageUrl = nonprofitData.bannerImageUrl;
-        if (!bannerImageUrl) {
-          bannerImageUrl = await getBannerImageFromStorage(nonprofitId);
-        }
-        
-        return {
-          name: metadata.organization_name || NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
-          profileImage: nonprofitData.profileImageUrl || await getProfileImageFromStorage(nonprofitId),
-          description: nonprofitData.description || 'No description available',
-          location: nonprofitData.location || '',
-          bannerImageUrl: bannerImageUrl
-        };
-      }
-    } catch (userDataError) {
-      console.error('Error in user data fetch process:', userDataError);
-      // Continue to fallback
+
+    // Fallback to profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', nonprofitId)
+      .single();
+
+    if (!profileError && profileData) {
+      return {
+        name: profileData.full_name || NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
+        profileImage: profileData.avatar_url,
+        description: 'No description available',
+        location: 'Location not specified',
+        bannerImageUrl: null
+      };
     }
-    
-    // Fallback to hardcoded values if no data found
-    console.log('No user data found, using fallback values');
+
+    // Fallback to the name map
     return {
       name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
-      profileImage: generateFallbackImageUrl(nonprofitId),
+      profileImage: null,
       description: 'No description available',
-      location: '',
-      bannerImageUrl: await getBannerImageFromStorage(nonprofitId)
-    };
-  } catch (error) {
-    console.error('Error in fetchNonprofitData:', error);
-    // Return fallback data even in case of errors
-    return {
-      name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
-      profileImage: generateFallbackImageUrl(nonprofitId),
-      description: 'No description available',
-      location: '',
+      location: 'Location not specified',
       bannerImageUrl: null
     };
+  } catch (error) {
+    console.error('Error fetching nonprofit data:', error);
+    return {
+      name: NONPROFIT_NAME_MAP[nonprofitId] || 'Organization',
+      profileImage: null,
+      description: 'No description available',
+      location: 'Location not specified',
+      bannerImageUrl: null
+    };
+  }
+};
+
+// Get profile image for a nonprofit
+export const getProfileImageForNonprofit = async (nonprofitId: string) => {
+  try {
+    const nonprofitData = await fetchNonprofitData(nonprofitId);
+    return nonprofitData.profileImage;
+  } catch (error) {
+    console.error('Error fetching nonprofit profile image:', error);
+    return null;
   }
 };

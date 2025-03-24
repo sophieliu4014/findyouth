@@ -8,7 +8,7 @@ import { transformDatabaseEvents } from './utils/event-transform-utils';
 const useCauseEvents = (causeSlug: string) => {
   const decodedCause = decodeURIComponent(causeSlug);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['cause-events', decodedCause],
     queryFn: async (): Promise<Event[]> => {
       if (!decodedCause) {
@@ -39,6 +39,12 @@ const useCauseEvents = (causeSlug: string) => {
     },
     enabled: !!decodedCause,
   });
+
+  return {
+    events: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error
+  };
 };
 
 export default useCauseEvents;

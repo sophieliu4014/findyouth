@@ -6,7 +6,7 @@ import { transformDatabaseEvents } from './utils/event-transform-utils';
 
 // Hook for fetching events by organization
 const useOrganizationEvents = (organizationId: string) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['organization-events', organizationId],
     queryFn: async (): Promise<Event[]> => {
       if (!organizationId) {
@@ -37,6 +37,12 @@ const useOrganizationEvents = (organizationId: string) => {
     },
     enabled: !!organizationId,
   });
+
+  return {
+    events: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error
+  };
 };
 
 export default useOrganizationEvents;
