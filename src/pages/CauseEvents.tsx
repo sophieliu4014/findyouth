@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
-import { useCauseEvents } from '@/hooks'; // Updated import path
+import { useCauseEvents } from '@/hooks';
 import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 
@@ -41,7 +41,7 @@ const CauseEvents = () => {
             {decodedCause} Volunteer Activities
           </h1>
           <p className="text-youth-charcoal/80 max-w-3xl mx-auto mb-8 animate-fade-in">
-            Browse all volunteer opportunities focused on {decodedCause.toLowerCase()} causes with youth-led nonprofits
+            Browse volunteer opportunities related to {decodedCause.toLowerCase()} causes with youth-led nonprofits
           </p>
         </div>
 

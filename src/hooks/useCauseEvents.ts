@@ -28,8 +28,16 @@ const useCauseEvents = (causeArea: string) => {
       const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
       console.log('All events fetched for filtering by cause:', transformedEvents.length);
       
-      // Filter by cause area
-      const filteredEvents = transformedEvents.filter(event => event.causeArea === causeArea);
+      // Filter by cause area - include events where the cause area contains the selected cause
+      // This handles both single cause areas and comma-separated lists
+      const filteredEvents = transformedEvents.filter(event => {
+        if (!event.causeArea) return false;
+        
+        // Split the event's cause areas and check if any match the selected cause
+        const eventCauses = event.causeArea.split(',').map(c => c.trim());
+        return eventCauses.includes(causeArea);
+      });
+      
       console.log('Events after filtering by cause area:', filteredEvents.length);
       return filteredEvents;
     },
