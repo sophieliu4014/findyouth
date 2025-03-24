@@ -73,19 +73,19 @@ export async function getBannerImageFromStorage(nonprofitId: string): Promise<st
     const extensions = ['jpg', 'jpeg', 'png', 'gif'];
     
     for (const ext of extensions) {
-      const filename = `${nonprofitId}.${ext}`;
+      // Use profile-images bucket with banner- prefix
+      const filename = `banner-${nonprofitId}.${ext}`;
       console.log(`Checking for banner image: ${filename}`);
       
       const { data } = supabase
         .storage
-        .from('banner-images')
+        .from('profile-images')
         .getPublicUrl(filename);
         
       if (data && data.publicUrl) {
         console.log(`Found potential banner URL: ${data.publicUrl}`);
         
         // Skip verification - trust that the image exists if we have a URL
-        // This avoids CORS and other verification issues
         console.log(`✅ Using banner image for ${nonprofitId} without verification: ${data.publicUrl}`);
         return data.publicUrl;
       }

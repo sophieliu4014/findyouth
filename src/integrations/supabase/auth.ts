@@ -246,15 +246,15 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
   try {
     console.log(`Starting banner upload with file: ${file.name}, size: ${file.size}, type: ${file.type}`);
     
-    // Don't use any prefix, just use the identifier directly
+    // Use banner- prefix for files in the profile-images bucket
     const fileExt = file.name.split('.').pop();
-    const filePath = `${identifier}.${fileExt}`;
+    const filePath = `banner-${identifier}.${fileExt}`;
     
-    console.log(`Uploading banner to bucket 'banner-images', path: ${filePath}`);
+    console.log(`Uploading banner to bucket 'profile-images', path: ${filePath}`);
     
-    // Use the exact same upload pattern as profile image
+    // Upload to profile-images bucket with the banner- prefix
     const { data, error: uploadError } = await supabase.storage
-      .from('banner-images')
+      .from('profile-images')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
@@ -269,7 +269,7 @@ export const uploadBannerImage = async (file: File, identifier: string): Promise
 
     // Get the public URL
     const { data: { publicUrl } } = supabase.storage
-      .from('banner-images')
+      .from('profile-images')
       .getPublicUrl(filePath);
 
     if (!publicUrl) {
