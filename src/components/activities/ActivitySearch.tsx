@@ -51,16 +51,17 @@ const ActivitySearch = ({
     }
   }, [initialLocation, initialKeyword, cause, organization]);
 
-  // Fetch all events without location filter to determine popular cities
+  // Fetch all events without location filter and include past events 
+  // to determine popular cities based on all events
   const { data: allEventsData, isLoading: isLoadingAllEvents } = useEventData({
     cause: filters.cause,
     location: '', // No location filter to get all events
     organization: filters.organization,
     searchKeyword: filters.searchKeyword
-  });
+  }, true); // Set to true to include past events for city determination
   
-  // Fetch filtered events (with location filter applied)
-  const { data: eventsData, isLoading } = useEventData(filters);
+  // Fetch filtered events (with location filter applied) but exclude past events
+  const { data: eventsData, isLoading } = useEventData(filters, false);
   const events = eventsData || [];
   
   // Calculate popular cities from event data

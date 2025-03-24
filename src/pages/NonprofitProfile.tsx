@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -9,11 +8,13 @@ import { useOrganizationEvents } from '@/hooks';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { NonprofitHeader, NonprofitDetailsSection, EventsList } from '@/components/nonprofits';
+import { NonprofitHeader, NonprofitDetailsSection } from '@/components/nonprofits';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
 import { ensureNonprofitProfile } from '@/integrations/supabase/auth';
 import { fetchNonprofitData } from '@/hooks/utils/nonprofit-utils';
+import { categorizeEvents } from '@/utils/dateUtils';
+import EventsList from '@/components/nonprofits/EventsList';
 
 interface Nonprofit {
   id: string;
@@ -42,6 +43,9 @@ const NonprofitProfile = () => {
   
   // Check if this is the current user's profile
   const isCurrentUserProfile = user?.id === id;
+
+  // Categorize events into active and past
+  const { activeEvents, pastEvents } = categorizeEvents(events || []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -329,11 +333,23 @@ const NonprofitProfile = () => {
         
         {nonprofit && <NonprofitDetailsSection nonprofit={nonprofit} />}
         
+        {/* Display active events */}
         <EventsList 
-          title={`Events by ${nonprofit?.organization_name || 'Organization'}`}
-          events={events} 
+          title={`Ongoing Events by ${nonprofit?.organization_name || 'Organization'}`}
+          events={activeEvents} 
           isLoading={eventsLoading} 
+          emptyMessage="This organization doesn't have any upcoming events."
         />
+        
+        {/* Display past events */}
+        <div className="mt-10">
+          <EventsList 
+            title={`Past Events by ${nonprofit?.organization_name || 'Organization'}`}
+            events={pastEvents} 
+            isLoading={eventsLoading} 
+            emptyMessage="This organization doesn't have any past events."
+          />
+        </div>
       </main>
 
       <Footer />

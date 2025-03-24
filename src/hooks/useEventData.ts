@@ -4,16 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Event, DatabaseEvent } from './types/event-types';
 import { transformDatabaseEvents } from './utils/event-transform-utils';
 import { filterEvents, EventFilters } from '@/utils/eventFilters';
+import { isEventPassed } from '@/utils/dateUtils';
 
 // Main hook for fetching event data
-const useEventData = (filters: EventFilters = {
-  cause: '',
-  location: '',
-  organization: '',
-  searchKeyword: ''
-}) => {
+const useEventData = (
+  filters: EventFilters = {
+    cause: '',
+    location: '',
+    organization: '',
+    searchKeyword: ''
+  }, 
+  showPassedEvents: boolean = false
+) => {
   return useQuery({
-    queryKey: ['events', filters],
+    queryKey: ['events', filters, showPassedEvents],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
@@ -29,9 +33,16 @@ const useEventData = (filters: EventFilters = {
       const transformedEvents = await transformDatabaseEvents(data as DatabaseEvent[]);
       console.log('Events loaded before filtering:', transformedEvents.length);
       
-      // Apply filters to the returned data
-      const filteredEvents = filterEvents(transformedEvents, filters);
-      console.log('Events after filtering:', filteredEvents.length);
+      // Filter out passed events if showPassedEvents is false
+      let filteredByDate = transformedEvents;
+      if (!showPassedEvents) {
+        filteredByDate = transformedEvents.filter(event => !isEventPassed(event.date));
+        console.log('Events after date filtering:', filteredByDate.length);
+      }
+      
+      // Apply other filters to the returned data
+      const filteredEvents = filterEvents(filteredByDate, filters);
+      console.log('Events after all filtering:', filteredEvents.length);
       return filteredEvents;
     },
   });

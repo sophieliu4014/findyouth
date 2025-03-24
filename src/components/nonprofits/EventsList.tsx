@@ -9,9 +9,10 @@ interface EventsListProps {
   title: string;
   events: Event[];
   isLoading: boolean;
+  emptyMessage?: string;
 }
 
-const EventsList = ({ title, events, isLoading }: EventsListProps) => {
+const EventsList = ({ title, events, isLoading, emptyMessage }: EventsListProps) => {
   const { toast } = useToast();
   
   // Check for events with missing data and toast a warning
@@ -70,7 +71,7 @@ const EventsList = ({ title, events, isLoading }: EventsListProps) => {
         <div className="text-center py-12 glass-panel">
           <h3 className="text-xl font-medium text-youth-charcoal mb-2">No events found</h3>
           <p className="text-youth-charcoal/70">
-            This organization hasn't published any events yet.
+            {emptyMessage || "This organization hasn't published any events yet."}
           </p>
         </div>
       )}

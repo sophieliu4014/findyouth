@@ -35,43 +35,49 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
   })));
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      {events && events.length > 0 ? (
-        events.map((event, index) => (
-          <div 
-            key={event.id} 
-            className="animate-slide-up" 
-            style={{ animationDelay: `${(index + 1) * 100}ms` }}
-          >
-            <EventCard 
-              id={event.id}
-              title={event.title}
-              organization={event.organization}
-              date={event.date}
-              location={event.location}
-              causeArea={event.causeArea}
-              rating={event.rating}
-              imageUrl={event.imageUrl}
-              profileImage={event.profileImage}
-              organizationId={event.organizationId}
-              registrationLink={event.registrationLink}
-            />
+    <div>
+      <p className="text-sm text-youth-charcoal/70 mb-4 italic">
+        Note: Only showing upcoming events. Past events can be viewed on organization profiles.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        {events && events.length > 0 ? (
+          events.map((event, index) => (
+            <div 
+              key={event.id} 
+              className="animate-slide-up" 
+              style={{ animationDelay: `${(index + 1) * 100}ms` }}
+            >
+              <EventCard 
+                id={event.id}
+                title={event.title}
+                organization={event.organization}
+                date={event.date}
+                location={event.location}
+                causeArea={event.causeArea}
+                rating={event.rating}
+                imageUrl={event.imageUrl}
+                profileImage={event.profileImage}
+                organizationId={event.organizationId}
+                registrationLink={event.registrationLink}
+              />
+            </div>
+          ))
+        ) : (
+          <div className="col-span-2 text-center py-12 glass-panel animate-fade-in">
+            <h3 className="text-xl font-medium text-youth-charcoal mb-2">No upcoming events found</h3>
+            <p className="text-youth-charcoal/70">
+              Try adjusting your filters or search criteria to find volunteer opportunities.
+            </p>
+            <button 
+              className="mt-4 px-4 py-2 bg-youth-purple text-white rounded-md hover:bg-youth-purple/90 transition-colors"
+              onClick={() => seedEvents().then(() => window.location.reload())}
+            >
+              Generate Sample Data
+            </button>
           </div>
-        ))
-      ) : (
-        <div className="col-span-2 text-center py-12 glass-panel animate-fade-in">
-          <h3 className="text-xl font-medium text-youth-charcoal mb-2">No events found</h3>
-          <p className="text-youth-charcoal/70">
-            Try adjusting your filters or search criteria to find volunteer opportunities.
-          </p>
-          <button 
-            className="mt-4 px-4 py-2 bg-youth-purple text-white rounded-md hover:bg-youth-purple/90 transition-colors"
-            onClick={() => seedEvents().then(() => window.location.reload())}
-          >
-            Generate Sample Data
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
