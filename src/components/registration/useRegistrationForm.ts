@@ -59,8 +59,8 @@ export const useRegistrationForm = () => {
         }
       }
       
-      // Instead of using admin API, check for existing users with the auth sign-up process
-      // The signUpWithEmail function will fail if the email is already in use and not deleted
+      // For email duplicates, we'll let the signUpWithEmail function handle those errors
+      // This avoids needing admin API access and works well with Supabase's built-in handling
       
       return { exists: false };
     } catch (error) {
