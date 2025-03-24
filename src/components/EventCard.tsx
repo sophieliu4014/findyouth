@@ -1,10 +1,21 @@
-
 import { useState } from 'react';
-import { Calendar, MapPin, Star, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Star, ArrowRight, MoreHorizontal } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from './ui/use-toast';
 import { useAuthStore } from '@/lib/auth';
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface EventCardProps {
   id: string;
@@ -18,6 +29,8 @@ interface EventCardProps {
   profileImage?: string;
   organizationId?: string;
   registrationLink?: string;
+  authorId?: string;
+  onDelete?: (id: string) => void;
 }
 
 const EventCard = ({
@@ -31,14 +44,19 @@ const EventCard = ({
   imageUrl,
   profileImage,
   organizationId,
-  registrationLink
+  registrationLink,
+  authorId,
+  onDelete
 }: EventCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [profileImageError, setProfileImageError] = useState(false);
   const { toast } = useToast();
+  const user = useAuthStore((state) => state.user);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const navigate = useNavigate();
+
+  const isAuthor = user?.id === authorId;
 
   console.log('EventCard rendering with:', { 
     id, 
@@ -46,7 +64,10 @@ const EventCard = ({
     organization, 
     organizationId, 
     profileImage,
-    registrationLink 
+    registrationLink,
+    isAuthor,
+    authorId,
+    userId: user?.id 
   });
 
   const renderStars = (rating: number) => {
@@ -113,11 +134,9 @@ const EventCard = ({
     return organization ? organization.charAt(0).toUpperCase() : '?';
   };
 
-  // Render the cause areas as individual clickable links
   const renderCauseAreas = () => {
     if (!causeArea) return null;
     
-    // Split by commas and handle whitespace
     const causes = causeArea.split(',').map(cause => cause.trim()).filter(Boolean);
     
     return causes.map((cause, index) => (
@@ -133,12 +152,53 @@ const EventCard = ({
     ));
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/edit-event/${id}`);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (onDelete) {
+      onDelete(id);
+    } else {
+      toast({
+        title: "Delete functionality not available",
+        description: "The delete handler was not provided to this component",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div 
-      className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden"
+      className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {isAuthor && (
+        <div className="absolute top-2 right-2 z-10">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="p-1 rounded-full hover:bg-black/5 transition-colors">
+                <MoreHorizontal className="h-5 w-5 text-youth-charcoal/70" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white shadow-lg border border-gray-200">
+              <DropdownMenuItem onClick={handleEdit} className="cursor-pointer flex items-center gap-2">
+                <span className="text-youth-blue">Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="cursor-pointer flex items-center gap-2">
+                <span className="text-red-500">Delete</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
+
       <div className="flex">
         <Avatar 
           className="h-16 w-16 border-2 border-white shadow-sm flex-shrink-0 mr-4 cursor-pointer hover:opacity-80 transition-opacity"
