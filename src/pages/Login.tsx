@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -24,7 +23,6 @@ const Login = () => {
   const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   
-  // Redirect if already authenticated
   if (isAuthenticated) {
     const from = (location.state as any)?.from?.pathname || '/';
     navigate(from, { replace: true });
@@ -96,7 +94,7 @@ const Login = () => {
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-youth-charcoal mb-2">Log In</h1>
               <p className="text-youth-charcoal/70">
-                Access your account to find volunteer opportunities
+                Login for nonprofits only. Volunteers do not need an account to browse!
               </p>
             </div>
             
