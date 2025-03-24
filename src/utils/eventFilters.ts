@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Event } from '@/hooks/event-types';
+import { Event } from '@/hooks/types/event-types';
 
 // Type for filters
 export interface EventFilters {
@@ -30,9 +30,14 @@ export const filterEvents = (events: Event[], filters: EventFilters = {
     );
   }
   
-  // Apply category filters
+  // Apply cause area filter - now checking if the filter cause is included in any of the event's cause areas
   if (filters.cause) {
-    results = results.filter(event => event.causeArea === filters.cause);
+    results = results.filter(event => {
+      // Split the event's cause areas by comma and trim whitespace
+      const eventCauseAreas = event.causeArea.split(',').map(cause => cause.trim());
+      // Check if the filter cause matches any of the event's cause areas
+      return eventCauseAreas.includes(filters.cause);
+    });
   }
   
   // Fix for location filter - case insensitive partial matching
