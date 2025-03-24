@@ -1,11 +1,6 @@
 
 import { Event, DatabaseEvent } from '../types/event-types';
-
-// Helper function to get profile image for a nonprofit (stubbed for now)
-export const getProfileImageForNonprofit = async (nonprofitId: string): Promise<string | null> => {
-  // Implementation would fetch profile image from storage or database
-  return null;
-};
+import { getProfileImageForNonprofit } from './nonprofit-utils';
 
 // Transform database format to UI format
 export const transformDatabaseEvents = async (events: DatabaseEvent[]): Promise<Event[]> => {

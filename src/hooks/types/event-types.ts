@@ -51,9 +51,10 @@ export interface DatabaseEvent {
   updated_at?: string;
 }
 
-// Add the NONPROFIT_NAME_MAP that's referenced in other files
+// Define and export the NONPROFIT_NAME_MAP constant
 export const NONPROFIT_NAME_MAP: Record<string, string> = {
   // Default mapping of nonprofit IDs to names
+  "e76a0e1b-6a87-4dac-8714-1c9e9052f52c": "Find Youth"
 };
 
 // EventFilters interface for filtering events

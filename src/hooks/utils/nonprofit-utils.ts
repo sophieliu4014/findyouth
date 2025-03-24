@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { generateFallbackImageUrl } from './image-utils';
 import { getProfileImageFromStorage, getBannerImageFromStorage } from './image-utils';
+import { NONPROFIT_NAME_MAP } from '../types/event-types';
 
 // Export the getProfileImageForNonprofit function referenced in transform-utils
 export const getProfileImageForNonprofit = async (nonprofitId: string): Promise<string | null> => {
@@ -12,11 +13,6 @@ export const getProfileImageForNonprofit = async (nonprofitId: string): Promise<
     console.error('Error fetching nonprofit profile image:', error);
     return null;
   }
-};
-
-// Add NONPROFIT_NAME_MAP to match imports
-export const NONPROFIT_NAME_MAP: Record<string, string> = {
-  // Default mapping of nonprofit IDs to names
 };
 
 export const fetchNonprofitData = async (nonprofitId: string) => {

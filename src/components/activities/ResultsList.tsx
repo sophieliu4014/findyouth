@@ -39,7 +39,7 @@ const ResultsList = ({ events, isLoading, onEventDeleted }: ResultsListProps) =>
     }
   }, [events, isLoading]);
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = (eventId: string) => {
     if (!user) {
       toast({
         title: "Authentication required",

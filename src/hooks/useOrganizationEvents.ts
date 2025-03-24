@@ -28,8 +28,8 @@ const useOrganizationEvents = (organizationId: string) => {
       // Add the missing properties for DatabaseEvent
       const databaseEvents = data.map(item => ({
         ...item,
-        nonprofit_name: item.nonprofit_id || 'Unknown Organization',
-        is_virtual: item.is_virtual || false
+        nonprofit_name: item.nonprofit_name || item.nonprofit_id || 'Unknown Organization',
+        is_virtual: item.is_virtual !== undefined ? item.is_virtual : false
       })) as DatabaseEvent[];
 
       // Transform the database events to UI events
