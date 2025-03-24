@@ -23,7 +23,7 @@ export const eventFormSchema = z.object({
   city: z.string().min(1, { message: 'City is required' }),
   state: z.string().min(1, { message: 'State is required' }),
   zip: z.string().min(1, { message: 'ZIP code is required' }),
-  signupFormUrl: z.string().url({ message: 'Please enter a valid URL' }).min(1, { message: 'Signup URL is required' }),
+  signupFormUrl: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.string().length(0)),
   attachedLinks: z.string().optional(),
   causeAreas: z.array(z.string()).min(1, { message: 'At least one cause area is required' }).max(3, { message: 'Maximum of 3 cause areas allowed' }),
 });
