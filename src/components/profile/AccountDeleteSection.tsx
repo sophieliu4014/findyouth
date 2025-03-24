@@ -25,6 +25,25 @@ const AccountDeleteSection = () => {
     try {
       setIsDeleting(true);
       
+      // Get the current user's ID
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      
+      if (userId) {
+        // First delete all events created by this user
+        const { error: eventsError } = await supabase
+          .from('events')
+          .delete()
+          .eq('nonprofit_id', userId);
+          
+        if (eventsError) {
+          console.error('Error deleting user events:', eventsError);
+          toast.error(`Failed to delete your events: ${eventsError.message}`);
+        } else {
+          console.log('Successfully deleted all user events');
+        }
+      }
+      
       // Delete the user's account
       const { error } = await supabase.auth.admin.deleteUser(
         (await supabase.auth.getUser()).data.user?.id as string
@@ -77,7 +96,7 @@ const AccountDeleteSection = () => {
             <AlertDialogDescription>
               Are you absolutely sure you want to delete your account? 
               This action cannot be undone and will permanently delete your account 
-              and all associated data.
+              and all associated data, including your events.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
