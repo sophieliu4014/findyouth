@@ -1,183 +1,165 @@
+
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useNavigate, Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { signInWithEmail } from '@/integrations/supabase/auth';
-import { useAuthStore } from '@/lib/auth';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 import AuthErrorMessage from './AuthErrorMessage';
 
+const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(1, { message: "Password is required" })
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 const NgoLoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const refreshAuth = useAuthStore((state) => state.refreshAuth);
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string; general?: string } = {};
-    let isValid = true;
-
-    if (!email.trim()) {
-      newErrors.email = 'Email is required';
-      isValid = false;
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: ""
     }
+  });
 
-    if (!password) {
-      newErrors.password = 'Password is required';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: FormData) => {
+    setError(null);
+    setIsLoading(true);
     
-    if (validateForm()) {
-      setIsLoading(true);
-      setErrors({});
+    try {
+      const { data: authData, error: authError } = await signInWithEmail(data.email, data.password);
       
-      try {
-        const { data, error } = await signInWithEmail(email, password);
+      if (authError) {
+        console.error("Login error:", authError);
         
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            setErrors({ general: 'Incorrect email and password combination' });
-          } else if (error.message.includes('Email not confirmed')) {
-            setErrors({ general: 'Please verify your email before logging in' });
-          } else {
-            setErrors({ general: error.message });
-          }
-          return;
+        // Provide more user-friendly error messages
+        if (authError.message.includes("Invalid login credentials")) {
+          setError("Incorrect email or password. Please try again.");
+        } else if (authError.message.includes("Email not confirmed")) {
+          setError("Please check your email to confirm your account before logging in.");
+        } else {
+          setError(authError.message);
         }
-        
-        if (data.session) {
-          await refreshAuth();
-          
-          toast.success('Login successful!');
-          
-          navigate('/');
-        }
-      } catch (err: any) {
-        setErrors({ general: err.message || 'An error occurred during login' });
-      } finally {
-        setIsLoading(false);
+        return;
       }
+      
+      // Success! Redirect to the dashboard
+      toast.success("Successfully logged in!");
+      navigate('/profile');
+      
+    } catch (error: any) {
+      console.error("Unexpected login error:", error);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="glass-panel p-8 animate-fade-in">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-youth-charcoal mb-2">NGO Log In</h1>
+        <h1 className="text-3xl font-bold text-youth-charcoal mb-2">NGO Login</h1>
         <p className="text-youth-charcoal/70">
-          Access your organization's account to post and manage volunteer opportunities
+          Log in to your nonprofit organization account
         </p>
       </div>
       
-      {errors.general && <AuthErrorMessage message={errors.general} />}
+      {error && <AuthErrorMessage message={error} />}
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-youth-charcoal mb-1">
-            Email Address <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`input-field ${errors.email ? 'border-red-500 focus:ring-red-500' : ''}`}
-            placeholder="Enter your email address"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-youth-charcoal">Email Address</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="your-ngo@example.org" 
+                    {...field} 
+                    className="bg-white/70"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.email && (
-            <div className="mt-1 flex items-center text-sm text-red-500">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {errors.email}
-            </div>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-youth-charcoal mb-1">
-            Password <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`input-field pr-10 ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
-              placeholder="Enter your password"
-            />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-youth-charcoal/50 hover:text-youth-charcoal"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <div className="mt-1 flex items-center text-sm text-red-500">
-              <AlertCircle className="h-4 w-4 mr-1" />
-              {errors.password}
-            </div>
-          )}
-          <div className="mt-1 text-sm text-youth-charcoal/70">
-            <Link to="/find-volunteers" className="text-youth-blue hover:text-youth-purple transition-colors">
-              Lost your password?
+          
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-youth-charcoal">Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input 
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••" 
+                      {...field} 
+                      className="bg-white/70 pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-youth-charcoal/50 hover:text-youth-charcoal"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-youth-blue hover:text-youth-purple transition-colors">
+              Forgot your password?
             </Link>
           </div>
-        </div>
-        
-        <div className="flex items-center">
-          <input
-            id="remember-me"
-            type="checkbox"
-            className="h-4 w-4 text-youth-purple focus:ring-youth-purple border-gray-300 rounded"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-          />
-          <label htmlFor="remember-me" className="ml-2 block text-sm text-youth-charcoal">
-            Remember Me
-          </label>
-        </div>
-        
-        <div>
-          <button
+          
+          <Button 
             type="submit"
-            className="w-full btn-primary py-3 transition-all hover:shadow-lg hover:scale-[1.02] disabled:opacity-70"
+            className="w-full bg-youth-blue hover:bg-youth-purple transition-colors"
             disabled={isLoading}
           >
             {isLoading ? (
               <>
-                <Loader2 className="inline mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Logging in...
               </>
-            ) : 'Login'}
-          </button>
-        </div>
-        
-        <div className="text-center text-sm text-youth-charcoal/70">
-          <p>
-            Don't have an account?{' '}
-            <Link to="/register-ngo" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
-              Sign Up
-            </Link>
-          </p>
-        </div>
-      </form>
+            ) : (
+              "Login"
+            )}
+          </Button>
+          
+          <div className="text-center mt-6">
+            <p className="text-youth-charcoal/70 text-sm">
+              Don't have an account yet?{' '}
+              <Link to="/register-ngo" className="text-youth-blue font-medium hover:text-youth-purple transition-colors">
+                Register your NGO
+              </Link>
+            </p>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };
