@@ -62,6 +62,7 @@ const EventsList = ({ title, events, isLoading, emptyMessage }: EventsListProps)
                 imageUrl={event.imageUrl}
                 profileImage={event.profileImage}
                 organizationId={event.organizationId}
+                creatorId={event.creatorId}
                 registrationLink={event.registrationLink}
               />
             </div>

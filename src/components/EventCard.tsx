@@ -63,7 +63,7 @@ const EventCard = ({
   const navigate = useNavigate();
 
   // Check if the current user can manage this event (created it or is admin)
-  const canUserManageEvent = user && canManageEvent(user.id, creatorId, isAdmin);
+  const canUserManageEvent = user && creatorId && canManageEvent(user.id, creatorId, isAdmin);
 
   useEffect(() => {
     const checkAdmin = async () => {

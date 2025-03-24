@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -71,11 +70,7 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // Update permission check - nonprofit_id is actually the creator's user ID
-  const canEditEvent = user && event && (
-    (user.id === event.nonprofit_id) || // User is the event creator
-    isAdmin // User is an admin
-  );
+  const canEditEvent = user && event && canManageEvent(user.id, event.nonprofit_id, isAdmin);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -156,7 +151,6 @@ const EventDetail = () => {
     if (!event?.id) return;
 
     try {
-      // Check permissions before deleting
       if (!user) {
         toast({
           title: "Authentication required",
@@ -166,7 +160,6 @@ const EventDetail = () => {
         return;
       }
 
-      // Check if user can manage this event (is creator or admin)
       if (!canEditEvent) {
         toast({
           title: "Permission denied",
@@ -232,7 +225,7 @@ const EventDetail = () => {
                   <Button 
                     variant="outline" 
                     className="flex items-center"
-                    onClick={handleEditEvent}
+                    onClick={() => navigate(`/edit-event/${event.id}`)}
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
