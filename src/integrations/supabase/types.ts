@@ -271,6 +271,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_event: {
+        Args: {
+          user_id: string
+          event_id: string
+        }
+        Returns: boolean
+      }
       get_columns_for_table: {
         Args: {
           table_name: string

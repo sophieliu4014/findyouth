@@ -12,23 +12,28 @@ export const checkAdminStatus = async (userId: string | undefined): Promise<bool
     return false;
   }
   
-  // Hardcoded admin ID for findyouthbc@gmail.com
-  if (userId === 'e76a0e1b-6a87-4dac-8714-1c9e9052f52c') {
-    console.log('Admin user detected via hardcoded ID:', userId);
-    return true;
-  }
-  
   try {
-    console.log('Checking admin status via RPC for user:', userId);
-    const { data, error } = await supabase.rpc('is_admin', { user_id: userId });
+    console.log('Checking admin status via admin_users table for user:', userId);
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
     
     if (error) {
+      // If error is not found, it's not an admin
+      if (error.code === 'PGRST116') {
+        console.log('User is not an admin:', userId);
+        return false;
+      }
+      
       console.error('Error checking admin status:', error);
       return false;
     }
     
-    console.log('Admin check via RPC for', userId, 'returned:', data);
-    return data === true;
+    const isAdmin = !!data;
+    console.log('Admin check result for', userId, ':', isAdmin);
+    return isAdmin;
   } catch (error) {
     console.error('Error in checkAdminStatus:', error);
     return false;
@@ -37,14 +42,15 @@ export const checkAdminStatus = async (userId: string | undefined): Promise<bool
 
 /**
  * Check if a user can manage a specific event (is creator or admin)
+ * Uses the same logic as the database RLS policies
  * @param userId Current user ID
  * @param creatorId Event creator's ID 
  * @param isAdmin Whether the user is an admin
  * @returns Boolean indicating if the user can manage this event
  */
 export const canManageEvent = (userId: string | undefined, creatorId: string | undefined, isAdmin: boolean): boolean => {
-  if (!userId || !creatorId) {
-    console.log('Missing userId or creatorId for permission check', { userId, creatorId });
+  if (!userId) {
+    console.log('Missing userId for permission check');
     return false;
   }
   
@@ -54,10 +60,42 @@ export const canManageEvent = (userId: string | undefined, creatorId: string | u
     creatorId, 
     isAdmin, 
     isCreator, 
-    canManage: isCreator || isAdmin,
-    userEqualsCreator: userId === creatorId
+    canManage: isCreator || isAdmin
   });
   
   // User can manage the event if they created it OR they're an admin
   return isCreator || isAdmin;
+};
+
+/**
+ * Server-side check if a user can manage an event
+ * Uses the same database function as RLS
+ * @param userId Current user ID
+ * @param eventId Event ID to check
+ * @returns Promise resolving to boolean indicating if user can manage event
+ */
+export const canManageEventServer = async (userId: string | undefined, eventId: string | undefined): Promise<boolean> => {
+  if (!userId || !eventId) {
+    console.log('Missing userId or eventId for server permission check');
+    return false;
+  }
+  
+  try {
+    console.log('Checking event management permission via RPC for user:', userId, 'on event:', eventId);
+    const { data, error } = await supabase.rpc('can_manage_event', { 
+      user_id: userId,
+      event_id: eventId
+    });
+    
+    if (error) {
+      console.error('Error checking event management permission:', error);
+      return false;
+    }
+    
+    console.log('Event management permission check result:', data);
+    return data === true;
+  } catch (error) {
+    console.error('Error in canManageEventServer:', error);
+    return false;
+  }
 };
