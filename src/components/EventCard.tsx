@@ -33,8 +33,8 @@ interface EventCardProps {
   rating: number;
   imageUrl?: string;
   profileImage?: string;
-  organizationId?: string; // This is actually the nonprofit org ID
-  creatorId?: string;      // This is the user ID who created the event
+  organizationId?: string;
+  creatorId?: string;
   registrationLink?: string;
 }
 
@@ -294,8 +294,8 @@ const EventCard = ({
           )}
         </Avatar>
         
-        <div className="flex-1">
-          <h3 className="text-xl font-semibold text-youth-charcoal truncate transition-colors duration-300">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xl font-semibold text-youth-charcoal truncate transition-colors duration-300 max-w-full">
             {title}
           </h3>
           
