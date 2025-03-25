@@ -40,12 +40,12 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
         Note: Only showing upcoming events. Past events can be viewed on organization profiles.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
         {events && events.length > 0 ? (
           events.map((event, index) => (
             <div 
               key={event.id} 
-              className="animate-slide-up" 
+              className="animate-slide-up p-1.5" 
               style={{ animationDelay: `${(index + 1) * 100}ms` }}
             >
               <EventCard 
