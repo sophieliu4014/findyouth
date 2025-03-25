@@ -70,12 +70,6 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
             <p className="text-youth-charcoal/70">
               Try adjusting your filters or search criteria to find volunteer opportunities.
             </p>
-            <button 
-              className="mt-4 px-4 py-2 bg-youth-purple text-white rounded-md hover:bg-youth-purple/90 transition-colors"
-              onClick={() => seedEvents().then(() => window.location.reload())}
-            >
-              Generate Sample Data
-            </button>
           </div>
         )}
       </div>
