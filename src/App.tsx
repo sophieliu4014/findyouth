@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   createBrowserRouter,
@@ -92,6 +91,10 @@ const router = createBrowserRouter([
   },
   {
     path: "/nonprofit/:id",
+    element: <NonprofitProfile />,
+  },
+  {
+    path: "/organization/:name",
     element: <NonprofitProfile />,
   },
   {

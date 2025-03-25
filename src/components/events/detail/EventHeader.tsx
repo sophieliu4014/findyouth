@@ -28,6 +28,11 @@ const EventHeader = ({ event, organization, goBack }: EventHeaderProps) => {
     event.nonprofit_id
   );
 
+  // Helper to create a URL-friendly slug from organization name
+  const createOrgSlug = (name: string) => {
+    return name.toLowerCase().replace(/\s+/g, '-');
+  };
+
   return (
     <div className="mb-8 animate-fade-in">
       {/* Display organization banner at the top if available, otherwise use gradient */}
@@ -70,7 +75,7 @@ const EventHeader = ({ event, organization, goBack }: EventHeaderProps) => {
           <h1 className="text-3xl md:text-4xl font-bold text-youth-charcoal">{event.title}</h1>
           {organization && (
             <Link 
-              to={`/nonprofit/${event.nonprofit_id}`}
+              to={`/organization/${createOrgSlug(organization.name)}`}
               className="text-lg text-youth-purple hover:underline mt-1 inline-block"
             >
               {organization.name}

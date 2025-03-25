@@ -41,6 +41,11 @@ const EventDetails = ({ event, organization, onApply, isApplying }: EventDetails
     }
   };
 
+  // Helper to create a URL-friendly slug from organization name
+  const createOrgSlug = (name: string) => {
+    return name.toLowerCase().replace(/\s+/g, '-');
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -102,7 +107,7 @@ const EventDetails = ({ event, organization, onApply, isApplying }: EventDetails
               <div>
                 <p className="font-medium">Hosted by</p>
                 <Link 
-                  to={`/nonprofit/${event.nonprofit_id}`}
+                  to={`/organization/${createOrgSlug(organization.name)}`}
                   className="text-youth-purple hover:underline"
                 >
                   {organization.name}

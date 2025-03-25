@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import Navbar from '../components/navbar/Navbar';
@@ -33,68 +33,97 @@ interface Nonprofit {
 }
 
 const NonprofitProfile = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, name } = useParams<{ id?: string; name?: string }>();
+  const [nonprofitId, setNonprofitId] = useState<string | null>(id || null);
   const [nonprofit, setNonprofit] = useState<Nonprofit | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { events, isLoading: eventsLoading } = useOrganizationEvents(id || '');
+  const { events, isLoading: eventsLoading } = useOrganizationEvents(nonprofitId || '');
   const { toast } = useToast();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   
-  // Check if this is the current user's profile
-  const isCurrentUserProfile = user?.id === id;
+  useEffect(() => {
+    const loadNonprofitByName = async () => {
+      if (!name) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('nonprofits')
+          .select('id')
+          .ilike('organization_name', name.replace(/-/g, ' '))
+          .single();
+          
+        if (error || !data) {
+          console.error('Error looking up nonprofit by name:', error);
+          setError(`Nonprofit "${name.replace(/-/g, ' ')}" not found`);
+          setIsLoading(false);
+          return;
+        }
+        
+        setNonprofitId(data.id);
+      } catch (error) {
+        console.error('Error in name lookup:', error);
+        setError("Failed to find nonprofit by name");
+        setIsLoading(false);
+      }
+    };
+    
+    if (name && !id) {
+      loadNonprofitByName();
+    }
+  }, [name, id]);
+  
+  const isCurrentUserProfile = user?.id === nonprofitId;
 
-  // Categorize events into active and past
   const { activeEvents, pastEvents } = categorizeEvents(events || []);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!id) {
-        setError("No nonprofit ID provided");
-        setIsLoading(false);
+      if (!nonprofitId) {
+        if (!name) {
+          setError("No nonprofit identifier provided");
+          setIsLoading(false);
+        }
         return;
       }
       
-      console.log(`Fetching nonprofit data for ID: ${id}`);
+      console.log(`Fetching nonprofit data for ID: ${nonprofitId}`);
       setIsLoading(true);
       
       try {
-        // Use simplified data fetching using the utility
-        const simplifiedData = await fetchNonprofitData(id);
+        const simplifiedData = await fetchNonprofitData(nonprofitId);
         
         if (simplifiedData) {
-          // First try to fetch from nonprofits table
           let { data: nonprofitData, error: nonprofitError } = await supabase
             .from('nonprofits')
             .select('*')
-            .eq('id', id)
+            .eq('id', nonprofitId)
             .single();
             
           if (nonprofitError) {
-            console.log(`No nonprofit found in nonprofits table with ID ${id}, error:`, nonprofitError.message);
+            console.log(`No nonprofit found in nonprofits table with ID ${nonprofitId}, error:`, nonprofitError.message);
             
-            // If not found in nonprofits table, check if it's a user acting as organization
             const { data: profileData, error: profileError } = await supabase
               .from('profiles')
               .select('*')
-              .eq('id', id)
+              .eq('id', nonprofitId)
               .single();
               
             if (profileError) {
               console.log('Error fetching profile:', profileError.message);
             }
             
-            // If this is the current user's profile, ensure nonprofit profile without showing errors
             if (isCurrentUserProfile) {
               console.log("This is the current user's profile, ensuring nonprofit profile");
               try {
                 const success = await ensureNonprofitProfile();
                 
-                // Fetch again to see if profile was created
                 const { data: refreshedData, error: refreshError } = await supabase
                   .from('nonprofits')
                   .select('*')
-                  .eq('id', id)
+                  .eq('id', nonprofitId)
                   .single();
                   
                 if (!refreshError && refreshedData) {
@@ -109,7 +138,6 @@ const NonprofitProfile = () => {
             }
             
             if (!nonprofitData && profileData) {
-              // For the current user, use their metadata
               let organizationName = profileData.full_name || 'Organization';
               let description = 'No description available';
               let mission = 'No mission statement available';
@@ -121,7 +149,6 @@ const NonprofitProfile = () => {
               let profileImageUrl = profileData.avatar_url;
               let bannerImageUrl = null;
               
-              // If this is the current user, we can use their metadata
               if (isCurrentUserProfile && user?.user_metadata) {
                 const metadata = user.user_metadata;
                 if (metadata.organization_name) {
@@ -141,7 +168,6 @@ const NonprofitProfile = () => {
                 }
               }
               
-              // Create a nonprofit-like object from profile data
               nonprofitData = {
                 id: profileData.id,
                 organization_name: organizationName,
@@ -163,10 +189,9 @@ const NonprofitProfile = () => {
           }
           
           if (!nonprofitData) {
-            console.warn('No nonprofit or profile data found for ID:', id);
-            // Create a basic nonprofit object from the simplified data
+            console.warn('No nonprofit or profile data found for ID:', nonprofitId);
             nonprofitData = {
-              id: id,
+              id: nonprofitId,
               organization_name: simplifiedData.name,
               description: simplifiedData.description,
               mission: "Mission not available",
@@ -182,21 +207,18 @@ const NonprofitProfile = () => {
             };
           }
           
-          // Fetch causes if this is a real nonprofit
           let causes: string[] = [];
           try {
-            // First check nonprofit_causes table
             const { data: causesData, error: causesError } = await supabase
               .from('nonprofit_causes')
               .select('causes(name)')
-              .eq('nonprofit_id', id);
+              .eq('nonprofit_id', nonprofitId);
               
             if (causesError) {
               console.error('Error fetching causes:', causesError.message);
             } else if (causesData && causesData.length > 0) {
               causes = causesData.map(item => item.causes?.name).filter(Boolean) || [];
             } 
-            // If no causes found in table and this is current user, try to get from metadata
             else if (isCurrentUserProfile && user?.user_metadata?.nonprofit_data?.causes) {
               causes = user.user_metadata.nonprofit_data.causes || [];
               console.log("Using causes from user metadata:", causes);
@@ -205,13 +227,12 @@ const NonprofitProfile = () => {
             console.error('Error processing causes:', causesError);
           }
           
-          // Fetch ratings
-          let avgRating = 4; // Default rating
+          let avgRating = 4;
           try {
             const { data: reviewsData, error: reviewsError } = await supabase
               .from('reviews')
               .select('rating')
-              .eq('nonprofit_id', id);
+              .eq('nonprofit_id', nonprofitId);
               
             if (reviewsError) {
               console.error('Error fetching reviews:', reviewsError.message);
@@ -223,7 +244,6 @@ const NonprofitProfile = () => {
             console.error('Error processing reviews:', reviewsError);
           }
           
-          // Create a proper Nonprofit object with the correct interface
           const finalNonprofit: Nonprofit = {
             id: nonprofitData.id,
             organization_name: nonprofitData.organization_name,
@@ -242,6 +262,11 @@ const NonprofitProfile = () => {
           
           setNonprofit(finalNonprofit);
           
+          if (id && !name && nonprofitData.organization_name) {
+            const nameSlug = nonprofitData.organization_name.toLowerCase().replace(/\s+/g, '-');
+            navigate(`/organization/${nameSlug}`, { replace: true });
+          }
+          
           toast({
             title: "Profile loaded",
             description: `Viewing profile for ${nonprofitData.organization_name}`,
@@ -256,7 +281,7 @@ const NonprofitProfile = () => {
     };
     
     fetchData();
-  }, [id, toast, user, isCurrentUserProfile]);
+  }, [nonprofitId, toast, user, isCurrentUserProfile, name, navigate]);
 
   if (isLoading) {
     return (
@@ -333,7 +358,6 @@ const NonprofitProfile = () => {
         
         {nonprofit && <NonprofitDetailsSection nonprofit={nonprofit} />}
         
-        {/* Display active events */}
         <EventsList 
           title={`Ongoing Events by ${nonprofit?.organization_name || 'Organization'}`}
           events={activeEvents} 
@@ -341,7 +365,6 @@ const NonprofitProfile = () => {
           emptyMessage="This organization doesn't have any upcoming events."
         />
         
-        {/* Display past events */}
         <div className="mt-10">
           <EventsList 
             title={`Past Events by ${nonprofit?.organization_name || 'Organization'}`}
