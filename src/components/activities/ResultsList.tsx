@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import EventCard from '../EventCard';
 import { seedEvents } from '@/utils/seedEvents';
 import { Event } from '@/hooks/types/event-types';
+import { categorizeEvents } from '@/utils/dateUtils';
 
 interface ResultsListProps {
   events: Event[];
@@ -28,21 +29,19 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
     );
   }
 
-  console.log('Rendering events with registration links:', events.map(e => ({ 
-    id: e.id, 
-    title: e.title, 
-    registrationLink: e.registrationLink 
-  })));
+  // Categorize events into active and past
+  const { activeEvents, pastEvents } = categorizeEvents(events);
+  
+  console.log('Active events:', activeEvents.length);
+  console.log('Past events:', pastEvents.length);
   
   return (
     <div>
-      <p className="text-sm text-youth-charcoal/70 mb-4 italic">
-        Note: Only showing upcoming events. Past events can be viewed on organization profiles.
-      </p>
+      <h2 className="text-2xl font-semibold text-youth-charcoal mb-6">Upcoming Events</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-        {events && events.length > 0 ? (
-          events.map((event, index) => (
+      {activeEvents.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+          {activeEvents.map((event, index) => (
             <div 
               key={event.id} 
               className="animate-slide-up p-1.5" 
@@ -63,16 +62,46 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
                 registrationLink={event.registrationLink}
               />
             </div>
-          ))
-        ) : (
-          <div className="col-span-2 text-center py-12 glass-panel animate-fade-in">
-            <h3 className="text-xl font-medium text-youth-charcoal mb-2">No upcoming events found</h3>
-            <p className="text-youth-charcoal/70">
-              Try adjusting your filters or search criteria to find volunteer opportunities.
-            </p>
+          ))}
+        </div>
+      ) : (
+        <div className="col-span-2 text-center py-12 glass-panel animate-fade-in mb-10">
+          <h3 className="text-xl font-medium text-youth-charcoal mb-2">No upcoming events found</h3>
+          <p className="text-youth-charcoal/70">
+            Check back soon for new volunteer opportunities or browse our past events below.
+          </p>
+        </div>
+      )}
+
+      {pastEvents.length > 0 && (
+        <>
+          <h2 className="text-2xl font-semibold text-youth-charcoal mb-6">Recently Past Events</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
+            {pastEvents.map((event, index) => (
+              <div 
+                key={event.id} 
+                className="animate-slide-up p-1.5" 
+                style={{ animationDelay: `${(index + 1) * 100}ms` }}
+              >
+                <EventCard 
+                  id={event.id}
+                  title={event.title}
+                  organization={event.organization}
+                  date={event.date}
+                  location={event.location}
+                  causeArea={event.causeArea}
+                  rating={event.rating}
+                  imageUrl={event.imageUrl}
+                  profileImage={event.profileImage}
+                  organizationId={event.organizationId}
+                  creatorId={event.creatorId}
+                  registrationLink={event.registrationLink}
+                />
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };

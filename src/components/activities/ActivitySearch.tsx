@@ -6,7 +6,6 @@ import { EventFilters } from '@/utils/eventFilters';
 import { useEventData } from '@/hooks';
 import ResultsList from './ResultsList';
 
-// Fallback cities in case we can't determine popular ones
 const fallbackCities = [
   "Vancouver",
   "Burnaby",
@@ -40,7 +39,6 @@ const ActivitySearch = ({
     searchKeyword: searchTerm
   });
 
-  // Initialize with any provided initial values
   useEffect(() => {
     setFilters({
       cause: initialCause || '',
@@ -49,46 +47,36 @@ const ActivitySearch = ({
       searchKeyword: initialKeyword || ''
     });
     
-    // Set our state variables to match
     if (initialCause) setCause(initialCause);
     if (initialLocation) setCity(initialLocation);
     if (initialKeyword) setSearchTerm(initialKeyword);
   }, [initialLocation, initialKeyword, initialCause]);
 
-  // Fetch all events without location filter and include past events 
-  // to determine popular cities based on all events
   const { data: allEventsData, isLoading: isLoadingAllEvents } = useEventData({
     cause: filters.cause,
-    location: '', // No location filter to get all events
+    location: '', // No location filter
     organization: filters.organization,
     searchKeyword: filters.searchKeyword
-  }, true); // Set to true to include past events for city determination
+  }, true); // Include past events
   
-  // Fetch filtered events (with location filter applied) but exclude past events
-  const { data: eventsData, isLoading } = useEventData(filters, false);
+  const { data: eventsData, isLoading } = useEventData(filters, true); // Include past events
   const events = eventsData || [];
-  
-  // Calculate popular cities from event data
+
   const popularCities = useMemo(() => {
     if (!allEventsData || allEventsData.length === 0) {
       return fallbackCities;
     }
 
-    // Count city frequencies
     const cityCounts: Record<string, number> = {};
     allEventsData.forEach(event => {
-      // Extract city from location field
-      // Assuming location might be in format like "123 Main St, Vancouver, BC"
       const locationParts = event.location?.split(',') || [];
       
       if (locationParts.length > 1) {
-        // Try to get city from second part of location (usually City, State format)
         const possibleCity = locationParts[1]?.trim();
         if (possibleCity && possibleCity.length > 0) {
           cityCounts[possibleCity] = (cityCounts[possibleCity] || 0) + 1;
         }
       } else if (locationParts.length === 1) {
-        // If only one part, assume it's the city
         const city = locationParts[0]?.trim();
         if (city && city.length > 0) {
           cityCounts[city] = (cityCounts[city] || 0) + 1;
@@ -96,17 +84,15 @@ const ActivitySearch = ({
       }
     });
 
-    // Sort cities by frequency and take top 6
     const sortedCities = Object.keys(cityCounts)
       .sort((a, b) => cityCounts[b] - cityCounts[a])
       .slice(0, 6);
 
     return sortedCities.length > 0 ? sortedCities : fallbackCities;
   }, [allEventsData]);
-  
-  // Extract unique organizations from events after they're loaded
+
   const uniqueOrganizations = [...new Set(events.map(event => event.organization))];
-  
+
   const handleCitySelect = (selectedCity: string) => {
     setCity(selectedCity);
     setFilters({
