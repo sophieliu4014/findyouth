@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -47,6 +48,7 @@ interface EventDetails {
   zip?: string;
   application_deadline?: string;
   nonprofit_id: string;
+  additional_image_urls?: string[];
 }
 
 interface OrganizationInfo {
