@@ -1,6 +1,12 @@
 
 import { Card, CardContent } from '@/components/ui/card';
-import { useState } from 'react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface EventImageProps {
   imageUrl?: string;
@@ -20,19 +26,31 @@ const EventImage = ({ imageUrl, additionalImageUrls = [], title }: EventImagePro
       <CardContent className="p-6">
         <h2 className="text-xl font-semibold mb-4">Event Gallery</h2>
         <div className="space-y-4">
-          {/* Main image */}
-          <div className="w-full flex justify-center">
-            <img 
-              src={allImages[0]} 
-              alt={title} 
-              className="max-w-full rounded-lg max-h-[500px] object-contain"
-            />
+          {/* Main carousel for all images */}
+          <div className="w-full">
+            <Carousel className="w-full max-w-3xl mx-auto">
+              <CarouselContent>
+                {allImages.map((url, index) => (
+                  <CarouselItem key={url}>
+                    <div className="flex justify-center p-1">
+                      <img
+                        src={url}
+                        alt={`${title} - Image ${index + 1}`}
+                        className="max-w-full rounded-lg max-h-[500px] object-contain"
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-2" />
+              <CarouselNext className="right-2" />
+            </Carousel>
           </div>
 
-          {/* Additional images grid */}
+          {/* Thumbnail grid */}
           {allImages.length > 1 && (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
-              {allImages.slice(1).map((url, index) => (
+              {allImages.map((url, index) => (
                 <div key={url} className="aspect-video">
                   <img
                     src={url}
