@@ -257,7 +257,11 @@ const EventDetail = () => {
                 
                 <EventResources attachedLinks={event.attached_links} />
                 
-                <EventImage imageUrl={event.image_url} title={event.title} />
+                <EventImage 
+                  imageUrl={event.image_url} 
+                  additionalImageUrls={event.additional_image_urls} 
+                  title={event.title} 
+                />
               </div>
               
               <div className="space-y-6">
