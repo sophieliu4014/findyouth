@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,9 +23,11 @@ interface EventFormProps {
 const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) => {
   const navigate = useNavigate();
   const [eventImage, setEventImage] = useState<File | null>(null);
+  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [existingAdditionalImageUrls, setExistingAdditionalImageUrls] = useState<string[]>([]);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -47,34 +48,28 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
     },
   });
 
-  // Populate form with existing data when editing
   useEffect(() => {
     if (isEditing && initialData) {
-      // Set existing image URL if available
       if (initialData.image_url) {
         setExistingImageUrl(initialData.image_url);
       }
 
-      // Parse location to get street, city, state, zip
       let street = '';
       let city = initialData.city || '';
       let state = initialData.state || '';
       let zip = initialData.zip || '';
 
       if (initialData.location) {
-        // Try to extract street from location if it contains commas
         const locationParts = initialData.location.split(',');
         if (locationParts.length > 0) {
           street = locationParts[0].trim();
         }
       }
 
-      // Parse cause areas from comma-separated string to array
       const causeAreas = initialData.cause_area 
         ? initialData.cause_area.split(',').map((area: string) => area.trim()) 
         : [];
 
-      // Set form values
       form.reset({
         title: initialData.title || '',
         description: initialData.description || '',
@@ -96,9 +91,8 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
   const onSubmit = async (values: EventFormValues) => {
     if (!userId) return;
     
-    // For create mode, validate image is uploaded
     if (!isEditing && !eventImage) {
-      setImageError("Please upload an event image");
+      setImageError("Please upload at least one event image");
       toast.error("Event image is required");
       return;
     }
@@ -106,10 +100,8 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
     try {
       setIsSubmitting(true);
       
-      // Create location string
       const location = `${values.street}, ${values.city}, ${values.state} ${values.zip}`;
       
-      // Prepare event data
       const eventPayload = {
         title: values.title,
         description: values.description,
@@ -123,14 +115,13 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
         zip: values.zip,
         signup_form_url: values.signupFormUrl || null,
         attached_links: values.attachedLinks || null,
-        cause_area: values.causeAreas.join(', '), // Join cause areas as comma-separated string
+        cause_area: values.causeAreas.join(', '),
         nonprofit_id: userId,
       };
 
       let eventId: string;
 
       if (isEditing && initialData) {
-        // Update existing event
         console.log('Updating event with payload:', eventPayload);
         const { data: updatedEvent, error } = await supabase
           .from('events')
@@ -143,7 +134,6 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
         eventId = updatedEvent.id;
         console.log('Event updated successfully:', updatedEvent);
       } else {
-        // Create new event
         console.log('Creating event with payload:', eventPayload);
         const fullPayload = {
           ...eventPayload,
@@ -161,67 +151,79 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
         console.log('Event created successfully:', createdEvent);
       }
 
-      // Upload image if selected (for both create and edit)
+      const uploadedImageUrls: string[] = [];
+
       if (eventImage && eventId) {
         try {
           const fileExt = eventImage.name.split('.').pop();
-          const filePath = `event-images/${eventId}.${fileExt}`;
-          
-          console.log('Uploading image to path:', filePath);
+          const mainImagePath = `event-images/${eventId}/main.${fileExt}`;
           
           const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('event-images') 
-            .upload(filePath, eventImage, {
+            .from('event-images')
+            .upload(mainImagePath, eventImage, {
               upsert: true,
             });
 
           if (uploadError) {
-            console.error('Error uploading image:', uploadError);
-            toast.error(`Image upload failed: ${uploadError.message}`, {
-              description: isEditing 
-                ? "Event was updated but without a new image."
-                : "Event was created but without an image."
-            });
-          } else {
-            console.log('Image uploaded successfully:', uploadData);
+            console.error('Error uploading main image:', uploadError);
+            throw uploadError;
+          }
 
-            // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('event-images')
+            .getPublicUrl(mainImagePath);
+
+          if (urlData) {
+            await supabase
+              .from('events')
+              .update({ image_url: urlData.publicUrl })
+              .eq('id', eventId);
+          }
+        } catch (imageError: any) {
+          console.error('Error processing main image upload:', imageError);
+          throw imageError;
+        }
+      }
+
+      if (additionalImages.length > 0 && eventId) {
+        try {
+          for (let i = 0; i < additionalImages.length; i++) {
+            const file = additionalImages[i];
+            const fileExt = file.name.split('.').pop();
+            const filePath = `event-images/${eventId}/additional-${i+1}.${fileExt}`;
+            
+            const { error: uploadError, data: uploadData } = await supabase.storage
+              .from('event-images')
+              .upload(filePath, file, {
+                upsert: true,
+              });
+
+            if (uploadError) {
+              console.error(`Error uploading additional image ${i+1}:`, uploadError);
+              continue;
+            }
+
             const { data: urlData } = supabase.storage
               .from('event-images')
               .getPublicUrl(filePath);
 
-            console.log('Image public URL:', urlData);
-
-            // Update event with image URL
             if (urlData) {
-              const { error: updateError } = await supabase
-                .from('events')
-                .update({ image_url: urlData.publicUrl })
-                .eq('id', eventId);
-
-              if (updateError) {
-                console.error('Error updating event with image URL:', updateError);
-                toast.error("Failed to attach image to event", {
-                  description: isEditing
-                    ? "Your event was updated, but the image couldn't be attached."
-                    : "Your event was created, but the image couldn't be attached."
-                });
-              } else {
-                console.log('Event updated with image URL:', urlData.publicUrl);
-              }
+              uploadedImageUrls.push(urlData.publicUrl);
             }
           }
+
+          if (uploadedImageUrls.length > 0) {
+            await supabase
+              .from('events')
+              .update({ additional_image_urls: uploadedImageUrls })
+              .eq('id', eventId);
+          }
         } catch (imageError: any) {
-          console.error('Error processing image upload:', imageError);
-          toast.error(`Image processing error: ${imageError.message}`, {
-            description: isEditing
-              ? "Event was updated but without a new image."
-              : "Event was created but without an image."
-          });
+          console.error('Error processing additional images upload:', imageError);
+          throw imageError;
         }
       }
 
-      // Show success toast and navigate
       toast.success(isEditing ? 'Event updated successfully!' : 'Event created successfully!');
       navigate(isEditing ? `/event/${eventId}` : '/find-activities');
     } catch (error: any) {
@@ -244,7 +246,11 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
             setEventImage(file);
             setImageError(null);
           }}
+          onAdditionalImagesSelect={(files) => {
+            setAdditionalImages(files);
+          }}
           existingImageUrl={existingImageUrl}
+          existingAdditionalImageUrls={existingAdditionalImageUrls}
         />
         
         {imageError && (

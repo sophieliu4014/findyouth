@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Control } from 'react-hook-form';
 import {
@@ -20,18 +19,29 @@ import { HelpCircle } from 'lucide-react';
 interface BasicInfoSectionProps {
   control: Control<EventFormValues>;
   onImageSelect: (file: File) => void;
+  onAdditionalImagesSelect?: (files: File[]) => void;
   existingImageUrl?: string | null;
+  existingAdditionalImageUrls?: string[];
 }
 
-const BasicInfoSection = ({ control, onImageSelect, existingImageUrl }: BasicInfoSectionProps) => {
+const BasicInfoSection = ({ 
+  control, 
+  onImageSelect, 
+  onAdditionalImagesSelect,
+  existingImageUrl,
+  existingAdditionalImageUrls 
+}: BasicInfoSectionProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [additionalPreviewUrls, setAdditionalPreviewUrls] = useState<string[]>([]);
 
-  // Set existing image preview if available
   useEffect(() => {
     if (existingImageUrl) {
       setPreviewUrl(existingImageUrl);
     }
-  }, [existingImageUrl]);
+    if (existingAdditionalImageUrls?.length) {
+      setAdditionalPreviewUrls(existingAdditionalImageUrls);
+    }
+  }, [existingImageUrl, existingAdditionalImageUrls]);
   
   return (
     <div className="space-y-6">
@@ -126,15 +136,18 @@ const BasicInfoSection = ({ control, onImageSelect, existingImageUrl }: BasicInf
       />
       
       <div>
-        <FormLabel>Event Image</FormLabel>
+        <FormLabel>Event Images</FormLabel>
         <EventImageUpload 
           onImageSelect={onImageSelect}
+          onAdditionalImagesSelect={onAdditionalImagesSelect}
           previewUrl={previewUrl}
+          additionalPreviewUrls={additionalPreviewUrls}
           setPreviewUrl={setPreviewUrl}
+          setAdditionalPreviewUrls={setAdditionalPreviewUrls}
         />
         <FormDescription>
-          Upload a high-quality image that represents your event. 
-          {existingImageUrl && " Leave as is to keep the current image, or upload a new one to replace it."}
+          Upload images for your event. The first image will be the main image shown in the events list.
+          {existingImageUrl && " Leave as is to keep the current images, or upload new ones to replace them."}
         </FormDescription>
       </div>
     </div>

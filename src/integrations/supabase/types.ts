@@ -47,6 +47,7 @@ export type Database = {
       }
       events: {
         Row: {
+          additional_image_urls: string[] | null
           application_deadline: string | null
           attached_links: string | null
           cause_area: string | null
@@ -67,6 +68,7 @@ export type Database = {
           zip: string | null
         }
         Insert: {
+          additional_image_urls?: string[] | null
           application_deadline?: string | null
           attached_links?: string | null
           cause_area?: string | null
@@ -87,6 +89,7 @@ export type Database = {
           zip?: string | null
         }
         Update: {
+          additional_image_urls?: string[] | null
           application_deadline?: string | null
           attached_links?: string | null
           cause_area?: string | null
