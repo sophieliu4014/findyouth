@@ -1,7 +1,9 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import {
   createBrowserRouter,
   RouterProvider,
+  useLocation,
 } from "react-router-dom";
 import './App.css';
 import { 
@@ -27,6 +29,17 @@ import EditEvent from './pages/EditEvent';
 import { initializeAuthListener } from './lib/auth';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HelmetProvider } from 'react-helmet-async';
+
+// Create a wrapper component that handles scrolling
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  
+  return null;
+};
 
 const router = createBrowserRouter([
   {
@@ -115,7 +128,11 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <RouterProvider 
+          router={router} 
+          // Add this to ensure ScrollToTop is used
+          fallbackElement={<ScrollToTop />}
+        />
       </QueryClientProvider>
     </HelmetProvider>
   );
