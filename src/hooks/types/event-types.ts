@@ -22,6 +22,7 @@ export interface Event {
   organizationId: string; // The ID of the nonprofit organization
   creatorId?: string;     // The user ID who created the event
   date: string;
+  endDate?: string;       // Added endDate property to fix TypeScript errors
   location: string;
   causeArea: string;
   rating: number;
