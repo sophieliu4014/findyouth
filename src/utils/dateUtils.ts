@@ -1,24 +1,24 @@
-
 /**
  * Utility functions for handling dates and times in the application
  */
 
 /**
- * Checks if an event date has already passed
+ * Checks if an event date has passed by more than 24 hours
  * @param eventDate - The date string of the event
- * @returns boolean indicating if the event has passed
+ * @returns boolean indicating if the event has passed by more than 24 hours
  */
 export const isEventPassed = (eventDate: string): boolean => {
   if (!eventDate) return false;
   
-  // Try to extract date information from the formatted date string
-  // Format is typically "Month Day, Year at Time AM/PM"
   try {
-    // Convert the formatted event date string back to a Date object
     const date = new Date(eventDate);
+    const currentDate = new Date();
+    
+    // Add 24 hours (in milliseconds) to the event date
+    const eventDatePlus24Hours = new Date(date.getTime() + (24 * 60 * 60 * 1000));
     
     // Compare with current date
-    return date < new Date();
+    return eventDatePlus24Hours < currentDate;
   } catch (error) {
     console.error("Error parsing event date:", error);
     return false;
