@@ -249,9 +249,23 @@ const EventCard = ({
 
   const formatDateDisplay = () => {
     if (endDate && endDate !== date) {
-      return `${date} to ${endDate}`;
+      const startFormatted = new Date(date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      const endFormatted = new Date(endDate).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      return `${startFormatted} to ${endFormatted}`;
     }
-    return date;
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   return (
