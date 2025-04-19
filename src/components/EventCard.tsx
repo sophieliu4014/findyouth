@@ -28,6 +28,7 @@ interface EventCardProps {
   title: string;
   organization: string;
   date: string;
+  endDate?: string;
   location: string;
   causeArea: string;
   rating: number;
@@ -43,6 +44,7 @@ const EventCard = ({
   title,
   organization,
   date,
+  endDate,
   location,
   causeArea,
   rating,
@@ -245,6 +247,13 @@ const EventCard = ({
     ));
   };
 
+  const formatDateDisplay = () => {
+    if (endDate && endDate !== date) {
+      return `${date} to ${endDate}`;
+    }
+    return date;
+  };
+
   return (
     <div 
       className="glass-panel hover:shadow-lg transition-all duration-300 overflow-hidden relative"
@@ -315,7 +324,7 @@ const EventCard = ({
           <div className="flex flex-col gap-y-1 mt-3">
             <div className="flex items-center text-sm text-youth-charcoal/70">
               <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
-              <span>{date}</span>
+              <span>{formatDateDisplay()}</span>
             </div>
             
             <div className="flex items-center text-sm text-youth-charcoal/70">

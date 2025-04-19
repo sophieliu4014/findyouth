@@ -52,6 +52,7 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
                 title={event.title}
                 organization={event.organization}
                 date={event.date}
+                endDate={event.endDate}
                 location={event.location}
                 causeArea={event.causeArea}
                 rating={event.rating}
@@ -88,6 +89,7 @@ const ResultsList = ({ events, isLoading }: ResultsListProps) => {
                   title={event.title}
                   organization={event.organization}
                   date={event.date}
+                  endDate={event.endDate}
                   location={event.location}
                   causeArea={event.causeArea}
                   rating={event.rating}

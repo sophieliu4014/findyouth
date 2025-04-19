@@ -30,7 +30,12 @@ interface EventDetailsProps {
 const EventDetails = ({ event, organization, onApply, isApplying }: EventDetailsProps) => {
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Date not specified';
-    return dateString;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const handleApplyClick = () => {

@@ -36,7 +36,7 @@ const useEventData = (
       // Filter out passed events if showPassedEvents is false
       let filteredByDate = transformedEvents;
       if (!showPassedEvents) {
-        filteredByDate = transformedEvents.filter(event => !isEventPassed(event.date));
+        filteredByDate = transformedEvents.filter(event => !isEventPassed(event.date, event.endDate));
         console.log('Events after date filtering:', filteredByDate.length);
       }
       

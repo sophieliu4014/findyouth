@@ -15,7 +15,7 @@ export async function transformEventData(
 ): Promise<Event> {
   const orgData = await fetchNonprofitData(organizationId);
   
-  const formattedDate = formatEventDate(event.date);
+  const formattedDate = formatEventDate(event.date, event.end_date);
 
   return {
     id: event.id,
@@ -24,6 +24,7 @@ export async function transformEventData(
     organizationId: organizationId,
     creatorId: event.nonprofit_id, // Include the creator ID (nonprofit_id is actually the creator's user ID)
     date: formattedDate,
+    endDate: event.end_date || undefined,
     location: event.location,
     causeArea: causeArea,
     rating: rating,
@@ -114,9 +115,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
         };
         
         // Get the nonprofit rating from pre-fetched data or use default
-        // Important: Use the same calculation method as in profile
         const nonprofitRating = nonprofitRatingsMap.get(event.nonprofit_id) || 4;
-        console.log(`Using rating ${nonprofitRating} for event ${event.id} by nonprofit ${event.nonprofit_id}`);
         
         const eventObj = {
           id: event.id,
@@ -125,6 +124,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           organizationId: event.nonprofit_id,
           creatorId: event.nonprofit_id, // Add creatorId (same as nonprofit_id in current schema)
           date: event.date,
+          endDate: event.end_date || undefined,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
           rating: nonprofitRating, // Use the nonprofit's actual rating with consistent calculation
@@ -135,7 +135,6 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           registrationLink: event.signup_form_url || undefined
         };
         
-        console.log(`Event ${event.id} registration link:`, event.signup_form_url);
         return eventObj;
       } catch (error) {
         console.error(`Error transforming event ${event.id}:`, error);
@@ -148,6 +147,7 @@ export const transformDatabaseEvents = async (dbEvents: DatabaseEvent[]): Promis
           organizationId: event.nonprofit_id,
           creatorId: event.nonprofit_id, // Add creatorId (same as nonprofit_id in current schema)
           date: event.date,
+          endDate: event.end_date || undefined,
           location: event.location,
           causeArea: event.cause_area || 'Environment',
           rating: nonprofitRatingsMap.get(event.nonprofit_id) || 4, // Use pre-fetched rating or default
