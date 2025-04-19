@@ -13,13 +13,13 @@ const DateTimeSection = ({ control }: DateTimeSectionProps) => {
     <div className="space-y-6">
       <h2 className="text-xl font-semibold text-youth-charcoal">Date & Time</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
           name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Event Date*</FormLabel>
+              <FormLabel>Start Date*</FormLabel>
               <FormControl>
                 <Input type="date" {...field} />
               </FormControl>
@@ -28,6 +28,25 @@ const DateTimeSection = ({ control }: DateTimeSectionProps) => {
           )}
         />
         
+        <FormField
+          control={control}
+          name="endDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>End Date</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormDescription>
+                Optional: for multi-day events
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={control}
           name="startTime"

@@ -15,7 +15,8 @@ export const eventFormSchema = z.object({
       (value) => value.trim().split(/\s+/).length >= 25,
       { message: 'Description must be at least 25 words' }
     ),
-  date: z.string().min(1, { message: 'Date is required' }),
+  date: z.string().min(1, { message: 'Start date is required' }),
+  endDate: z.string().optional(),
   startTime: z.string().min(1, { message: 'Start time is required' }),
   endTime: z.string().min(1, { message: 'End time is required' }),
   applicationDeadline: z.string().optional(),
