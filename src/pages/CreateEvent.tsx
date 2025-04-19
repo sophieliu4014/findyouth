@@ -23,6 +23,13 @@ const CreateEvent = () => {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
+  // Define a function to handle successful event creation
+  const handleEventCreated = () => {
+    // Navigate to find-activities and scroll to top
+    navigate('/find-activities', { replace: true });
+    window.scrollTo(0, 0);
+  };
+
   return (
     <>
       <Helmet>
@@ -40,7 +47,7 @@ const CreateEvent = () => {
               Share your volunteer opportunity with the community! Fill out the form below to create a new event.
             </p>
             
-            {user && <EventForm userId={user.id} />}
+            {user && <EventForm userId={user.id} onEventCreated={handleEventCreated} />}
           </div>
         </div>
       </main>

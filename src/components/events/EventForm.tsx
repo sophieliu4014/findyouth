@@ -18,9 +18,10 @@ interface EventFormProps {
   userId: string;
   initialData?: any; // For editing an existing event
   isEditing?: boolean;
+  onEventCreated?: () => void; // Add callback for successful event creation
 }
 
-const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) => {
+const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: EventFormProps) => {
   const navigate = useNavigate();
   const [eventImage, setEventImage] = useState<File | null>(null);
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
@@ -107,6 +108,7 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
         description: values.description,
         location,
         date: values.date,
+        end_date: values.endDate || null,
         start_time: values.startTime,
         end_time: values.endTime,
         application_deadline: values.applicationDeadline || null,
@@ -225,7 +227,16 @@ const EventForm = ({ userId, initialData, isEditing = false }: EventFormProps) =
       }
 
       toast.success(isEditing ? 'Event updated successfully!' : 'Event created successfully!');
-      navigate(isEditing ? `/event/${eventId}` : '/find-activities');
+      
+      if (isEditing) {
+        navigate(`/event/${eventId}`);
+      } else {
+        if (onEventCreated) {
+          onEventCreated();
+        } else {
+          navigate('/find-activities');
+        }
+      }
     } catch (error: any) {
       console.error(isEditing ? 'Error updating event:' : 'Error creating event:', error);
       toast.error(isEditing 
