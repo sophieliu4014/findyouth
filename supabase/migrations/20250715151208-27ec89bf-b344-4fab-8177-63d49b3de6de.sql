@@ -1,0 +1,1 @@
+UPDATE events SET end_date = '2025-07-31' WHERE id = 'bd5b79d2-f475-4f03-9ee7-045379e10651';
