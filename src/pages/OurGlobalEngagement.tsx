@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/navbar/Navbar';
 import Footer from '../components/Footer';
+import globalEngagementImage from '../assets/global-engagement-framework.png';
 
 const OurGlobalEngagement = () => {
   return (
@@ -30,7 +31,7 @@ const OurGlobalEngagement = () => {
             {/* Framework Image */}
             <div className="flex justify-center">
               <img 
-                src="/lovable-uploads/fa82e076-0772-4750-9dcf-c281180d4388.png" 
+                src={globalEngagementImage} 
                 alt="FindYouth Framework: 80 Ways Youth Can Maximize Their Potential from Passion to Productivity showing statistics: 5+ Think Tanks, 21.2K+ Impressions, 450+ Youth, 3+ Universities, 37 Countries, 3+ Partners" 
                 className="rounded-2xl shadow-elevated max-w-full h-auto hover:shadow-hover transition-all duration-300"
               />
