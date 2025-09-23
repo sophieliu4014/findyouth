@@ -120,6 +120,7 @@ const Navbar = () => {
               {isAboutOpen && (
                 <div className="dropdown-menu bg-white/95 backdrop-blur-sm rounded-xl shadow-elevated border-none">
                   <Link to="/our-story" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Our Story</Link>
+                  <Link to="/our-global-engagement" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Our Global Engagement</Link>
                   <Link to="/our-instagram" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Our Instagram</Link>
                   <Link to="/contact" className="dropdown-item hover:bg-youth-softgray/50" onClick={closeDropdowns}>Contact Us</Link>
                 </div>
@@ -194,6 +195,13 @@ const Navbar = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Our Story
+              </Link>
+              <Link 
+                to="/our-global-engagement" 
+                className={`block py-2 px-8 ${isActive('/our-global-engagement') ? 'text-youth-purple font-medium' : 'text-youth-charcoal/80'}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Our Global Engagement
               </Link>
               <Link 
                 to="/our-instagram" 

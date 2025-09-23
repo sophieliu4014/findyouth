@@ -11,6 +11,7 @@ import {
   FindActivities,
   RegisterNgo,
   OurStory,
+  OurGlobalEngagement,
   OurInstagram,
   WebsiteGuidelines,
   Contact,
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: "/our-story",
     element: <OurStory />,
+  },
+  {
+    path: "/our-global-engagement",
+    element: <OurGlobalEngagement />,
   },
   {
     path: "/our-instagram",
