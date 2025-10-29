@@ -24,12 +24,15 @@ const OurStory = () => {
               with meaningful causes, we aim to inspire students and educators to contribute to our community.
             </p>
             
-            <div className="mt-12 flex justify-center">
+            <div className="mt-12 flex flex-col items-center">
               <img 
                 src="/lovable-uploads/fa82e076-0772-4750-9dcf-c281180d4388.png" 
                 alt="FindYouth Team" 
                 className="rounded-2xl shadow-elevated max-w-full h-auto max-h-96 object-cover hover:shadow-hover transition-all duration-300"
               />
+              <p className="mt-4 text-sm text-muted-foreground text-center max-w-2xl italic">
+                For privacy reasons, the team's faces are not shown and this image is not of FindYouth's team, who are all minors.
+              </p>
             </div>
           </div>
         </div>
