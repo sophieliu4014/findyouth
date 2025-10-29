@@ -31,7 +31,7 @@ const OurStory = () => {
                 className="rounded-2xl shadow-elevated max-w-full h-auto max-h-96 object-cover hover:shadow-hover transition-all duration-300"
               />
               <p className="mt-4 text-sm text-muted-foreground text-center max-w-2xl italic">
-                For privacy reasons, the team's faces are not shown and this image is not of FindYouth's team, who are all minors.
+                Image shown for illustrative purposes only. To protect the privacy of our youth team, the faces of FindYouth's actual team members are not shown.
               </p>
             </div>
           </div>
