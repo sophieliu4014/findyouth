@@ -290,10 +290,7 @@ export type Database = {
           data_type: string
         }[]
       }
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
       app_permission: "admin" | "user"

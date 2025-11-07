@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { ensureAnonymousId, calculateAverageRating } from '@/hooks/utils/rating-utils';
+import { calculateAverageRating } from '@/hooks/utils/rating-utils';
+import { useAuthStore } from '@/lib/auth';
 
 interface RatingSystemProps {
   nonprofitId: string;
@@ -26,6 +27,7 @@ const RatingSystem = ({
   const [userReviewId, setUserReviewId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const user = useAuthStore((state) => state.user);
   
   // Size variants for stars
   const sizeClasses = {
@@ -37,14 +39,13 @@ const RatingSystem = ({
   // Get user's previous rating if any
   useEffect(() => {
     const getUserRating = async () => {
-      // Get stored anonymous ID
-      const anonymousId = ensureAnonymousId();
+      if (!user?.id) return;
       
       const { data, error } = await supabase
         .from('reviews')
         .select('id, rating')
         .eq('nonprofit_id', nonprofitId)
-        .eq('anonymous_id', anonymousId)
+        .eq('user_id', user.id)
         .maybeSingle();
       
       if (error) {
@@ -53,39 +54,39 @@ const RatingSystem = ({
       }
       
       if (data) {
-        console.log('Found existing rating:', data);
         setUserRating(data.rating);
         setUserReviewId(data.id);
-      } else {
-        console.log('No existing rating found for this nonprofit');
       }
     };
     
     if (!displayOnly) {
       getUserRating();
     }
-  }, [nonprofitId, displayOnly]);
+  }, [nonprofitId, displayOnly, user?.id]);
   
   const handleRatingClick = async (selectedRating: number) => {
     if (displayOnly || isSubmitting) return;
     
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to rate this nonprofit.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
-      const anonymousId = ensureAnonymousId();
-      console.log('Using anonymous ID:', anonymousId);
-      console.log('Current user review ID:', userReviewId);
-      
       let result;
       
       if (userReviewId) {
         // Update existing rating
-        console.log(`Updating existing rating to ${selectedRating} stars for review ID ${userReviewId}`);
         result = await supabase
           .from('reviews')
           .update({ 
-            rating: selectedRating,
-            anonymous_id: anonymousId // Ensure anonymous_id is included in update
+            rating: selectedRating
           })
           .eq('id', userReviewId)
           .select()
@@ -97,13 +98,12 @@ const RatingSystem = ({
         });
       } else {
         // Insert new rating
-        console.log(`Creating new rating of ${selectedRating} stars`);
         result = await supabase
           .from('reviews')
           .insert([{ 
             nonprofit_id: nonprofitId, 
             rating: selectedRating,
-            anonymous_id: anonymousId
+            user_id: user.id
           }])
           .select()
           .maybeSingle();
@@ -119,9 +119,6 @@ const RatingSystem = ({
         throw result.error;
       }
       
-      // Log success for debugging
-      console.log('Rating saved successfully:', result.data);
-      
       // Update UI state
       setRating(selectedRating);
       setUserRating(selectedRating);
@@ -131,20 +128,19 @@ const RatingSystem = ({
         setUserReviewId(result.data.id);
       }
       
-      // Notify parent component - pass the new rating to trigger immediate update
+      // Notify parent component
       if (onRatingChange) {
         onRatingChange(selectedRating);
       }
       
-      // Fetch new average rating and update UI
+      // Fetch new average rating
       const { data: updatedReviews } = await supabase
         .from('reviews')
         .select('rating')
         .eq('nonprofit_id', nonprofitId);
         
       if (updatedReviews && updatedReviews.length > 0) {
-        const newAvg = calculateAverageRating(updatedReviews, false);
-        console.log(`New calculated average rating: ${newAvg}`);
+        calculateAverageRating(updatedReviews, false);
       }
       
     } catch (error) {
@@ -242,7 +238,7 @@ const RatingSystem = ({
       </div>
       {!displayOnly && (
         <span className="ml-2 text-sm text-gray-500">
-          {userRating ? `Your rating: ${userRating} stars` : 'Rate this nonprofit'}
+          {!user ? 'Log in to rate' : userRating ? `Your rating: ${userRating} stars` : 'Rate this nonprofit'}
         </span>
       )}
     </div>
