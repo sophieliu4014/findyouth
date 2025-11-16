@@ -29,6 +29,7 @@ const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: E
   const [imageError, setImageError] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [existingAdditionalImageUrls, setExistingAdditionalImageUrls] = useState<string[]>([]);
+  const [navigationPath, setNavigationPath] = useState<string | null>(null);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -88,6 +89,18 @@ const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: E
       });
     }
   }, [isEditing, initialData, form]);
+
+  // Handle navigation after state cleanup
+  useEffect(() => {
+    if (navigationPath && !isSubmitting) {
+      if (onEventCreated && !isEditing) {
+        onEventCreated();
+      } else {
+        navigate(navigationPath);
+      }
+      setNavigationPath(null);
+    }
+  }, [navigationPath, isSubmitting, onEventCreated, isEditing, navigate]);
 
   const onSubmit = async (values: EventFormValues) => {
     if (!userId) return;
@@ -176,10 +189,12 @@ const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: E
             .getPublicUrl(mainImagePath);
 
           if (urlData) {
-            await supabase
+            const { error: imageUrlUpdateError } = await supabase
               .from('events')
               .update({ image_url: urlData.publicUrl })
               .eq('id', eventId);
+            
+            if (imageUrlUpdateError) throw imageUrlUpdateError;
           }
         } catch (imageError: any) {
           console.error('Error processing main image upload:', imageError);
@@ -215,10 +230,12 @@ const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: E
           }
 
           if (uploadedImageUrls.length > 0) {
-            await supabase
+            const { error: additionalImagesUpdateError } = await supabase
               .from('events')
               .update({ additional_image_urls: uploadedImageUrls })
               .eq('id', eventId);
+            
+            if (additionalImagesUpdateError) throw additionalImagesUpdateError;
           }
         } catch (imageError: any) {
           console.error('Error processing additional images upload:', imageError);
@@ -228,15 +245,8 @@ const EventForm = ({ userId, initialData, isEditing = false, onEventCreated }: E
 
       toast.success(isEditing ? 'Event updated successfully!' : 'Event created successfully!');
       
-      if (isEditing) {
-        navigate(`/event/${eventId}`);
-      } else {
-        if (onEventCreated) {
-          onEventCreated();
-        } else {
-          navigate('/find-activities');
-        }
-      }
+      // Set navigation path to be handled after state cleanup
+      setNavigationPath(isEditing ? `/event/${eventId}` : '/find-activities');
     } catch (error: any) {
       console.error(isEditing ? 'Error updating event:' : 'Error creating event:', error);
       toast.error(isEditing 
