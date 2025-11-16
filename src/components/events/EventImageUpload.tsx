@@ -20,6 +20,7 @@ const EventImageUpload = ({
   setAdditionalPreviewUrls
 }: EventImageUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
   
   // Handle image file selection
   const handleFileSelect = (files: FileList) => {
@@ -34,17 +35,21 @@ const EventImageUpload = ({
       
       // Handle additional images if they exist
       if (files.length > 1) {
-        const additionalFiles = Array.from(files).slice(1);
-        const additionalUrls = additionalFiles.map(file => URL.createObjectURL(file));
-        setAdditionalPreviewUrls?.(additionalUrls);
-        onAdditionalImagesSelect?.(additionalFiles);
+        const newAdditionalFiles = Array.from(files).slice(1);
+        const additionalUrls = newAdditionalFiles.map(file => URL.createObjectURL(file));
+        const allAdditionalFiles = [...additionalFiles, ...newAdditionalFiles];
+        setAdditionalFiles(allAdditionalFiles);
+        setAdditionalPreviewUrls?.([...(additionalPreviewUrls || []), ...additionalUrls]);
+        onAdditionalImagesSelect?.(allAdditionalFiles);
       }
     } else {
       // If main image exists, all new images are additional
-      const additionalFiles = Array.from(files);
-      const additionalUrls = additionalFiles.map(file => URL.createObjectURL(file));
+      const newAdditionalFiles = Array.from(files);
+      const additionalUrls = newAdditionalFiles.map(file => URL.createObjectURL(file));
+      const allAdditionalFiles = [...additionalFiles, ...newAdditionalFiles];
+      setAdditionalFiles(allAdditionalFiles);
       setAdditionalPreviewUrls?.([...(additionalPreviewUrls || []), ...additionalUrls]);
-      onAdditionalImagesSelect?.(additionalFiles);
+      onAdditionalImagesSelect?.(allAdditionalFiles);
     }
   };
   
@@ -99,6 +104,12 @@ const EventImageUpload = ({
       const newUrls = [...additionalPreviewUrls];
       newUrls.splice(index, 1);
       setAdditionalPreviewUrls(newUrls);
+      
+      // Also remove from files array and notify parent
+      const newFiles = [...additionalFiles];
+      newFiles.splice(index, 1);
+      setAdditionalFiles(newFiles);
+      onAdditionalImagesSelect?.(newFiles);
     }
   };
   
