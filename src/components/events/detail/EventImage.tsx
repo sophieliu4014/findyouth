@@ -46,8 +46,8 @@ const EventImage = ({ imageUrl, additionalImageUrls = [], title }: EventImagePro
             </CarouselContent>
             {allImages.length > 1 && (
               <>
-                <CarouselPrevious className="!-left-12 hover:!-left-11 z-10" />
-                <CarouselNext className="!-right-12 hover:!-right-11 z-10" />
+                <CarouselPrevious className="left-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background" />
+                <CarouselNext className="right-4 z-50 bg-background/80 backdrop-blur-sm hover:bg-background" />
               </>
             )}
           </Carousel>
