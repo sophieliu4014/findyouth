@@ -38,7 +38,7 @@ const EventImage = ({ imageUrl, additionalImageUrls = [], title }: EventImagePro
         <h2 className="text-xl font-semibold mb-4">Event Gallery</h2>
         <Carousel 
           className="w-full max-w-3xl mx-auto relative" 
-          opts={{ loop: true }}
+          opts={{ loop: false }}
         >
           <CarouselContent>
             {allImages.map((url, index) => (
