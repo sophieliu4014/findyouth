@@ -27,7 +27,7 @@ const EventImage = ({ imageUrl, additionalImageUrls = [], title }: EventImagePro
         <h2 className="text-xl font-semibold mb-4">Event Gallery</h2>
         <div className="space-y-4">
           {/* Main carousel for all images */}
-          <div className="w-full">
+          <div className="w-full relative">
             <Carousel className="w-full max-w-3xl mx-auto">
               <CarouselContent>
                 {allImages.map((url, index) => (
@@ -42,8 +42,12 @@ const EventImage = ({ imageUrl, additionalImageUrls = [], title }: EventImagePro
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-2" />
-              <CarouselNext className="right-2" />
+              {allImages.length > 1 && (
+                <>
+                  <CarouselPrevious className="left-4 z-10 bg-background/80 backdrop-blur-sm hover:bg-background" />
+                  <CarouselNext className="right-4 z-10 bg-background/80 backdrop-blur-sm hover:bg-background" />
+                </>
+              )}
             </Carousel>
           </div>
 
