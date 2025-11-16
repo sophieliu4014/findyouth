@@ -52,16 +52,12 @@ export const fetchNonprofitData = async (nonprofitId: string) => {
     // If no data in nonprofits table, try to get from user metadata
     console.log('No data in nonprofits table, attempting to fetch from user metadata');
     try {
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(nonprofitId);
+      const { data: currentUser } = await supabase.auth.getUser();
       
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-        throw userError;
-      }
-      
-      if (userData?.user) {
+      // Only allow fetching metadata if it's the current user
+      if (currentUser?.user?.id === nonprofitId) {
         console.log('Successfully fetched user data from auth');
-        const metadata = userData.user.user_metadata || {};
+        const metadata = currentUser.user.user_metadata || {};
         const nonprofitData = metadata.nonprofit_data || {};
         
         // Get banner image from storage if not in metadata

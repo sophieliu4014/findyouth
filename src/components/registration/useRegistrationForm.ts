@@ -38,11 +38,27 @@ export const useRegistrationForm = () => {
 
   const checkForExistingOrganization = async (organizationName: string, email: string) => {
     try {
-      // Only check for existing organizations in the nonprofits table
+      // Check for existing organization name (secure version without SQL injection)
+      const { data: nameMatch, error: nameError } = await supabase
+        .from('nonprofits')
+        .select('id, organization_name')
+        .ilike('organization_name', organizationName)
+        .limit(1);
+      
+      if (nameError) {
+        console.error("Error checking organization name:", nameError);
+        throw new Error("Error checking for existing organizations");
+      }
+      
+      if (nameMatch && nameMatch.length > 0) {
+        return { exists: true, message: "An organization with this name already exists" };
+      }
+      
+      // Check for existing email (secure version without SQL injection)
       const { data: existingNonprofit, error: nonprofitError } = await supabase
         .from('nonprofits')
-        .select('id, organization_name, email')
-        .or(`organization_name.ilike."${organizationName}",email.ilike."${email}"`)
+        .select('id, email')
+        .ilike('email', email)
         .limit(1);
       
       if (nonprofitError) {
@@ -51,12 +67,7 @@ export const useRegistrationForm = () => {
       }
       
       if (existingNonprofit && existingNonprofit.length > 0) {
-        const matchedOrg = existingNonprofit[0];
-        if (matchedOrg.organization_name.toLowerCase() === organizationName.toLowerCase()) {
-          return { exists: true, message: "An organization with this name already exists" };
-        } else {
-          return { exists: true, message: "An account with this email already exists" };
-        }
+        return { exists: true, message: "An account with this email already exists" };
       }
       
       // For email duplicates, we'll let the signUpWithEmail function handle those errors

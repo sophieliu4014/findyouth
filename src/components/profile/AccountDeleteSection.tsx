@@ -39,28 +39,17 @@ const AccountDeleteSection = () => {
         if (eventsError) {
           console.error('Error deleting user events:', eventsError);
           toast.error(`Failed to delete your events: ${eventsError.message}`);
-        } else {
-          console.log('Successfully deleted all user events');
+          return;
         }
       }
       
-      // Delete the user's account
-      const { error } = await supabase.auth.admin.deleteUser(
-        (await supabase.auth.getUser()).data.user?.id as string
-      );
+      // Sign out the user (account deletion requires contacting support)
+      const { error } = await supabase.auth.signOut();
       
-      if (error) {
-        // If admin deletion fails, try the standard method
-        const { error: standardError } = await supabase.auth.signOut();
-        if (standardError) throw standardError;
-        
-        navigate('/');
-        toast.success('Your account has been deleted and you have been signed out');
-        return;
-      }
+      if (error) throw error;
       
       navigate('/');
-      toast.success('Your account has been successfully deleted');
+      toast.success('Your data has been deleted and you have been signed out. Please contact support to permanently delete your account.');
     } catch (error: any) {
       console.error('Error deleting account:', error);
       toast.error(`Failed to delete account: ${error.message}`);
